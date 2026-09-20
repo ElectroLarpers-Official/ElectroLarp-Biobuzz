@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.auto;
-
-
+import static com.pedropathing.ivy.commands.Commands.*;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.CommandBuilder;
@@ -12,7 +11,7 @@ import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.psilynx.psikit.core.Logger;
 
-@Configurable
+
 public class Close extends CommandOpMode {
     Alliance a;
     Robot robot;
@@ -28,6 +27,7 @@ public class Close extends CommandOpMode {
 
     @Override
     public void start() {
+        
 
     }
     private CommandBuilder goon() {
