@@ -561,7 +561,7 @@ The drivetrain/path-following layer is [Pedro Pathing](https://pedropathing.com)
 
 ## Build & run
 
-This is an Android app deployed to a FTC Robot Controller (REV Control Hub), not something run/tested locally in a JVM.
+This is an Android app deployed to an FTC Robot Controller (REV Control Hub), not something run/tested locally in a JVM.
 
 - Build (from repo root): `./gradlew build`
 - Build just TeamCode: `./gradlew :TeamCode:build`
