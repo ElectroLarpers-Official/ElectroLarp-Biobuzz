@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.util.data;
 
 public class Tuple<T1, T2> {
     public final T1 v1;

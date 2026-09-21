@@ -1,7 +1,8 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.util.filter;
 
 
 import static com.pedropathing.utils.Utils.clamp;
+import org.firstinspires.ftc.teamcode.util.data.TriTuple;
 
 public class ScalingLowPassFilter extends Filter {
     public double coeff;

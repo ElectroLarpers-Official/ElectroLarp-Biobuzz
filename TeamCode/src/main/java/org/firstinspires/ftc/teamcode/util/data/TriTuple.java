@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.util.data;
 
 public class TriTuple<T1, T2, T3> extends Tuple<T1, T2> {
     public final T3 v3;
