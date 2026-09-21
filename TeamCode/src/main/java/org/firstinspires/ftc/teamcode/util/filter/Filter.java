@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.util.filter;
 
 public abstract class Filter {
     public abstract double update(double value);

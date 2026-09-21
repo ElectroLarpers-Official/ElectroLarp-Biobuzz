@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.util.hardware;
 
 import static com.pedropathing.utils.Utils.clamp;
 
@@ -14,6 +14,8 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import java.util.HashMap;
+import org.firstinspires.ftc.teamcode.util.filter.ScalingLowPassFilter;
+import org.firstinspires.ftc.teamcode.util.data.TriTuple;
 
 @Configurable
 public class CachedMotor implements DcMotorEx {
