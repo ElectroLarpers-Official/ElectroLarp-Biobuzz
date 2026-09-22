@@ -25,7 +25,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "dev.frozenmilk:Load:0.3.1"    // was 0.2.4
+        classpath "dev.frozenmilk:Load:0.3.2"    // was 0.2.4
     }
 }
 android {
