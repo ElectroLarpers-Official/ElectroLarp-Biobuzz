@@ -7,12 +7,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
 @Configurable
 public final class Turret {
-    public static String SERVO_NAME = "turret";
     private final ServoImplEx turret;
     private double LAST_POSITION = -1;
     public static double SERVO_THRESHOLD = 0.0012;
@@ -22,7 +22,7 @@ public final class Turret {
     private double CENTER = 0.5;
 
     public Turret(HardwareMap hw) {
-        turret = hw.get(ServoImplEx.class, SERVO_NAME);
+        turret = hw.get(ServoImplEx.class, HardwareNames.TURRET);
         turret.setPwmRange(new PwmControl.PwmRange(500, 2500));
         turret.setPosition(CENTER);
     }

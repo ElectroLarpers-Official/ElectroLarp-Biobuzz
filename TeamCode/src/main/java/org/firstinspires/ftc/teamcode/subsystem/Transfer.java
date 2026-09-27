@@ -4,19 +4,18 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
 /** Two-motor transfer, bang-bang (fixed power per state) with states: intake, slow, outtake, stopped. */
 @Configurable
 public final class Transfer {
-    public static String MOTOR_1_NAME = "transferMotor";
-    public static String MOTOR_2_NAME = "transferMotor2";
     public static boolean MOTOR_1_REVERSED = false;
     public static boolean MOTOR_2_REVERSED = false;
 
     public static double INTAKE = 1.0;
     public static double OUTTAKE = -1.0;
-    public static double SLOW = 0.8;
+    public static double SLOW = -0.5; // slow reverse, used to clear a jam
     public static double STOPPED = 0;
 
     public enum TransferState {
@@ -30,8 +29,8 @@ public final class Transfer {
     private TransferState state = TransferState.STOPPED;
 
     public Transfer(HardwareMap hw) {
-        motor1 = new CachedMotor(hw, MOTOR_1_NAME);
-        motor2 = new CachedMotor(hw, MOTOR_2_NAME);
+        motor1 = new CachedMotor(hw, HardwareNames.TRANSFER_1);
+        motor2 = new CachedMotor(hw, HardwareNames.TRANSFER_2);
         motor1.setDirection(MOTOR_1_REVERSED ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
         motor2.setDirection(MOTOR_2_REVERSED ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
     }

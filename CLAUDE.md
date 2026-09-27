@@ -22,8 +22,8 @@ Season overview, gameplay, scoring/RP thresholds, field, advancement and awards 
 - **Latch** — servo, **two positions only** (open/close), must hold whichever position it's set to.
 - **Turret** — **4 servos**, each driving its own gear, all 4 meshing on the same axis. Single-axis (yaw only), geared/multi-servo drive. All servos share a wire so in code will appear as 1 servo.
 - **Shooter** — single-motor flywheel (feedforward + P velocity loop).
-- **Limelight** — floor-facing, neural-network or color-based CV, for ball detection.
-- **Arducam** — second camera, AprilTag Hive detection (see §6).
+- **Limelight** *(planned, not in code yet)* — floor-facing, neural-network or color-based CV, for ball detection.
+- **Arducam** *(planned, not in code yet)* — second camera, AprilTag Hive detection (see §6).
 
 ---
 
@@ -32,6 +32,23 @@ Season overview, gameplay, scoring/RP thresholds, field, advancement and awards 
 ### Biobuzz package decisions
 - **No separate `calc/` package.** SOTM math, interpolation, and angle math live inside their own subsystem files (`Shooter.java` holds its SOTM/interpolation; `Turret.java` holds its angle math).
 - `util/` holds only hardware-adjacent/reusable helpers — **fresh implementations, not copied from the old repo**. Top level: `Alliance`, `CommandOpMode` (used by every OpMode). Subpackages: `hardware/` (`CachedMotor`), `filter/` (`Filter`, `ScalingLowPassFilter`, `KalmanFilter` — still an empty stub), `input/` (`GamepadEx`, `BooleanSwitch`, `FloatSupplier`), `data/` (`Tuple`, `TriTuple`).
+
+### Hardware names
+All hardware-map device names live in **`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`** (`@Configurable`, `public static String`). Subsystems and `Robot` read from it; `pedro/Constants` should too once the Follower is filled in. Never hard-code a name string elsewhere. Saved Control Hub configurations are in `configs/*.xml` (repo root) — names in `HardwareNames` must match the active one. Pedro's tuner procedures (`pedro/procedures/*`) keep their own template defaults (e.g. `"pinpoint"`) to avoid upstream merge conflicts.
+
+| Constant | Config name | Device |
+|---|---|---|
+| `FRONT_LEFT` / `FRONT_RIGHT` / `BACK_LEFT` / `BACK_RIGHT` | `frontLeft` / `frontRight` / `backLeft` / `backRight` | Drive motors (Expansion Hub) |
+| `PINPOINT` | `pinpoint` | goBILDA Pinpoint |
+| `IMU` | `imu` | Control Hub IMU |
+| `INTAKE` | `intakeMotor` | Intake motor |
+| `TRANSFER_1` / `TRANSFER_2` | `transferMotor` / `transferMotor2` | Transfer motors |
+| `SHOOTER` | `launchingmotor` | Flywheel motor |
+| `HOOD` | `hoodServo` | Hood servo |
+| `LATCH` | `stopperServo` | Latch servo |
+| `TURRET` | `turret` | Turret servos (4 on one signal wire → one device; the XML configs still list `turretServo1`–`4`) |
+
+Cameras are not listed yet (vision is planned, see §6). Keep this table in sync when `HardwareNames` changes.
 
 ---
 
@@ -45,8 +62,9 @@ Base OpModes (`Close`, `Far`, `Tele`) take an `Alliance` enum (`BLUE`/`RED`) and
 
 ### Subsystem class shape
 - `@Config` annotated; hardware fields `private final CachedMotor`/`Servo`.
+- Hardware-map device names come from `HardwareNames` (see §4 Hardware names) — never hard-code a name string or add a per-subsystem `*_NAME` constant.
 - Tunable constants as `public static double` (dashboard-tunable).
-- State-based motor subsystems (`Intake`, `Transfer`): a nested state enum, one tunable `public static` power per state, one method per state, plus `getState()` / `atState(state)`. `Intake` has exactly three states — `INTAKE` (on), `OUTTAKE`, `STOPPED` (off) — with methods `intake()`, `outtake()`, `stop()`. `Transfer` has those plus `SLOW` (`slow()`). Don't add other intake/transfer modes or parameterized control methods (no `intake(boolean ...)` / `intakeControl(...)`).
+- State-based motor subsystems (`Intake`, `Transfer`): a nested state enum, one tunable `public static` power per state, one method per state, plus `getState()` / `atState(state)`. `Intake` and `Transfer` both have exactly four states — `INTAKE` (on), `OUTTAKE`, `SLOW`, `STOPPED` (off) — with methods `intake()`, `outtake()`, `slow()`, `stop()`. `SLOW` is a slow reverse; `Robot.outtake()` (jam clearing) uses `intake.slow()` + `transfer.slow()`. Don't add other intake/transfer modes or parameterized control methods (no `intake(boolean ...)` / `intakeControl(...)`).
 - Other subsystems use plain action methods plus sensor getters.
 - **No Ivy command wrappers and no `requiring(...)` on subsystems** — subsystems stay plain classes; sequences that use them are built in `Robot` (below).
 - Subsystems with per-loop work expose `update()` (called from `Robot.update()`); most have none.
@@ -54,12 +72,12 @@ Base OpModes (`Close`, `Far`, `Tele`) take an `Alliance` enum (`BLUE`/`RED`) and
 - Turret-style: servos in lockstep, linear position↔radians mapping (`ppr`), `face(targetPose, robotPose)` computing/clamping/setting yaw.
 
 ### `Robot` class
-Composition root: constructs all subsystems + the Pedro `Follower` (**`Constants.create(hardwareMap)`** — the old `Constants.createFollower()` form is wrong), bulk-caching hub setup, and `update()` (clears the bulk cache, updates the follower and subsystems, tracks loop timing — call it once per loop, first). The important actions live here as methods: plain composites (`drive(...)`, `feed()`/`stopFeed()`, `outtake()`/`stopOuttake()`) and Ivy commands built from `Groups.sequential(...)` / `Commands.instant` / `waitMs` (`shootOne()`), often `.raceWith(Commands.infinite(...))` for background tasks (e.g. turret tracking during a shoot sequence). OpModes call these; they do not build sequences themselves. Tunable timings for these sequences (`SHOOT_ONE_MS`) are `public static` on `Robot`.
+Composition root: constructs all subsystems + the Pedro `Follower` (**`Constants.create(hardwareMap)`** — the old `Constants.createFollower()` form is wrong), bulk-caching hub setup, and `update()` (clears the bulk cache, updates the follower and subsystems, tracks loop timing — call it once per loop, first). The important actions live here as methods: plain composites (`drive(...)`, `shootAll()`/`stopShootAll()`, `outtake()`/`stopOuttake()`) and Ivy commands built from `Groups.sequential(...)` / `Commands.instant` / `waitMs` (`shootOne()`), often `.raceWith(Commands.infinite(...))` for background tasks (e.g. turret tracking during a shoot sequence). OpModes call these; they do not build sequences themselves. Tunable timings for these sequences (`SHOOT_ONE_MS`) are `public static` on `Robot`.
 
 ### TeleOp shape (`tele/Tele.java` is the reference)
 - `initialize()`: build `Robot` and `GamepadEx` objects, register trigger buttons (`gp.left_trigger_button(FloatSupplier::isPress)`), schedule **one** `infinite(...)` that runs `robot.update()`, the drive call and telemetry.
 - `initializeLoop()`: also call `gp.update()`, so a button held through START does not register as a press.
-- `execute()`: `gp.update()`, then plain `if (gp.x.isRisingEdge()) ...` checks that either call `robot.*` directly or `schedule(robot.someCommand())`. Held inputs are handled as a rising-edge "start" plus a falling-edge "stop" (e.g. right trigger: `robot.feed()` / `robot.stopFeed()`); continuous inputs (sticks, turret slew) use `isTrue()` / `getVal()`.
+- `execute()`: `gp.update()`, then plain `if (gp.x.isRisingEdge()) ...` checks that either call `robot.*` directly or `schedule(robot.someCommand())`. Held inputs are handled as a rising-edge "start" plus a falling-edge "stop" (e.g. right trigger: `robot.shootAll()` / `robot.stopShootAll()`); continuous inputs (sticks, turret slew) use `isTrue()` / `getVal()`.
 - Do **not** add button-binding helpers or per-control `infinite` commands with requirements/priorities; keep the teleop nearly logic-free.
 - `GamepadEx.update()` must run once per loop. A derived switch (`.risingEdge()`, `.and(...)`) updates its source, so use `gp.apply(...)` to swap rather than registering both.
 
@@ -71,9 +89,11 @@ Stop citing old-repo-specific syntax (Ivy command names, `CachedMotor` API, etc.
 
 ---
 
-## 6. Arducam Hive Vision
+## 6. Arducam Hive Vision (planned)
 
-Constraints, findings, CPU levers and open TODOs are in `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/vision/CLAUDE.md` (loads when working in `vision/`). Camera rotation is physical — keep `SENSOR_NATIVE`, never request software rotation; detection is AprilTag-ID-only (no pose, no lens intrinsics).
+**Vision is removed from the code for now** — no camera classes, no camera names in `HardwareNames`, nothing in `Robot`. It will be added back later. When re-added, put the camera name(s) in `HardwareNames` and the §4 table. The earlier `ArduVision` was also written against the pre-12.0 SDK: in SDK 12.0 `AprilTagDetection` is abstract, `id`/`decisionMargin` live on `AprilTagSingleDetection`, and there is a new `AprilTagClusterDetection` (the Hive uses tag clusters).
+
+Design notes for when it comes back — constraints, findings, CPU levers and open TODOs — are in `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/vision/CLAUDE.md` (loads when working in `vision/`). Camera rotation is physical — keep `SENSOR_NATIVE`, never request software rotation; detection is AprilTag-ID-only (no pose, no lens intrinsics).
 
 ---
 

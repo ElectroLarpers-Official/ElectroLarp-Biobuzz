@@ -19,9 +19,9 @@ import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
  * <ul>
  *   <li>Left stick: translate (field-centric). Right stick X: turn.</li>
  *   <li>Left trigger (hold): run intake.</li>
- *   <li>Right trigger (hold): open latch, run transfer + intake, i.e. feed the shooter.</li>
+ *   <li>Right trigger (hold): shoot all, i.e. open latch and run transfer + intake.</li>
  *   <li>A: shoot exactly one ball.</li>
- *   <li>Left bumper (hold): reverse intake + transfer to clear a jam.</li>
+ *   <li>Left bumper (hold): slowly reverse intake + transfer to clear a jam.</li>
  * </ul>
  * The turret, hood and flywheel have no manual controls: {@link Robot#update()} aims them from the pose, and the
  * flywheel spins for as long as the OpMode is running (not during init).
@@ -35,6 +35,7 @@ public class Tele extends CommandOpMode {
     public static double BLUE_FORWARD_OFFSET_DEG = 0;
     public static double RED_FORWARD_OFFSET_DEG = 180;
 
+    /** Manual hood nudge per press. Reserved for driver 2 controls, which are not added yet. */
     public static double HOOD_STEP = 0.05;
 
     Alliance a;
@@ -89,14 +90,14 @@ public class Tele extends CommandOpMode {
         if (gp1.left_trigger_button.isFallingEdge()) {
             robot.intake.stop();
         }
-        //Feed the shooter: latch open + transfer + intake (hold)
+        //Shoot all: latch open + transfer + intake (hold)
         if (gp1.right_trigger_button.isRisingEdge()) {
-            robot.feed();
+            robot.shootAll();
         }
         if (gp1.right_trigger_button.isFallingEdge()) {
-            robot.stopFeed();
+            robot.stopShootAll();
         }
-        //Outtake, clears a jam (hold)
+        //Outtake, slowly reverses intake + transfer to clear a jam (hold)
         if (gp1.left_bumper.isRisingEdge()) {
             robot.outtake();
         }
@@ -120,7 +121,6 @@ public class Tele extends CommandOpMode {
     private void updateTelemetry() {
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
-        telemetry.addData("Hive", robot.hiveVision.getState());
         telemetry.addData("Shooter", "%.0f / %.0f ticks/s (%s)",
                 robot.shooter.velocity(), robot.shooter.targetVelocity(),
                 robot.shooter.atTarget() ? "at speed" : robot.shooter.isSpinning() ? "spinning up" : "off");

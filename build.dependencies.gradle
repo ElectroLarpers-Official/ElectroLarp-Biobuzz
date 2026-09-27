@@ -10,6 +10,7 @@ repositories {
 dependencies {
     implementation 'org.firstinspires.ftc:Inspection:12.0.0'
     implementation 'org.firstinspires.ftc:Blocks:12.0.0'
+    //noinspection Aligned16KB
     implementation 'org.firstinspires.ftc:RobotCore:12.0.0'
     implementation 'org.firstinspires.ftc:RobotServer:12.0.0'
     implementation 'org.firstinspires.ftc:OnBotJava:12.0.0'
@@ -24,10 +25,6 @@ dependencies {
     implementation 'com.pedropathing:telemetry:1.0.0'
 
     implementation "dev.frozenmilk.sinister:Sloth:0.3.2"
-    implementation 'org.psilynx.psikit:core:0.2.0-beta1'
-    implementation 'org.psilynx.psikit:ftc:0.2.0-beta1'
     implementation("com.bylazar.sloth:fullpanels:0.3.2+1.0.13")
 
-
-    implementation 'androidx.appcompat:appcompat:1.2.0'
 }

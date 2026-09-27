@@ -4,16 +4,17 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
-/** Single-motor intake with three states: intake, outtake, stopped. */
+/** Single-motor intake with states: intake, slow, outtake, stopped. */
 @Configurable
 public final class Intake {
-    public static String MOTOR_NAME = "intakeMotor";
     public static boolean REVERSED = false;
 
     public static double INTAKE = 1.0;
     public static double OUTTAKE = -1.0;
+    public static double SLOW = -0.5; // slow reverse, used to clear a jam
     public static double STOPPED = 0;
 
 
@@ -21,7 +22,7 @@ public final class Intake {
     public enum IntakeState {
         INTAKE,
         OUTTAKE,
-
+        SLOW,
         STOPPED
     }
 
@@ -29,7 +30,7 @@ public final class Intake {
     private IntakeState state = IntakeState.STOPPED;
 
     public Intake(HardwareMap hw) {
-        motor = new CachedMotor(hw, MOTOR_NAME);
+        motor = new CachedMotor(hw, HardwareNames.INTAKE);
         motor.setDirection(REVERSED ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
     }
 
@@ -41,6 +42,11 @@ public final class Intake {
     public void outtake() {
         motor.setPower(OUTTAKE);
         state = IntakeState.OUTTAKE;
+    }
+
+    public void slow() {
+        motor.setPower(SLOW);
+        state = IntakeState.SLOW;
     }
 
     public void stop() {
