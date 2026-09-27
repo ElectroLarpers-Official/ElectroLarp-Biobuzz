@@ -2,14 +2,6 @@ package org.firstinspires.ftc.teamcode.util.input;
 
 import java.util.function.BooleanSupplier;
 
-/**
- * A polled boolean input with edge detection and toggle state. Call {@link #update()} exactly once per loop;
- * the edge getters compare the two most recent updates.
- * <p>
- * The derived switches ({@link #risingEdge()}, {@link #and}, ...) call {@code update()} on their sources, so
- * only register the derived switch for updating, never the source as well, or the source is updated twice per
- * loop and its edges are lost. {@link GamepadEx#apply} exists for exactly that swap.
- */
 public final class BooleanSwitch {
     private boolean state;
     private boolean previousState;
@@ -29,7 +21,6 @@ public final class BooleanSwitch {
         previousState = state;
         state = decider.getAsBoolean();
 
-        // toggle on rising edge
         if (isRisingEdge()) {
             toggled = !toggled;
         }
@@ -96,45 +87,21 @@ public final class BooleanSwitch {
         return isTrue;
     }
 
-    /**
-     * standard press function.
-     * Also update the internal timestamp.
-     * @param timeStamp timestamp to use
-     * @return if the button is pressable yet
-     */
     public boolean canPress(long timeStamp) {
         return canPress(timeStamp,
                 BTN_PRESS_INTERVAL);
     }
 
-    /**
-     * press function for half time.
-     * Also update the internal timestamp.
-     * @param timeStamp timestamp to use
-     * @return if the button is pressable yet
-     */
     public boolean canPressShort(long timeStamp) {
         return canPress(timeStamp,
                 BTN_PRESS_INTERVAL/2);
     }
 
-    /**
-     * press function for fourth time.
-     * Also update the internal timestamp.
-     * @param timeStamp timestamp to use
-     * @return if the button is pressable yet
-     */
     public boolean canPress4Short(long timeStamp) {
         return canPress(timeStamp,
                 BTN_PRESS_INTERVAL/4);
     }
 
-    /**
-     * press function for sixth time.
-     * Also update the internal timestamp.
-     * @param timeStamp timestamp to use
-     * @return if the button is pressable yet
-     */
     public boolean canPress6Short(long timeStamp) {
         return canPress(timeStamp,
                 BTN_PRESS_INTERVAL/6);

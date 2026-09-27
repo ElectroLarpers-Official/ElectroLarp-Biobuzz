@@ -1,38 +1,30 @@
-package org.firstinspires.ftc.teamcode.subsystem.control;
+package org.firstinspires.ftc.teamcode.subsystem.control.pasted;
 
 import static com.pedropathing.utils.Utils.clamp;
-import static org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants.PASS_THROUGH_POINT_RADIUS;
-import static org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants.SCORE_ANGLE;
+import static org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants.*;
 import static java.lang.Double.isNaN;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.math.Pose;
 import com.pedropathing.math.Vector2D;
 
+import org.firstinspires.ftc.teamcode.subsystem.control.Braking;
+import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
+import org.firstinspires.ftc.teamcode.util.Alliance;
 
 
-/**
- * Shoot-on-the-move solver. See "On-Bot Control & Dynamic Targeting"
- * (Control Lab, Module 7) for the derivation this follows.
- *
- * Step 3 - SOTM is a fixed-point problem: virtual target -> distance ->
- *          flight time -> virtual target. Iterate to tolerance, capped.
- * Step 4 - Project robot pose/velocity forward through the coast to the
- *          launch instant and solve against the PROJECTED state.
- *
- * t_d (feeder delay + turret settle) is consumed by projecting the launch
- * state forward; t_f (flight time) is the lead inside the fixed-point loop.
- * Kept separate because the robot's speed is not constant across the two
- * intervals - averaging them leads wrong.
- */
+
 @Configurable
 public class ShooterCalc {
 
     // ---- Fixed-point solver parameters -------------------------------------
-    public static double feederDelay = 0.1;
-    public static double turretSettleTime = 0.03;
-    public static double leadGain = 1;
-    public static double solveTolerance = 0.001;
-    public static int maxIterations = 5;
+    // feederDelay + turretSettleTime is the horizon the launch state is projected over; flight time
+    // is the lead solved inside the fixed-point loop. Kept separate: speed is not constant across both.
+    public static double feederDelay = 0.1; // TODO(new robot): old-robot value
+    public static double turretSettleTime = 0.03; // TODO(new robot): old-robot value
+    public static double leadGain = 1; // TODO(new robot): old-robot value
+    public static double solveTolerance = 0.001; // TODO(new robot): old-robot value
+    public static int maxIterations = 5; // TODO(new robot): old-robot value
 
     // ---- Launch-state projection -------------------------------------------
     public static final int MODE_MEASURED_ACCEL = 0;
@@ -44,32 +36,91 @@ public class ShooterCalc {
     public static final int REVAMPED_AUTO = 1;
     public static final int REVAMPED_ALWAYS = 2;
     public static int revAmpedMode = REVAMPED_AUTO;
-    public static double revAmpedBrakeThreshold = -60.0;
-    public static double revAmpedReleaseThreshold = -10.0;
+    /** Measured decel (in/s^2) that ENGAGES the braking model. Clear of the ~-52 float coast. */
+    public static double revAmpedBrakeThreshold = -100.0; // TODO(new robot): old-robot value
+    /** Measured decel (in/s^2) at which it RELEASES. Latched far from the engage threshold so
+     *  one stop is treated as one event instead of stepping the aim point between models. */
+    public static double revAmpedReleaseThreshold = -75.0; // TODO(new robot): old-robot value
     public static boolean revAmpedBypassMinSpeed = true;
     public static boolean revAmpedActive = false;
 
     // ---- Accel filter --------------------------------------------------------
-    public static double accelFilterAlphaDecel = 0.5;
-    public static double accelFilterAlphaAccel = 0.3;
-    public static double maxProjectedSpeed = 125.0;
-    // Off to match the old code, whose solver call always passed a yaw rate of 0. Turn on to lead the curve.
-    public static boolean compensateTurning = false;
-    public static double minAngularVelocity = 0.02;
-    public static double maxAngularVelocity = 6.0;
-    public static double accelClamp = 400.0;
-    public static double positiveAccelGain = 0.5;
-    public static double slopeWindowSeconds = 0.15;
+    public static double accelFilterAlphaDecel = 0.5; // TODO(new robot): old-robot value
+    public static double accelFilterAlphaAccel = 0.3; // TODO(new robot): old-robot value
+    public static double maxProjectedSpeed = 125.0; // TODO(new robot): old-robot value
+    /** Rotate the velocity direction forward through the horizon so the lead points where the robot
+     *  will be heading at launch. Without it, at 30 deg/s the hit rate on a 7in target fell to 50%;
+     *  with it, 99%. Robot passes the follower's real yaw rate (the old code passed 0, so this never ran there). */
+    public static boolean compensateTurning = true;
+    public static double minAngularVelocity = 0.02; // TODO(new robot): old-robot value
+    public static double maxAngularVelocity = 6.0; // TODO(new robot): old-robot value
+    public static double accelClamp = 400.0; // TODO(new robot): old-robot value
+    public static double positiveAccelGain = 0.5; // TODO(new robot): old-robot value
+    public static double slopeWindowSeconds = 0.15; // TODO(new robot): old-robot value
     public static double lastAlongTrackAccelRaw = 0.0;
 
-    private static final int HIST_N = 12;
-    private static final double[] histT = new double[HIST_N];
-    private static final double[] histV = new double[HIST_N];
-    private static int histHead = 0;
-    private static int histCount = 0;
-    private static double filteredAlongTrackAccel = 0.0;
+    protected static final int HIST_N = 12;
+    protected static final double[] histT = new double[HIST_N];
+    protected static final double[] histV = new double[HIST_N];
+    protected static int histHead = 0;
+    protected static int histCount = 0;
+    protected static double filteredAlongTrackAccel = 0.0;
+
+    // ---- BIOBUZZ HIVE mode ------------------------------------------------
+    // Geometry from Competition Manual V1, Figures 9-9 to 9-11: the opening is a
+    // house-shaped window, 20 in wide x 14 in tall, whose outward normal points
+    // 30 deg above horizontal. The aim point is a fixed point in space, so unlike
+    // the DECODE regression the target height does not vary with range.
+
+    /** Toggle: aim at the BIOBUZZ HIVE instead of the DECODE goal. */
+    public static boolean hiveMode = true;
+    public static void toggleHiveMode() { hiveMode = !hiveMode; }
+
+    /** Window centroid above the tiles, inches. */
+    public static double hiveAimHeight = 65; // TODO(new robot): old-robot value
+    /** Shooter exit above the tiles, inches. Target heights here are relative to the launch point. */
+    public static double launchHeight = 14.0; // TODO(new robot): old-robot value
+    /** Entry angle into the window, degrees. If balls rebound off the back wall and out, try -40. */
+    public static double hiveEntryDeg = -50.0; // TODO(new robot): old-robot value
+    /** Calibration trim on aim height, inches. Consistently short -> raise. */
+    public static double hiveHeightTrim = 0.0; // TODO(new robot): old-robot value
+
+    private static boolean hiveAimFar = true;
+    private static boolean hiveSideLatched = false;
+
+    // ---- Hood compensation (RevAmped's SimpleShooterMath) --------------------
+    // Two independent hood offsets: (1) in-burst sag comp, (2) latched velocity comp.
+
+    /** Fraction of ball exit speed the later balls in a burst lose to flywheel sag.
+     *  MEASURE THIS: log flywheel TPS through a burst and map the drop at ball 2's exit
+     *  back to ball speed. 0.03 is a starting estimate. */
+    public static double burstSpeedSag = 0.03; // TODO(new robot): old-robot value
+    public static boolean burstCompEnabled = true;
+    /** Delay from feed start to applying the comp. 30 ms lands after ball 1 exits and
+     *  leaves the hood servo time to move before ball 2. */
+    public static double burstCompDelayMs = 30.0; // TODO(new robot): old-robot value
+    /** Written by Robot each loop from its feed timer. */
+    public static boolean burstCompActive = false;
+    /** Hood change the burst comp applied last loop, degrees. Telemetry. */
+    public static double lastBurstHoodDeltaDeg = 0.0;
+
+    /** Velocity comp, LATCHED: direction is decided when speed first crosses the threshold
+     *  and held until it drops back under. Offsets stay 0 until moving shots show a
+     *  consistent direction-dependent miss that stationary shots do not. */
+    public static boolean velCompEnabled = true;
+    public static double velCompThreshold = 12.0;  // in/s; TODO(new robot): old-robot value
+    public static double velCompToward = 0.0;      // hood signal, TUNE; TODO(new robot): old-robot value
+    public static double velCompAway = 0.0;        // ADDED to Toward when retreating; TODO(new robot): old-robot value
+    protected static boolean velCompLatched = false;
+    protected static double velCompLatchedOffset = 0.0;
+    /** Total offset applied last loop (velocity comp). Telemetry. */
+    public static double lastHoodCompTotal = 0.0;
 
     public static void resetProjectionFilter() {
+        velCompLatched = false;
+        velCompLatchedOffset = 0.0;
+        burstCompActive = false;
+        hiveSideLatched = false;
         filteredAlongTrackAccel = 0.0;
         revAmpedActive = false;
         lastAlongTrackAccel = 0.0;
@@ -80,12 +131,14 @@ public class ShooterCalc {
     }
 
     // ---- Empirical terms -------------------------------------------------
-    public static double dragTimeFactor = 1;
-    public static double sotmFactor = 1.0;
-    public static double sotmOffset = 0.0;
-    public static double verticalShift = 0.0;
-    public static double sotmMinSpeed = 12.0;
-    public static double zoneBlendWidth = 10.0;
+    public static double dragTimeFactor = 1; // TODO(new robot): old-robot value
+    public static double sotmFactor = 1.0; // TODO(new robot): old-robot value
+    public static double sotmOffset = 0.0; // TODO(new robot): old-robot value
+    public static double verticalShift = 0.0; // TODO(new robot): old-robot value
+    /** verticalShift nudge per press. Reserved for driver 2 controls, which are not added yet. */
+    public static double verticalShiftStep = 50.0; // TODO(new robot): old-robot value
+    public static double sotmMinSpeed = 12.0; // TODO(new robot): old-robot value
+    public static double zoneBlendWidth = 2; // TODO(new robot): old-robot value
 
     // ---- Telemetry outputs --------------------------------------------------
     public static double requiredTPS = 0.0;
@@ -101,28 +154,34 @@ public class ShooterCalc {
     public static double lastHeadingAngle = 0.0;
     public static boolean lastSotmActive = false;
 
-    private static final double G_IN = 32.174 * 12.0;
-    // TODO: set HOOD_MIN/HOOD_MAX to the real hood's launch-angle limits.
-    private static final double HOOD_MIN = Math.toRadians(46.0);
-    private static final double HOOD_MAX = Math.toRadians(80);
-    private static final double CLOSE_ZONE_END = 66.29;
-    private static final double FAR_ZONE_START = 136.0;
+    protected static final double G_IN = 32.174 * 12.0;
 
-    // ---- Calibration curves --------------------------------------------------
-    // TODO: recalibrate targetHeight and entryAngle (and the zone boundaries above) for the BIOBUZZ target.
+    // Ball speed (m/s) -> flywheel ticks/s: tps = A*v^2 + B*v + C, fit on the old robot.
+    protected static final double TPS_A = -16.19; // TODO(new robot): old-robot value
+    protected static final double TPS_B = 449.11; // TODO(new robot): old-robot value
+    protected static final double TPS_C = -964.9; // TODO(new robot): old-robot value
+
+    public static double tpsForBallSpeed(double mps) { return TPS_A * mps * mps + TPS_B * mps + TPS_C; }
+    protected static final double HOOD_MIN = Math.toRadians(46.0); // TODO(new robot): old-robot value
+    protected static final double HOOD_MAX = Math.toRadians(80); // TODO(new robot): old-robot value
+    private static final double CLOSE_ZONE_END = 66.29; // TODO(new robot): old-robot value
+    private static final double FAR_ZONE_START = 123.0; // TODO(new robot): old-robot value
+
     public static double targetHeight(double range) {
-        double poly = 0.0032 * range * range - 0.6653 * range + 66.888;
-        if (range <= CLOSE_ZONE_END) return poly + 0.4;
-        if (range <= FAR_ZONE_START) return poly + 0.75;
-        if (range >= FAR_ZONE_START + zoneBlendWidth) return 36.0;
+        if (hiveMode) return hiveAimHeight - launchHeight + hiveHeightTrim;
+        double poly = 0.0032 * range * range - 0.6653 * range + 66.888; // TODO(new robot): old-robot value
+        if (range <= CLOSE_ZONE_END) return poly + 0.3;
+        if (range <= FAR_ZONE_START) return poly;
+        if (range >= FAR_ZONE_START + zoneBlendWidth) return 34.8; // TODO(new robot): old-robot value
         double f = (range - FAR_ZONE_START) / zoneBlendWidth;
-        return poly + (36.0 - poly) * f;
+        return (poly + (36.0 - poly) * f) - 1.8; // TODO(new robot): old-robot value
     }
 
     public static double entryAngle(double range) {
-        double closeDeg = 0.6106 * range - 57.478;
-        double midDeg = SCORE_ANGLE; // TODO: confirm ShooterConstants
-        double farDeg = -30.0;
+        if (hiveMode) return Math.toRadians(hiveEntryDeg);
+        double closeDeg = 0.6106 * range - 57.478; // TODO(new robot): old-robot value
+        double midDeg = SCORE_ANGLE;
+        double farDeg = -30.0; // TODO(new robot): old-robot value
         double half = zoneBlendWidth / 2.0;
 
         double deg;
@@ -168,6 +227,28 @@ public class ShooterCalc {
         return degrees;
     }
 
+    public static Pose goal(Alliance alliance, double robotY) {
+        boolean red = alliance == Alliance.RED;
+        if (!hiveMode) {
+            hiveSideLatched = false;
+            return red ? GOAL_POS_RED : GOAL_POS_BLUE;
+        }
+        if (!hiveSideLatched) {
+            hiveAimFar = robotY >= HIVE_SIDE_SPLIT_Y;
+            hiveSideLatched = true;
+        } else if (robotY > HIVE_SIDE_SPLIT_Y + HIVE_SIDE_HYSTERESIS) {
+            hiveAimFar = true;
+        } else if (robotY < HIVE_SIDE_SPLIT_Y - HIVE_SIDE_HYSTERESIS) {
+            hiveAimFar = false;
+        }
+        if (red) {
+            return hiveAimFar ? new Pose(HIVE_RED_FAR_X, HIVE_RED_FAR_Y) : new Pose(HIVE_RED_AUD_X, HIVE_RED_AUD_Y);
+        }
+        return hiveAimFar ? new Pose(HIVE_BLUE_FAR_X, HIVE_BLUE_FAR_Y) : new Pose(HIVE_BLUE_AUD_X, HIVE_BLUE_AUD_Y);
+    }
+
+    public static boolean hiveAimFar() { return hiveAimFar; }
+
     public static double flightTime(double range) {
         double[] s = solveStatic(range, targetHeight(range), entryAngle(range));
         double horizontal = s[1] * Math.cos(s[0]);
@@ -175,9 +256,6 @@ public class ShooterCalc {
         return dragTimeFactor * (range / horizontal);
     }
 
-    /**
-     * @return {requiredTPS, hoodServoPosition, turretHeadingErrorDegrees}
-     */
     public static Double[] solve(
             double robotHeading, Vector2D robotToGoalVector, Vector2D robotVel,
             Vector2D robotAccel, double robotAngularVelocity) {
@@ -339,19 +417,55 @@ public class ShooterCalc {
             headingAngle = normalizeDegrees(baseBearing + sotmFactor * leadDelta);
         }
 
-        // TODO: refit this ball-speed -> ticks/s regression on the real flywheel and ball.
-        double tps = (-16.19 * ballSpeedMps * ballSpeedMps + 449.11 * ballSpeedMps - 964.9)
-                + verticalShift;
+        double tps = tpsForBallSpeed(ballSpeedMps) + verticalShift;
         if (sotmActive) tps -= sotmOffset;
         if (isNaN(tps) || Double.isInfinite(tps) || launchSpeed <= 0.0) tps = 0.0;
         if (tps < 0.0) tps = 0.0;
 
         requiredTPS = tps;
-        requiredRPM = tps * 60.0 / 28.0;
+        requiredRPM = tps * 60.0 / 28.0; // TODO(new robot): old-robot value
+
+        lastBurstHoodDeltaDeg = 0.0;
+        if (burstCompEnabled && burstCompActive && burstSpeedSag > 0.0 && launchSpeed > 0.0) {
+            double r = virtualRange;
+            double h = targetHeight(virtualRange);
+            double v = launchSpeed * (1.0 - burstSpeedSag);
+            double a = G_IN * r * r / (2.0 * v * v);
+            double disc = r * r - 4.0 * a * (a + h);
+            double compHood = Double.NaN;
+            if (disc >= 0.0) {
+                double tLow = Math.atan((r - Math.sqrt(disc)) / (2.0 * a));
+                double tHigh = Math.atan((r + Math.sqrt(disc)) / (2.0 * a));
+                compHood = (Math.abs(tLow - hoodAngle) <= Math.abs(tHigh - hoodAngle)) ? tLow : tHigh;
+            } else if (v * v - 2.0 * G_IN * h > 0.0) {
+                compHood = Math.atan(v / Math.sqrt(v * v - 2.0 * G_IN * h));
+            }
+            if (!isNaN(compHood)) {
+                compHood = clamp(compHood, HOOD_MIN, HOOD_MAX);
+                lastBurstHoodDeltaDeg = Math.toDegrees(compHood - hoodAngle);
+                hoodAngle = compHood;
+            }
+        }
 
         double hoodDegrees = Math.toDegrees(hoodAngle);
-        // TODO: refit this hood angle -> servo position mapping on the real hood.
-        double hoodTime = (0.01625 * hoodDegrees) - 0.6;
+        // Hood launch angle (deg) -> servo position, fit on the old robot.
+        double hoodTime = (0.01625 * hoodDegrees) - 0.6; // TODO(new robot): old-robot value
+
+        if (velCompEnabled) {
+            if (!velCompLatched && currentSpeed > velCompThreshold) {
+                boolean toward = Math.cos(velTheta - goalTheta) > 0.0;
+                velCompLatchedOffset = toward ? velCompToward : velCompToward + velCompAway;
+                velCompLatched = true;
+            } else if (velCompLatched && currentSpeed <= velCompThreshold) {
+                velCompLatched = false;
+                velCompLatchedOffset = 0.0;
+            }
+        } else {
+            velCompLatched = false;
+            velCompLatchedOffset = 0.0;
+        }
+        lastHoodCompTotal = velCompLatchedOffset;
+        hoodTime += lastHoodCompTotal;
         if (isNaN(hoodTime)) hoodTime = 0.0;
 
         lastRange = x;

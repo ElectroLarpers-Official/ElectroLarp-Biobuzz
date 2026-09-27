@@ -12,12 +12,11 @@ import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.OpModeStorage;
 
-/** Autonomous entry point for the close-side starting position. */
 @Configurable
 public class Close extends CommandOpMode {
     Alliance a;
     Robot robot;
-    boolean started = false; // false if the OpMode was stopped in init, so no pose worth handing to TeleOp
+    boolean started = false;
 
     public Close(Alliance a) {this.a = a;}
 
@@ -39,7 +38,7 @@ public class Close extends CommandOpMode {
     public void onStart() {
         started = true;
         schedule(
-                infinite(robot::update), // must stay first: Scheduler runs commands in the order they were scheduled
+                infinite(robot::update),
                 routine()
         );
     }
@@ -47,7 +46,7 @@ public class Close extends CommandOpMode {
     @Override
     public void end() {
         if (robot == null) return;
-        if (started) OpModeStorage.endPose = robot.follower.pose(); // TeleOp starts from here
+        if (started) OpModeStorage.endPose = robot.follower.pose();
         robot.stop();
     }
 

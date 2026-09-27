@@ -6,11 +6,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.HardwareNames;
 
-/** Two-position latch servo. Starts closed and holds whichever position it was last set to. */
 @Configurable
 public final class Latch {
-    public static double OPEN_POS = 0.6;
-    public static double CLOSED_POS = 0.0;
+    public static double OPEN_POS = 0; // TODO(new robot): old-robot value
+    public static double CLOSED_POS = 0.142; // TODO(new robot): old-robot value
 
     private final Servo latch;
     private boolean open;

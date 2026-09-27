@@ -2,63 +2,36 @@ package org.firstinspires.ftc.teamcode.subsystem.control;
 
 import com.bylazar.configurables.annotations.Configurable;
 
-/**
- * RevAmped's LambertApproximator, ported 1:1.
- * Source: RevAmped-Decode-V2/utils/math/LambertApproximator.java
- *
- * WHAT IT DOES
- * ------------
- * Given the braking-distance fit D(v) = a*v^2 + b*v, the implied deceleration
- * is vdot = -v / (2a*v + b). Separating variables and solving through the
- * Lambert W function gives speed as a function of time into the brake, and the
- * ground covered follows without a second integral because the remaining
- * stopping distance is always D of the current speed.
- *
- * THE PRECOMPUTE TRICK (theirs, kept)
- * -----------------------------------
- * The Lambert W is evaluated ONCE for a fixed horizon and cached as two
- * scalars. At runtime the projection is two multiplies:
- *
- *     distance = distFactor * currentSpeed
- *     speed    = speedFactor * currentSpeed
- *
- * So although the derivation is transcendental, the deployed behavior is
- * linear in current speed.
- *
- * THE HORIZON IS NOT BALL-EXIT TIME
- * ---------------------------------
- * RevAmped run 0.5s, tuned empirically, and per its author the long lookahead
- * is what gives the lead any effect - which reads as implicit turret-lag
- * compensation rather than a physical prediction of where the ball leaves.
- * That means:
- *
- *   - horizonSeconds is a TUNING KNOB, not feederDelay + turretSettleTime.
- *   - It must NOT be combined with an explicit command-rate feedforward, or
- *     the same servo lag gets corrected twice.
- *
- * UNITS
- * -----
- * Their a = 0.001503 is s^2/METRE. Pedro reports inches, so it is divided by
- * 39.3701 below. Their b = 0.1239 is in seconds and transfers unchanged.
- */
 @Configurable
 public class Braking {
 
-    /** Quadratic braking coefficient, s^2/in. Theirs, converted from per-metre. */
-    public static double coefA = 0.001503 / 39.3701;
+    /** Quadratic braking coefficient, s^2/in.
+     *
+     *  From the old robot's Pedro PredictiveBrakingCoefficients(0.18, 0.11091, 0.00097587)
+     *  -> (prop, lin, quad). RevAmped's converted value (3.82e-5) is ~26x smaller because it
+     *  was fit on a heavier robot with different wheels; only the STRUCTURE here is theirs.
+     *
+     *  Refit on the new robot (pedro/Constants quadraticBrakeCoefficients is the Foresight
+     *  equivalent once AutoTune has been run). */
+    public static double coefA = 0.00097587; // TODO(new robot): old-robot value
 
-    /** Linear braking coefficient, seconds. Theirs verbatim. */
-    public static double coefB = 0.1239;
+    /** Linear braking coefficient, seconds. Same source as {@link #coefA}. */
+    public static double coefB = 0.11091; // TODO(new robot): old-robot value
 
-    /** Reference speed their fit was taken at. */
-    public static double coefV0 = 72.0;
+    /** Linearisation reference speed, in/s. The Lambert solution is evaluated once at this
+     *  speed and scaled linearly by actual speed, so it is most accurate near this value. */
+    public static double coefV0 = 72.0; // TODO(new robot): old-robot value
 
     /**
      * Projection horizon, seconds. THEIRS IS 0.5 - start here and tune to this
      * robot. Note the cached factors are recomputed whenever this changes, so
      * it is safe to sweep live from Panels.
+     *
+     * This is a TUNING KNOB, not feederDelay + turretSettleTime: the long lookahead acts as
+     * implicit turret-lag compensation. Do NOT combine it with an explicit command-rate
+     * feedforward, or the same servo lag gets corrected twice.
      */
-    public static double horizonSeconds = 0.5;
+    public static double horizonSeconds = 0.5; // TODO(new robot): old-robot value
 
     private static double cachedSpeedFactor = 0.0;
     private static double cachedDistFactor = 0.0;
@@ -85,13 +58,11 @@ public class Braking {
         return w;
     }
 
-    /** Their computeX: (2a/b)*v0 * exp((2a/b)*v0 - t/b). */
     private static double computeX(double t) {
         double leadingTerm = (2.0 * coefA / coefB) * coefV0;
         return leadingTerm * Math.exp(leadingTerm - (t / coefB));
     }
 
-    /** Their setDefaultDt: cache the two factors for the current horizon. */
     private static void refreshFactors() {
         double wx0 = lambertW(computeX(0.0));
         double wxNew = lambertW(computeX(horizonSeconds));
@@ -118,16 +89,14 @@ public class Braking {
         }
     }
 
-    /** Projected speed at the end of the horizon, in/s. */
     public static double speedAfter(double currentSpeed) {
         if (currentSpeed <= 1e-3) return 0.0;
         ensureFresh();
         double v = cachedSpeedFactor * currentSpeed;
         if (Double.isNaN(v) || v < 0.0) return 0.0;
-        return Math.min(v, currentSpeed);   // braking cannot speed you up
+        return Math.min(v, currentSpeed);
     }
 
-    /** Ground covered during the horizon, inches. */
     public static double distanceAfter(double currentSpeed) {
         if (currentSpeed <= 1e-3) return 0.0;
         ensureFresh();
@@ -136,9 +105,6 @@ public class Braking {
         return d;
     }
 
-    /** Deceleration this model implies at a given speed, in/s^2. Diagnostic:
-     *  compare against the measured aAlongV telemetry to see how well their
-     *  fit describes this drivetrain. */
     public static double impliedDecel(double currentSpeed) {
         if (currentSpeed <= 1e-3 || horizonSeconds <= 1e-6) return 0.0;
         return (speedAfter(currentSpeed) - currentSpeed) / horizonSeconds;

@@ -2,10 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
 
-/**
- * Every hardware-map device name in one place. Must match the active robot configuration
- * on the Control Hub (see {@code configs/*.xml}).
- */
 @Configurable
 public final class HardwareNames {
     private HardwareNames() {}
@@ -30,5 +26,8 @@ public final class HardwareNames {
     public static String HOOD = "hoodServo";
     public static String LATCH = "stopperServo";
 
-    public static String TURRET = "turret";
+    // 4 servos on one signal wire; plugged into the port configured as turretServo1 (Control Hub servo port 3)
+    public static String TURRET = "turretServo1";
+
+    // TODO: add the Limelight and Arducam names here (and in the CLAUDE.md table) when vision is added back.
 }

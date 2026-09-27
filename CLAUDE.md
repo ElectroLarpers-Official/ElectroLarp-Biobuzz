@@ -46,7 +46,7 @@ All hardware-map device names live in **`TeamCode/src/main/java/org/firstinspire
 | `SHOOTER` | `launchingmotor` | Flywheel motor |
 | `HOOD` | `hoodServo` | Hood servo |
 | `LATCH` | `stopperServo` | Latch servo |
-| `TURRET` | `turret` | Turret servos (4 on one signal wire → one device; the XML configs still list `turretServo1`–`4`) |
+| `TURRET` | `turretServo1` | Turret servos (4 on one signal wire → one device on servo port 3; the XML configs also list `turretServo2`–`4`, unused in code) |
 
 Cameras are not listed yet (vision is planned, see §6). Keep this table in sync when `HardwareNames` changes.
 

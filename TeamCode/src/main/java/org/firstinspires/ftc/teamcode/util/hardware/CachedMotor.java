@@ -54,12 +54,9 @@ public class CachedMotor implements DcMotorEx {
 
 
     public CachedMotor(HardwareMap hardwareMap, String name) {
-//        if (CachedMotor.created.get(name) != null) motor = CachedMotor.created.get(name);
-//        else {
         this.motor = hardwareMap.get(DcMotorEx.class, name);
 
         CachedMotor.created.put(name, motor);
-//        }
 
         _init();
     }
@@ -369,10 +366,6 @@ public class CachedMotor implements DcMotorEx {
     }
 
     public void resetEncoder() {
-//        try {
-//            new LynxResetMotorEncoderCommand(motor., motor.getPortNumber()).send();
-//        } catch (InterruptedException | LynxNackException e) {
-//        }
         motor.setMode(RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(mode);
     }

@@ -7,10 +7,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
-/** Single-motor intake with states: intake, slow, outtake, stopped. */
 @Configurable
 public final class Intake {
-    public static boolean REVERSED = false;
+    public static boolean REVERSED = false; // TODO: check direction on the new robot
 
     public static double INTAKE = 1.0;
     public static double OUTTAKE = -1.0;

@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.HardwareNames;
 
 /**
- * Values copied from the old Pedro3+Ivy branch (tuned on last season's robot, commit c1856d8).
+ * TODO(new robot): old-robot values. Copied from the old Pedro3+Ivy branch (tuned on last season's robot, commit c1856d8).
  * Re-tune on this robot with AutoTune and paste the results over them.
  */
 public class Constants {
@@ -49,7 +49,7 @@ public class Constants {
 
     public static ForesightConfig foresightConfig = new ForesightConfig(
             c -> {
-                // Forward translational kP was never tuned on the old robot (0).
+                // TODO(new robot): forward translational kP was never tuned on the old robot (0).
                 Controller primaryTranslationalForward = Controller.proportional(0);
                 Controller secondaryTranslationalForward = Controller.proportional(0);
                 Controller primaryTranslationalLateral = Controller.proportional(0.1629657422312071);

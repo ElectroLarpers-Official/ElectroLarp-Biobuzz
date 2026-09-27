@@ -20,19 +20,18 @@ import org.firstinspires.ftc.teamcode.subsystem.Latch;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Transfer;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
-import org.firstinspires.ftc.teamcode.subsystem.control.ShooterCalc;
-import org.firstinspires.ftc.teamcode.subsystem.control.TurretCalc;
+// TODO: pick one shooter logic version (control.shotcheck or control.pasted) and delete the other; until then these imports must match Tele's.
+import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
+import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
-
 import com.pedropathing.math.Velocity;
-
 import java.util.List;
 
-/** Central owner for all robot subsystems, plus the commands that span more than one of them. */
+
 @Configurable
 public final class Robot {
-    /** How long {@link #shootOne()} runs the transfer, i.e. long enough to pass exactly one ball. */
-    public static double SHOOT_ONE_MS = 250;
+    public static double SHOOT_ONE_MS = 250; // TODO: tune
     public final Alliance alliance;
     public final Follower follower;
     public final Intake intake;
@@ -43,13 +42,13 @@ public final class Robot {
     public final Hood hood;
 
     private final List<LynxModule> hubs;
+    private long feedStartNanos = 0;
     private long lastLoopNanos = 0;
     private double loopMs = 0;
 
-    /** The alliance picks the goal the turret tracks, which in turn sets the flywheel speed and hood. */
+
     public Robot(HardwareMap hardwareMap, Alliance alliance) {
         this.alliance = alliance;
-        // Bulk reads: one hub transaction per loop instead of one per sensor/encoder read.
         hubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -61,14 +60,16 @@ public final class Robot {
         turret = new Turret(hardwareMap);
         shooter = new Shooter(hardwareMap);
         hood = new Hood(hardwareMap);
+        ShooterCalc.resetProjectionFilter();
+        TurretCalc.reset();
     }
 
-    /** Call once per loop, before anything reads the follower or the hub's bulk data. */
+
     public void update() {
         for (LynxModule hub : hubs) {
             hub.clearBulkCache();
         }
-        follower.update(); // before aiming, so the solver sees this loop's pose and velocity
+        follower.update();
         updateAiming();
         shooter.update();
 
@@ -77,9 +78,6 @@ public final class Robot {
         lastLoopNanos = now;
     }
 
-    /**
-     *This is a meathod that is updated every loop to aim turret, set tps, and raise hood
-     */
     private void updateAiming() {
         Pose currPose = follower.pose();
         Velocity vel = follower.velocity();
@@ -88,7 +86,11 @@ public final class Robot {
         double angularVelocity = vel.omega;
 
         Pose turretPose = Turret.getTurretPose(currPose);
-        Vector2D robotToGoal = Turret.getTurretToGoalVector(turretPose, alliance);
+        Pose goal = ShooterCalc.goal(alliance, currPose.y());
+        Vector2D robotToGoal = Turret.getTurretToGoalVector(turretPose, goal);
+
+        double feedMs = (feedStartNanos == 0) ? 0.0 : (System.nanoTime() - feedStartNanos) / 1e6;
+        ShooterCalc.burstCompActive = feedStartNanos != 0 && feedMs >= ShooterCalc.burstCompDelayMs;
 
         Double[] result = ShooterCalc.solve(
                 currPose.heading(), robotToGoal, velocity, accel, angularVelocity);
@@ -96,29 +98,36 @@ public final class Robot {
         shooter.setTargetVelocity(result[0]);
         hood.setPosition(result[1]);
         turret.setPosition(TurretCalc.solve(result[2], angularVelocity, alliance));
+        ShotCheck.check(alliance, goal);
     }
-    /**
-     * Field-centric mecanum drive. Inputs are Pedro-signed: +forward, +lateral is left, +turn is counter-clockwise.
-     * {@code forwardOffsetRad} rotates the frame so "forward" points away from the driver.
-     */
+
+    public boolean shotAllowed() {
+        return ShotCheck.allowed();
+    }
+
+
+    public boolean readyToShoot() {
+        return ShotCheck.ready(shooter.velocity(), shooter.targetVelocity());
+    }
+
     public void drive(double forward, double lateral, double turn, double forwardOffsetRad) {
         follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, follower.pose().heading(), forwardOffsetRad));
     }
 
-    /** Shoots everything held: opens the latch and runs the transfer and intake until {@link #stopShootAll()}. */
     public void shootAll() {
+        feedStartNanos = System.nanoTime();
         latch.open();
         transfer.intake();
         intake.intake();
     }
 
     public void stopShootAll() {
+        feedStartNanos = 0;
         latch.close();
         transfer.stop();
         intake.stop();
     }
 
-    /** Runs the intake and transfer in their SLOW states (slow reverse) to clear a jam. */
     public void outtake() {
         intake.slow();
         transfer.slow();
@@ -129,21 +138,18 @@ public final class Robot {
         transfer.stop();
     }
 
-    /** Passes exactly one ball: opens the latch, pulses the transfer, closes the latch. The intake is left off on purpose. */
     public CommandBuilder shootOne() {
         return sequential(
                 instant(latch::open),
-                instant(intake::slow),
-                instant(transfer::slow),
+                instant(transfer::intake),
                 waitMs(SHOOT_ONE_MS),
                 instant(transfer::stop),
                 instant(latch::close)
-
         );
     }
 
-    /** Puts every subsystem in a safe state. Call when the OpMode ends. */
     public void stop() {
+        feedStartNanos = 0;
         intake.stop();
         transfer.stop();
         latch.close();

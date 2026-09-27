@@ -7,11 +7,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
-/** Two-motor transfer, bang-bang (fixed power per state) with states: intake, slow, outtake, stopped. */
 @Configurable
 public final class Transfer {
-    public static boolean MOTOR_1_REVERSED = false;
-    public static boolean MOTOR_2_REVERSED = false;
+    public static boolean MOTOR_1_REVERSED = false; // TODO: check direction on the new robot
+    public static boolean MOTOR_2_REVERSED = false; // TODO: check direction on the new robot
 
     public static double INTAKE = 1.0;
     public static double OUTTAKE = -1.0;
