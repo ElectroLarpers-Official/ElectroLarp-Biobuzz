@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
 /**
@@ -12,9 +13,7 @@ import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
  */
 @Configurable
 public final class Shooter {
-    public static String MOTOR_NAME = "launchingmotor";
-
-    /** Fixed target used in auto's party mode, ticks/s. */
+    /** Fixed flywheel target for party mode, ticks/s. Party mode is reserved for driver 2 controls, which are not added yet. */
     public static double PARTY_MODE_VELOCITY = 1800; // TODO: confirm real value
 
     /**
@@ -30,7 +29,7 @@ public final class Shooter {
     private double targetVelocity = 0;
 
     public Shooter(HardwareMap hw) {
-        motor = new CachedMotor(hw, MOTOR_NAME);
+        motor = new CachedMotor(hw, HardwareNames.SHOOTER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); // let the flywheel coast down
     }
 
@@ -45,6 +44,7 @@ public final class Shooter {
 
     /** Called every loop with the solver's requiredTPS during normal (non-party) operation. */
     public void setTargetVelocity(double ticksPerSecond) { targetVelocity = Math.max(0, ticksPerSecond); }
+    /** Reserved for driver 2 (not wired up yet): holds {@link #PARTY_MODE_VELOCITY} instead of the solver's target. */
     public void partyMode() { setTargetVelocity(PARTY_MODE_VELOCITY); }
     public void stop() {
         targetVelocity = 0;

@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.auto.paths.FarPaths;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.OpModeStorage;
-import org.psilynx.psikit.core.Logger;
 
 /** Autonomous entry point for the far-side starting position. */
 @Configurable
@@ -24,8 +23,6 @@ public class Far extends CommandOpMode {
 
     @Override
     public void initialize() {
-        Logger.recordMetadata("Alliance", a.name());
-        Logger.recordMetadata("OpMode", "Far");
         robot = new Robot(hardwareMap, a);
         robot.follower.setPose(FarPaths.startPose(a));
         robot.follower.update();

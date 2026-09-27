@@ -4,10 +4,11 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.HardwareNames;
+
 /** Two-position latch servo. Starts closed and holds whichever position it was last set to. */
 @Configurable
 public final class Latch {
-    public static String SERVO_NAME = "stopperServo";
     public static double OPEN_POS = 0.6;
     public static double CLOSED_POS = 0.0;
 
@@ -15,7 +16,7 @@ public final class Latch {
     private boolean open;
 
     public Latch(HardwareMap hw) {
-        latch = hw.get(Servo.class, SERVO_NAME);
+        latch = hw.get(Servo.class, HardwareNames.LATCH);
         latch.setPosition(CLOSED_POS);
         open = false;
     }

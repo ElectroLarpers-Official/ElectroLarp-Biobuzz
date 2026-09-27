@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.auto.paths.ClosePaths;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.OpModeStorage;
-import org.psilynx.psikit.core.Logger;
 
 /** Autonomous entry point for the close-side starting position. */
 @Configurable
@@ -24,8 +23,6 @@ public class Close extends CommandOpMode {
 
     @Override
     public void initialize() {
-        Logger.recordMetadata("Alliance", a.name());
-        Logger.recordMetadata("OpMode", "Close");
         robot = new Robot(hardwareMap, a);
         robot.follower.setPose(ClosePaths.startPose(a));
         robot.follower.update();

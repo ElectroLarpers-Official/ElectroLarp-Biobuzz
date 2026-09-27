@@ -23,7 +23,6 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 import org.firstinspires.ftc.teamcode.subsystem.control.ShooterCalc;
 import org.firstinspires.ftc.teamcode.subsystem.control.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
-import org.firstinspires.ftc.teamcode.vision.ArduVision;
 
 import com.pedropathing.math.Velocity;
 
@@ -32,8 +31,6 @@ import java.util.List;
 /** Central owner for all robot subsystems, plus the commands that span more than one of them. */
 @Configurable
 public final class Robot {
-    public static String ARDUCAM_NAME = "Arducam";
-
     /** How long {@link #shootOne()} runs the transfer, i.e. long enough to pass exactly one ball. */
     public static double SHOOT_ONE_MS = 250;
     public final Alliance alliance;
@@ -45,7 +42,6 @@ public final class Robot {
     public final Shooter shooter;
     public final Hood hood;
 
-    public final ArduVision hiveVision;
     private final List<LynxModule> hubs;
     private long lastLoopNanos = 0;
     private double loopMs = 0;
@@ -65,7 +61,6 @@ public final class Robot {
         turret = new Turret(hardwareMap);
         shooter = new Shooter(hardwareMap);
         hood = new Hood(hardwareMap);
-        hiveVision = new ArduVision(hardwareMap, ARDUCAM_NAME);
     }
 
     /** Call once per loop, before anything reads the follower or the hub's bulk data. */
@@ -73,10 +68,9 @@ public final class Robot {
         for (LynxModule hub : hubs) {
             hub.clearBulkCache();
         }
+        follower.update(); // before aiming, so the solver sees this loop's pose and velocity
         updateAiming();
         shooter.update();
-        follower.update();
-        hiveVision.update();
 
         long now = System.nanoTime();
         if (lastLoopNanos != 0) loopMs = (now - lastLoopNanos) / 1e6;
@@ -111,23 +105,23 @@ public final class Robot {
         follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, follower.pose().heading(), forwardOffsetRad));
     }
 
-    /** Opens the latch and runs the transfer and intake, i.e. feeds the shooter. */
-    public void feed() {
+    /** Shoots everything held: opens the latch and runs the transfer and intake until {@link #stopShootAll()}. */
+    public void shootAll() {
         latch.open();
         transfer.intake();
         intake.intake();
     }
 
-    public void stopFeed() {
+    public void stopShootAll() {
         latch.close();
         transfer.stop();
         intake.stop();
     }
 
-    /** Reverses the intake and transfer to clear a jam. */
+    /** Runs the intake and transfer in their SLOW states (slow reverse) to clear a jam. */
     public void outtake() {
-        intake.outtake();
-        transfer.outtake();
+        intake.slow();
+        transfer.slow();
     }
 
     public void stopOuttake() {
@@ -135,11 +129,12 @@ public final class Robot {
         transfer.stop();
     }
 
-    /** Passes exactly one ball: opens the latch, pulses the transfer, closes the latch. */
+    /** Passes exactly one ball: opens the latch, pulses the transfer, closes the latch. The intake is left off on purpose. */
     public CommandBuilder shootOne() {
         return sequential(
                 instant(latch::open),
-                instant(transfer::intake),
+                instant(intake::slow),
+                instant(transfer::slow),
                 waitMs(SHOOT_ONE_MS),
                 instant(transfer::stop),
                 instant(latch::close)
@@ -147,13 +142,12 @@ public final class Robot {
         );
     }
 
-    /** Puts every actuator in a safe state and releases the camera. Call when the OpMode ends. */
+    /** Puts every subsystem in a safe state. Call when the OpMode ends. */
     public void stop() {
         intake.stop();
         transfer.stop();
         latch.close();
         shooter.stop();
-        hiveVision.close();
     }
 
     public double loopMs() {
