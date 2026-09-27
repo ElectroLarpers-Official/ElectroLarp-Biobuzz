@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.util.input;
 
 import java.util.function.Supplier;
 
-/** A polled analog input (trigger/stick axis). {@link #getVal()} returns the value from the last {@link #update()}. */
 public class FloatSupplier {
     private final Supplier<Float> floatSupplier;
     private float lastVal = 0;

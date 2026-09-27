@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 public abstract class CommandOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        reset(); // Scheduler is static, so clear anything left over from the last OpMode
+        reset();
         try {
             preInit();
             initialize();
@@ -27,22 +27,15 @@ public abstract class CommandOpMode extends LinearOpMode {
                 }
             }
         } finally {
-            // Runs on every exit (stop pressed in init, stop pressed while running, or an exception).
             reset();
             end();
         }
     }
 
-    /**
-     * Cancels all previous commands
-     */
     public void reset() {
         Scheduler.reset();
     }
 
-    /**
-     * Schedules commands to the scheduler
-     */
     public void schedule(Command... commands) {
         Scheduler.schedule(commands);
     }

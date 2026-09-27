@@ -9,10 +9,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Wraps an SDK {@link Gamepad} with edge/toggle-aware buttons and cached analog axes.
- * Call {@link #update()} once per loop, before anything reads it (see {@code CommandOpMode#execute}).
- */
 public class GamepadEx {
     public final BooleanSwitch b;
     public final BooleanSwitch a;
@@ -30,7 +26,6 @@ public class GamepadEx {
     public final BooleanSwitch right_stick_button;
     public final BooleanSwitch touchpad;
 
-    /** Insertion-ordered so buttons update in a deterministic order. */
     public Set<BooleanSwitch> buttons;
 
     public final FloatSupplier right_trigger;
@@ -72,7 +67,6 @@ public class GamepadEx {
         left_stick_x = new FloatSupplier(() -> gamepad.left_stick_x);
         right_stick_y = new FloatSupplier(() -> gamepad.right_stick_y);
         left_stick_y = new FloatSupplier(() -> gamepad.left_stick_y);
-        // Arrays.asList, not List.of: minSdk is 24 and List.of needs API 30.
         buttons = new LinkedHashSet<>(Arrays.asList(
                 a, b, x, y, left_bumper, right_bumper, start, back, dpad_left, dpad_right, dpad_down, dpad_up, left_stick_button,
                 right_stick_button, touchpad
@@ -117,12 +111,10 @@ public class GamepadEx {
         buttons.add(right_stick_y_button);
     }
 
-    /** Stick as (right, up), so pushing the stick forward is +y. */
     public Vector2D leftStick() {
         return Vector2D.cartesian(gamepad.left_stick_x, -gamepad.left_stick_y);
     }
 
-    /** Stick as (right, up), so pushing the stick forward is +y. */
     public Vector2D rightStick() {
         return Vector2D.cartesian(gamepad.right_stick_x, -gamepad.right_stick_y);
     }
@@ -136,7 +128,6 @@ public class GamepadEx {
     }
 
     public void update() {
-        // The raw axes are only refreshed here; without this getVal() would stay 0 unless a derived button used them.
         for (FloatSupplier axis : axes) axis.update();
         for (BooleanSwitch button : buttons) button.update();
     }

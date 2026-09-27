@@ -8,22 +8,20 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.HardwareNames;
-import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
-import org.firstinspires.ftc.teamcode.util.Alliance;
 
 @Configurable
 public final class Turret {
     private final ServoImplEx turret;
     private double LAST_POSITION = -1;
-    public static double SERVO_THRESHOLD = 0.0012;
-    // TODO: replace both with the turret pivot offset from CAD (inches, measured from the robot's pose point; forward +, left +)
-    public static double TURRET_FORWARD_OFFSET = -0.52588;
-    public static double TURRET_STRAFE_OFFSET = 0;
-    private double CENTER = 0.5;
+    public static double SERVO_THRESHOLD = 0.0002; // TODO(new robot): old-robot value
+    // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot.
+    public static double TURRET_FORWARD_OFFSET = -0.52588; // TODO(new robot): old-robot value
+    public static double TURRET_STRAFE_OFFSET = 0; // TODO(new robot): old-robot value
+    private double CENTER = 0.5; // TODO(new robot): old-robot value
 
     public Turret(HardwareMap hw) {
         turret = hw.get(ServoImplEx.class, HardwareNames.TURRET);
-        turret.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // TODO(new robot): old-robot value
         turret.setPosition(CENTER);
     }
 
@@ -37,10 +35,7 @@ public final class Turret {
 
         return new Pose(turretX, turretY, heading);
     }
-    public static Vector2D getTurretToGoalVector(Pose turretPose, Alliance alliance) {
-        Pose goal = (alliance == Alliance.RED)
-                ? ShooterConstants.GOAL_POS_RED
-                : ShooterConstants.GOAL_POS_BLUE;
+    public static Vector2D getTurretToGoalVector(Pose turretPose, Pose goal) {
         double dx = goal.x() - turretPose.x();
         double dy = goal.y() - turretPose.y();
         return Vector2D.polar(Math.hypot(dx, dy), Math.atan2(dy, dx));
