@@ -26,7 +26,7 @@ public final class HardwareNames {
     public static String HOOD = "hoodServo";
     public static String LATCH = "stopperServo";
 
-    // 4 servos on one signal wire; plugged into the port configured as turretServo1 (Control Hub servo port 3)
+    // 4 servos on one signal wire; Y-split into one device: turretServo1 on Control Hub servo port 0
     public static String TURRET = "turretServo1";
 
     // TODO: add the Limelight and Arducam names here (and in the CLAUDE.md table) when vision is added back.

@@ -13,13 +13,14 @@ public class ShooterConstants {
     // One hardcoded (x, y) per CELL. The solver aims at whichever cell is on the
     // robot's side (see ShooterCalc.goal). Each is independent - edit live in Panels.
     //
-    // Defaults come from the manual geometry: pivots at x = 59.25 (red) and
-    // 84.75 (blue), y = 72, window centroid 16.49 in out from the pivot.
-    // "Far" = the cell on the side away from the audience.
-    public static double HIVE_RED_FAR_X = 58.4, HIVE_RED_FAR_Y = 91.4; // TODO(new robot): old-robot value
-    public static double HIVE_RED_AUD_X = 58.4, HIVE_RED_AUD_Y = 51.6; // TODO(new robot): old-robot value
-    public static double HIVE_BLUE_FAR_X = 84, HIVE_BLUE_FAR_Y = 91.4; // TODO(new robot): old-robot value
-    public static double HIVE_BLUE_AUD_X = 84, HIVE_BLUE_AUD_Y = 51.6; // TODO(new robot): old-robot value
+    // Measured off the Pedro 3 field (144 in, origin bottom-left, y up) in the visualizer,
+    // +-2 in. TOP = higher y, BOTTOM = lower y. The field is 180-degree symmetric (not a
+    // left/right mirror): RED_TOP <-> BLUE_BOTTOM and RED_BOTTOM <-> BLUE_TOP, so
+    // x + x' = 144 and y + y' = 144.
+    public static double HIVE_RED_TOP_X = 58.9, HIVE_RED_TOP_Y = 88.2;
+    public static double HIVE_RED_BOTTOM_X = 58.9, HIVE_RED_BOTTOM_Y = 60.9;
+    public static double HIVE_BLUE_TOP_X = 85.1, HIVE_BLUE_TOP_Y = 83.1;
+    public static double HIVE_BLUE_BOTTOM_X = 85.1, HIVE_BLUE_BOTTOM_Y = 55.8;
 
     /** Aim at the cell on the robot's own side of the field: robot y below the
      *  split -> audience cell, above -> far cell. Only the up-cell can be scored,
