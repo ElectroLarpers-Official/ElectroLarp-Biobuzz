@@ -12,12 +12,8 @@
             <goBILDA5202SeriesMotor name="transferMotor" port="1" />
             <goBILDA5202SeriesMotor name="transferMotor2" port="2" />
             <goBILDA5202SeriesMotor name="launchingmotor" port="3" />
-            <Servo name="hoodServo" port="0" />
+            <Servo name="turretServo1" port="0" />
             <Servo name="stopperServo" port="1" />
-            <Servo name="turretServo2" port="2" />
-            <Servo name="turretServo1" port="3" />
-            <Servo name="turretServo3" port="4" />
-            <Servo name="turretServo4" port="5" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
             <goBILDAPinpoint name="pinpoint" port="0" bus="2" />
         </LynxModule>

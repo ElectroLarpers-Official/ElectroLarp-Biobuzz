@@ -58,7 +58,7 @@ These convert the physics answer into hardware commands. **They are still the ol
 ### 4. Where you're aiming — `ShooterConstants`
 | Number | Default | Change when |
 |---|---|---|
-| `HIVE_RED_FAR_X/Y`, `HIVE_RED_AUD_X/Y`, `HIVE_BLUE_FAR_X/Y`, `HIVE_BLUE_AUD_X/Y` | see file | Aim point for each HIVE cell (Pedro inches). Consistent left/right miss at **one** cell only → move that cell. |
+| `HIVE_RED_TOP_X/Y`, `HIVE_RED_BOTTOM_X/Y`, `HIVE_BLUE_TOP_X/Y`, `HIVE_BLUE_BOTTOM_X/Y` | see file | Aim point for each HIVE cell (Pedro inches). Consistent left/right miss at **one** cell only → move that cell. |
 | `HIVE_SIDE_SPLIT_Y` | 72 | Robot y where it switches from audience cell to far cell. |
 | `HIVE_SIDE_HYSTERESIS` | 3 | Raise if the aim flips between cells when sitting near the middle. |
 | `GOAL_POS_RED` / `GOAL_POS_BLUE` | (140, 140.5) / (3, 140.5) | DECODE goal, only used when `hiveMode = false`. |
