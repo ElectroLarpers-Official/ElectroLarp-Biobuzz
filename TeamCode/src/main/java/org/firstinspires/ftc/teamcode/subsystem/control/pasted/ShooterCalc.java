@@ -242,9 +242,9 @@ public class ShooterCalc {
             hiveAimFar = false;
         }
         if (red) {
-            return hiveAimFar ? new Pose(HIVE_RED_FAR_X, HIVE_RED_FAR_Y) : new Pose(HIVE_RED_AUD_X, HIVE_RED_AUD_Y);
+            return hiveAimFar ? new Pose(HIVE_RED_TOP_X, HIVE_RED_TOP_Y) : new Pose(HIVE_RED_BOTTOM_X, HIVE_RED_BOTTOM_Y);
         }
-        return hiveAimFar ? new Pose(HIVE_BLUE_FAR_X, HIVE_BLUE_FAR_Y) : new Pose(HIVE_BLUE_AUD_X, HIVE_BLUE_AUD_Y);
+        return hiveAimFar ? new Pose(HIVE_BLUE_TOP_X, HIVE_BLUE_TOP_Y) : new Pose(HIVE_BLUE_BOTTOM_X, HIVE_BLUE_BOTTOM_Y);
     }
 
     public static boolean hiveAimFar() { return hiveAimFar; }
