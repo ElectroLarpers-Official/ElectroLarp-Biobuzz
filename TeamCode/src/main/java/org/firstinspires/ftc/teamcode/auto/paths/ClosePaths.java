@@ -3,10 +3,14 @@ package org.firstinspires.ftc.teamcode.auto.paths;
 import static com.pedropathing.api.Paths.curve;
 import static com.pedropathing.api.Paths.line;
 
+
 import com.pedropathing.api.PoseFactory;
+import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.interpolator.Interpolator;
+import org.electrolightsftc.pulse.electropathing.*;
+import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.*;
 
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
@@ -26,6 +30,7 @@ public final class ClosePaths {
 
     public static Path path1(Alliance a) {
         Poses waypoints = new Poses(a);
+
         return curve(waypoints.start, waypoints.path1Control1, waypoints.path1Control2, waypoints.path1Control3, waypoints.path1)
                 .heading(Interpolator.piecewise()
                         .until(0.6096, Interpolator.tangent)
@@ -59,6 +64,14 @@ public final class ClosePaths {
         Poses waypoints = new Poses(a);
         return line(waypoints.point5, waypoints.point6).constant(waypoints.point6);
     }
+    //ts is the bank for later i commented it so its not cluttering if you want to use a pose callback in the fricking shi follow this, keep this shit for later
+    /*public static Path posecallbacktest(Alliance a, Command onReach) {
+        Poses waypoints = new Poses(a);
+        return withCallbacks(
+                line(waypoints.start, waypoints.poseCallbackTestEnd).constant(waypoints.poseCallbackTestEnd),
+                poseCallback(waypoints.poseCallbackTestTrigger, onReach, 2)
+        );
+    }*/
 
     private static final class Poses {
         final Pose start;
@@ -77,6 +90,9 @@ public final class ClosePaths {
         final Pose point4;
         final Pose point5;
         final Pose point6;
+
+        final Pose poseCallbackTestEnd;
+        final Pose poseCallbackTestTrigger;
 
         Poses(Alliance a) {
             PoseFactory poseFactory = poses(a);
@@ -97,6 +113,9 @@ public final class ClosePaths {
             point4 = poseFactory.of(20.508, 48.5437, 180);
             point5 = poseFactory.of(21.5138, 8.4811, 180);
             point6 = poseFactory.of(9.714, 8.4068, 180);
+
+            poseCallbackTestEnd = poseFactory.of(32.52, 48, 90);
+            poseCallbackTestTrigger = poseFactory.of(32.52, 30, 90);
         }
     }
 }
