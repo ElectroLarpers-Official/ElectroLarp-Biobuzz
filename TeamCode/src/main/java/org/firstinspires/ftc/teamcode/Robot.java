@@ -5,13 +5,16 @@ import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
 import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.math.Pose;
 import com.pedropathing.math.Vector2D;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.electrolightsftc.pulse.electropathing.AutoPathRuntime;
+import org.electrolightsftc.pulse.electropathing.PulseRuntime;
+import org.electrolightsftc.pulse.electropathing.PulseFollower;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
@@ -33,7 +36,7 @@ import java.util.List;
 public final class Robot {
     public static double SHOOT_ONE_MS = 250; // TODO: tune
     public final Alliance alliance;
-    public final Follower follower;
+    public final PulseFollower follower;
     public final Intake intake;
     public final Transfer transfer;
     public final Latch latch;
@@ -53,7 +56,7 @@ public final class Robot {
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-        follower = Constants.create(hardwareMap);
+        follower = PulseRuntime.follower();
         intake = new Intake(hardwareMap);
         transfer = new Transfer(hardwareMap);
         latch = new Latch(hardwareMap);
