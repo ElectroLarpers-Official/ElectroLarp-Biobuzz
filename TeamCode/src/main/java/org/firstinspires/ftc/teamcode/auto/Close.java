@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 import static com.pedropathing.ivy.commands.Commands.infinite;
-import static com.pedropathing.ivy.commands.Commands.instant;
+import static com.pedropathing.ivy.groups.Groups.sequential;
+import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.follow;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
@@ -50,11 +51,14 @@ public class Close extends CommandOpMode {
         robot.stop();
     }
 
-    /**
-     * TODO: fill in once ClosePaths has real paths, e.g.
-     * {@code sequential(follow(robot.follower, ClosePaths.toScore(a)), robot.shootOne(), ...)}.
-     */
     private Command routine() {
-        return instant(() -> {});
+        return sequential(
+                follow(robot.follower, ClosePaths.path1(a)),
+                follow(robot.follower, ClosePaths.path2(a)),
+                follow(robot.follower, ClosePaths.path3(a)),
+                follow(robot.follower, ClosePaths.path4(a)),
+                follow(robot.follower, ClosePaths.path5(a)),
+                follow(robot.follower, ClosePaths.path6(a))
+        );
     }
 }
