@@ -9,7 +9,8 @@ import org.firstinspires.ftc.teamcode.util.Alliance;
 @Configurable
 public class TurretCalc {
 
-    /** Turret travel in degrees relative to straight ahead. */
+    /** Turret travel in degrees relative to straight ahead (soft limits, e.g. for wiring). Must stay inside what
+     *  the servos can reach: +/- SERVO_RANGE_DEG/2 * 1.731 = +/- 307 deg with 355 deg Axons centred at 0.5. */
     public static double MIN_ANGLE = -224.75; // TODO(new robot): old-robot value
     public static double MAX_ANGLE = 224.75; // TODO(new robot): old-robot value
 
@@ -25,6 +26,27 @@ public class TurretCalc {
     public static double wrapServoOffset = 0.0; // TODO: tune
 
     public static double yawFeedforwardGain = 0.145; // TODO(new robot): old-robot value
+
+    // ---- Servo -> turret gearing (BIOBUZZ) -------------------------------------
+    // 4 Axons, positional, one signal. Each pair drives a 15T through 48T gears (48:15 speed-up); each 15T shares
+    // an axle with a 33T that drives the 61T turret ring (33:61). Turret deg per servo deg = 48/15 * 33/61 = 1.731.
+    public static double SERVO_GEAR_TEETH = 48, STAGE1_DRIVEN_TEETH = 15, STAGE2_DRIVE_TEETH = 33, TURRET_RING_TEETH = 61;
+    /** Servo rotation over position 0..1, degrees. TODO(new robot): set to the travel the Axons are programmed to. */
+    public static double SERVO_RANGE_DEG = 355;
+    /** Servo position with the turret straight ahead (0 deg). */
+    public static double SERVO_CENTER = 0.5;
+    /** Turret flips direction relative to the servo signal: set true if a positive angle turns the turret clockwise. */
+    public static boolean SERVO_REVERSED = false;
+
+    public static double turretDegPerServoDeg() {
+        return (SERVO_GEAR_TEETH / STAGE1_DRIVEN_TEETH) * (STAGE2_DRIVE_TEETH / TURRET_RING_TEETH);
+    }
+
+    /** Turret angle (deg from straight ahead, CCW +) -> servo position. */
+    public static double servoPositionFor(double turretDeg) {
+        double servoDeg = turretDeg / turretDegPerServoDeg();
+        return SERVO_CENTER + (SERVO_REVERSED ? -1 : 1) * servoDeg / SERVO_RANGE_DEG;
+    }
 
     protected static double slewedTurretAngle = Double.NaN;
     protected static double lastChosenTurretAngle = Double.NaN;
@@ -47,9 +69,8 @@ public class TurretCalc {
         double rawTarget = getClosestValidTurretAngle(commandedAngleDeg + allianceOffset - feedforwardOffset);
         double targetTurretAngle = slewTurret(rawTarget);
 
-        double servoPositionSignal =
-                0.05 + ((targetTurretAngle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE)) * 0.90; // TODO(new robot): old-robot value
-        servoPositionSignal = Math.max(0.05, Math.min(0.95, servoPositionSignal)); // TODO(new robot): old-robot value
+        double servoPositionSignal = servoPositionFor(targetTurretAngle);
+        servoPositionSignal = Math.max(0.0, Math.min(1.0, servoPositionSignal));
 
         double activeOffset = wrapping ? wrapServoOffset : servoOffset;
         return servoPositionSignal + activeOffset;

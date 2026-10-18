@@ -17,10 +17,11 @@ public final class HardwareNames {
     public static String IMU = "imu";
 
     // Motors (Control Hub)
-    public static String INTAKE = "intakeMotor";
-    public static String TRANSFER_1 = "transferMotor";
-    public static String TRANSFER_2 = "transferMotor2";
-    public static String SHOOTER = "launchingmotor";
+    public static String INTAKE = "intake";
+    /** Transfer motor, belted to the intake; driven by Intake together with it (optional in the config). */
+    public static String TRANSFER = "transfer";
+    public static String SHOOTER = "shooter";    // flywheel motor with the encoder
+    public static String SHOOTER_2 = "shooter2";
 
     // Servos (Control Hub)
     public static String HOOD = "hoodServo";

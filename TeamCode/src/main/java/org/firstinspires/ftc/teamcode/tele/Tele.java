@@ -6,8 +6,11 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
 
+import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
+import com.pedropathing.math.Pose;
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 // TODO: pick one shooter logic version (control.shotcheck or control.pasted) and delete the other; until then these imports must match Robot's.
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
@@ -30,6 +33,14 @@ public class Tele extends CommandOpMode {
     /** Manual hood nudge per press. Reserved for driver 2 controls, which are not added yet. */
     public static double HOOD_STEP = 0.05;
 
+    /** Start pose when no saved pose is used, Pedro inches / degrees. */
+    public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
+    /** Start from where the last auto / TeleOp ended instead of START_X/Y. Turn on once autos are running. */
+    public static boolean USE_SAVED_POSE = false;
+
+    /** Only shoot when ShotCheck says the shot can go in. Turn off to test shooting from anywhere. */
+    public static boolean REQUIRE_SHOT_ALLOWED = true;
+
     /** Rumble length while trying to shoot a shot that can't go in, ms. */
     public static int CANT_SHOOT_RUMBLE_MS = 250;
 
@@ -48,13 +59,10 @@ public class Tele extends CommandOpMode {
         // because Robot reads it with PulseRuntime.follower(). This OpMode isn't a PulseOpMode,
         // so nothing attaches the follower for us — we do it here, the one thing PulseOpMode.init
         // would otherwise do. (configurePedro is a PulseOpMode instance method and can't be used here.)
-        PulseRuntime.attach(Constants.create(hardwareMap));
+        PulseRuntime.attach((PulseFollower) Constants.create(hardwareMap));
         robot = new Robot(hardwareMap, a);
-        // TODO: fallback start pose (or a driver pose-reset button) for when no auto ran; aiming currently starts from (0, 0).
-        if (OpModeStorage.endPose != null) {
-            robot.follower.setPose(OpModeStorage.endPose);
-            robot.follower.update();
-        }
+        robot.follower.setPose(startPose());
+        robot.follower.update();
         gp1 = new GamepadEx(gamepad1);
         shootOne = robot.shootOne();
         gp1.left_trigger_button(FloatSupplier::isPress);
@@ -75,9 +83,24 @@ public class Tele extends CommandOpMode {
         gp1.update();
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
-        telemetry.addData("Pose source", OpModeStorage.endPose != null ? "auto / last run" : "NONE, starting at (0,0)");
+        telemetry.addData("Pose source", usingSavedPose() ? "auto / last run" : "START_X/Y");
+        telemetry.addData("Not connected (skipped)", notConnected());
         telemetry.addLine("Ready");
         telemetry.update();
+    }
+
+    private boolean usingSavedPose() { return USE_SAVED_POSE && OpModeStorage.endPose != null; }
+
+    private Pose startPose() {
+        return usingSavedPose() ? OpModeStorage.endPose : new Pose(START_X, START_Y, Math.toRadians(START_HEADING_DEG));
+    }
+
+    private String notConnected() {
+        StringBuilder s = new StringBuilder();
+        if (!Constants.drivetrainConnected) s.append("drive motors ");
+        if (!robot.turret.isConnected()) s.append("turret ");
+        if (!robot.latch.isConnected()) s.append("latch ");
+        return s.length() == 0 ? "none" : s.toString().trim();
     }
 
     @Override
@@ -92,10 +115,12 @@ public class Tele extends CommandOpMode {
         if (gp1.left_trigger_button.isFallingEdge()) {
             robot.intake.stop();
         }
-        if (gp1.right_trigger_button.isRisingEdge()) {
-            robot.shootAll();
-        }
-        if (gp1.right_trigger_button.isFallingEdge()) {
+        // Right trigger held = shoot, but only while the shot can go in. If it stops being possible mid-burst
+        // (robot moved), feeding stops; it resumes on its own once the shot is possible again.
+        boolean canShoot = !REQUIRE_SHOT_ALLOWED || robot.shotAllowed();
+        if (gp1.right_trigger_button.isTrue() && canShoot) {
+            if (!robot.isShooting()) robot.shootAll();
+        } else if (robot.isShooting()) {
             robot.stopShootAll();
         }
         if (gp1.left_bumper.isRisingEdge()) {
@@ -104,11 +129,11 @@ public class Tele extends CommandOpMode {
         if (gp1.left_bumper.isFallingEdge()) {
             robot.stopOuttake();
         }
-        if (gp1.a.isRisingEdge() && !Scheduler.isScheduled(shootOne)) {
+        if (gp1.a.isRisingEdge() && canShoot && !Scheduler.isScheduled(shootOne)) {
             schedule(shootOne);
         }
-        boolean tryingToShoot = gp1.right_trigger_button.isTrue() || Scheduler.isScheduled(shootOne);
-        if (tryingToShoot && !robot.shotAllowed() && !gamepad1.isRumbling()) {
+        boolean tryingToShoot = gp1.right_trigger_button.isTrue() || gp1.a.isTrue();
+        if (tryingToShoot && !canShoot && !gamepad1.isRumbling()) {
             gamepad1.rumble(CANT_SHOOT_RUMBLE_MS);
         }
 
@@ -124,13 +149,21 @@ public class Tele extends CommandOpMode {
     private void updateTelemetry() {
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
-        telemetry.addData("Shooter", "%.0f / %.0f ticks/s (%s)",
-                robot.shooter.velocity(), robot.shooter.targetVelocity(),
-                robot.shooter.atTarget() ? "at speed" : robot.shooter.isSpinning() ? "spinning up" : "off");
+        telemetry.addData("Shooter", "%.0f / %.0f motor RPM (%s, %s, power %.2f)",
+                robot.shooter.rpm(), robot.shooter.targetRpm(),
+                robot.shooter.atTarget() ? "at speed" : robot.shooter.isSpinning() ? "spinning up" : "off",
+                robot.shooter.mode(), robot.shooter.power());
         telemetry.addData("Range now / projected / virtual", "%.1f / %.1f / %.1f",
                 ShooterCalc.lastRange, ShooterCalc.lastProjectedRange, ShooterCalc.lastVirtualRange);
         telemetry.addData("Aim", !ShooterCalc.hiveMode ? "DECODE goal"
-                : ShooterCalc.hiveAimFar() ? "HIVE far cell" : "HIVE audience cell");
+                : (ShooterCalc.hiveAimFar() ? "HIVE far cell" : "HIVE audience cell")
+                + (robot.underHive() ? " (UNDER HIVE: fixed RPM / hood)" : ""));
+        telemetry.addData("Aim table", !ShooterCalc.aimTableInUse() ? "off (fixed score height / entry)"
+                : String.format("launch %.1f deg, %.2f m/s +/-%.1f%%%s%s",
+                ShooterCalc.lastTableLaunchDeg, ShooterCalc.lastTableSpeedMps, ShooterCalc.lastTableWindowPct,
+                ShooterCalc.lastTableValid ? "" : ", NO SHOT HERE",
+                ShooterCalc.lastTableDependsOnOtherHive ? ", needs other HIVE tilted right" : ""));
+        telemetry.addData("Score height / entry", "%.1f in / %.1f deg", ShooterCalc.lastAimHeight, ShooterCalc.lastEntryDeg);
         telemetry.addData("Shot", robot.readyToShoot() ? "READY" : ShotCheck.status());
         telemetry.addData("Tolerance turret deg / flywheel tps", "%.2f / %.0f",
                 ShotCheck.turretToleranceDeg(), ShotCheck.flywheelToleranceTps());
@@ -146,7 +179,6 @@ public class Tele extends CommandOpMode {
         telemetry.addData("Hood", "%.2f", robot.hood.position());
         telemetry.addData("Latch", robot.latch.isOpen() ? "open" : "closed");
         telemetry.addData("Intake", robot.intake.getState());
-        telemetry.addData( "Transfer", robot.transfer.getState());
         telemetry.addData("Loop ms", robot.loopMs());
         telemetry.update();
     }
