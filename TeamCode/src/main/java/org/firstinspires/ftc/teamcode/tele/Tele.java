@@ -6,8 +6,10 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
 
+import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.firstinspires.ftc.teamcode.Robot;
 // TODO: pick one shooter logic version (control.shotcheck or control.pasted) and delete the other; until then these imports must match Robot's.
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
 import org.firstinspires.ftc.teamcode.util.Alliance;
@@ -36,10 +38,17 @@ public class Tele extends CommandOpMode {
     GamepadEx gp1;
     Command shootOne;
 
-    public Tele(Alliance a) {this.a = a;}
+    public Tele(Alliance a) {
+        this.a = a;
+    }
 
     @Override
     public void initialize() {
+        // Build the Pulse follower and attach it to PulseRuntime BEFORE constructing Robot,
+        // because Robot reads it with PulseRuntime.follower(). This OpMode isn't a PulseOpMode,
+        // so nothing attaches the follower for us — we do it here, the one thing PulseOpMode.init
+        // would otherwise do. (configurePedro is a PulseOpMode instance method and can't be used here.)
+        PulseRuntime.attach(Constants.create(hardwareMap));
         robot = new Robot(hardwareMap, a);
         // TODO: fallback start pose (or a driver pose-reset button) for when no auto ran; aiming currently starts from (0, 0).
         if (OpModeStorage.endPose != null) {

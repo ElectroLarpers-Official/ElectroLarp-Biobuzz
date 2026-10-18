@@ -10,8 +10,10 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.interpolator.Interpolator;
 import org.electrolightsftc.pulse.electropathing.*;
+import static org.electrolightsftc.pulse.electropathing.PiecewiseCustom.*;
 import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.*;
-
+import static org.electrolightsftc.pulse.electropathing.PulseRuntime.follower;
+import static org.electrolightsftc.pulse.electropathing.PulseFollower.*;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
 public final class ClosePaths {
@@ -72,7 +74,37 @@ public final class ClosePaths {
                 poseCallback(waypoints.poseCallbackTestTrigger, onReach, 2)
         );
     }*/
+    /*public static Path posecallbacktest2(Alliance a, Command onReach) {
+        Poses waypoints = new Poses(a);
+        return Piece
+    }*/
+    public static Path posecallbacktest2(Alliance a, Command onReach) {
+        Poses waypoints = new Poses(a);
+        return withCallbacks(
+                follower().pathBuilder().piecewiseCustom(waypoints.start)
 
+
+                        .curveTo(waypoints.path1, waypoints.path1Control1, waypoints.path1Control2, waypoints.path1Control3)
+                        .heading(Interpolator.piecewise()
+                                .until(0.6096, Interpolator.tangent)
+                                .until(1, Interpolator.constant(waypoints.path1End.heading())))
+
+
+                        .lineTo(waypoints.point2)
+                        .heading(Interpolator.piecewise()
+                                .until(0.3865, Interpolator.linear(waypoints.point2Start.heading(),
+                                        waypoints.point2Mid.heading()))
+                                .until(1, Interpolator.constant(waypoints.point2.heading())))
+
+
+                        .lineTo(waypoints.point3)
+                        .constant(waypoints.point3.heading())
+
+                        .done()
+                        .toPath(),
+                poseCallback(waypoints.poseCallbackTestTrigger, onReach, 2)
+        );
+    }
     private static final class Poses {
         final Pose start;
 
