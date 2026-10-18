@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystem.control.shotcheck;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.math.Pose;
 
+import org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
 @Configurable
@@ -19,7 +20,10 @@ public final class ShotCheck {
         TOO_EDGE_ON("too far to the side of the cell opening"),
         WINDOW_TOO_NARROW("opening looks narrower than the ball from here"),
         BLOCKED_OTHER_HIVE("other alliance's HIVE is in the way"),
-        BLOCKED_FRAME("HIVE frame is in the way");
+        BLOCKED_FRAME("HIVE frame is in the way"),
+        NOT_ON_MAP("shot map: no scoring shot from here"),
+        UNDER_HIVE("under the HIVE: holding fixed RPM / hood, no shot"),
+        TOO_TIGHT("shot map: shot too tight (speed window not over the minimum)");
 
         public final String text;
         Result(String text) { this.text = text; }
@@ -27,10 +31,18 @@ public final class ShotCheck {
 
     // ---- Ball and shooter ----------------------------------------------------
     /** Ball diameter, inches. DECODE ball on the old robot. New robot shoots POLLEN: 2.8. */
-    public static double BALL_DIAMETER = 5.0; // TODO(new robot): old-robot value, set to 2.8 for POLLEN
-    /** Highest flywheel speed the motor can hold, ticks/s. Not in the old code: this is
-     *  28 CPR x 6000 rpm free speed, derated to 85%. Measure it (full power, read telemetry). */
-    public static double MAX_FLYWHEEL_TPS = 2380; // TODO(new robot): measure on the robot
+    public static double BALL_DIAMETER = 2.8; // POLLEN, 71.1 mm
+    /** Highest flywheel speed the motors can hold, motor ticks/s: 5800 rpm (free speed tested at 12 V) x 28 / 60.
+     *  TODO(new robot): measure (full power, read telemetry). */
+    public static double MAX_FLYWHEEL_TPS = 2700;
+    /** Aim table: share of the map's exit-speed window the flywheel may use, leaving the rest for hood error. */
+    public static double TABLE_SPEED_WINDOW_USE = 0.8;
+    /** Aim table: a shot is only allowed if its exit-speed window (+/- m/s around the planned speed) is MORE than
+     *  this. The map's windows come in 0.025 m/s steps, so 0.075 refuses spots with +/-0.075 or less (about 22% of
+     *  scoring spots); the typical window is +/- 0.22 m/s (about 3.8%). 0 = no minimum. */
+    public static double MIN_SPEED_WINDOW_MPS = 0.075;
+    /** Aim table: let the robot shoot from spots that score only with the other HIVE tilted one particular way. */
+    public static boolean ALLOW_OTHER_HIVE_DEPENDENT = true;
     /** Clearance kept on EACH side of the ball inside the opening, inches, for everything
      *  the tolerances don't model (hood servo error, ball variation, pose error). */
     public static double APERTURE_MARGIN = 0.5; // TODO: tune
@@ -93,6 +105,14 @@ public final class ShotCheck {
                 && Math.abs(flywheelVelocity - flywheelTarget) <= lastFlywheelToleranceTps;
     }
 
+    /** Under the HIVE: solver skipped, shooting blocked. */
+    public static void blockUnderHive() {
+        lastTurretToleranceDeg = 0.0;
+        lastFlywheelToleranceTps = 0.0;
+        lastIncidenceDeg = 0.0;
+        lastResult = Result.UNDER_HIVE;
+    }
+
     public static boolean check(Alliance alliance, Pose goal) {
         lastTurretToleranceDeg = 0.0;
         lastFlywheelToleranceTps = 0.0;
@@ -102,6 +122,7 @@ public final class ShotCheck {
     }
 
     private static Result evaluate(Alliance alliance, Pose goal, boolean turretInRange) {
+        if (ShooterCalc.aimTableInUse()) return evaluateTable(turretInRange);
         double v = ShooterCalc.lastLaunchSpeed;
         double hood = ShooterCalc.lastLaunchHoodRad;
         double tf = ShooterCalc.lastFlightTime;
@@ -188,6 +209,35 @@ public final class ShotCheck {
             lastTurretToleranceDeg = DECODE_TURRET_TOLERANCE_DEG;
             lastFlywheelToleranceTps = DECODE_FLYWHEEL_TOLERANCE_TPS;
         }
+        return Result.OK;
+    }
+
+    /**
+     * Aim-table mode. The table already checked the window, the HIVE and the frame in the simulation, and the
+     * geometric checks above assume the real window height, which the table's virtual score height is not.
+     * So this only asks the table whether the spot scores, and takes the flywheel tolerance from the map's
+     * exit-speed window.
+     */
+    private static Result evaluateTable(boolean turretInRange) {
+        double v = ShooterCalc.lastLaunchSpeed;
+        double tf = ShooterCalc.lastFlightTime;
+        if (!ShooterCalc.lastSolveOk || v <= 0 || tf <= 0) return Result.NO_SOLUTION;
+        if (ShooterCalc.requiredTPS > MAX_FLYWHEEL_TPS) return Result.FLYWHEEL_LIMIT;
+        if (!turretInRange) return Result.TURRET_LIMIT;
+
+        HiveAimTable.Shot shot = ShooterCalc.tableShot();
+        if (!shot.valid) return Result.NOT_ON_MAP;
+        if (MIN_SPEED_WINDOW_MPS > 0 && shot.halfWindowMps <= MIN_SPEED_WINDOW_MPS + 1e-9) return Result.TOO_TIGHT;
+        if (shot.dependsOnOtherHive && !ALLOW_OTHER_HIVE_DEPENDENT) return Result.BLOCKED_OTHER_HIVE;
+
+        // Lateral room: the window looks narrower from the side (it spans x, faces +/- y).
+        double bearing = ShooterCalc.lastProjectedBearing;
+        double seenWidth = WINDOW_WIDTH * Math.max(Math.abs(Math.sin(bearing)), 0.3);
+        double lateralRoom = (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
+        if (lateralRoom <= 0) return Result.WINDOW_TOO_NARROW;
+        lastTurretToleranceDeg = Math.toDegrees(Math.atan2(lateralRoom, Math.max(ShooterCalc.lastVirtualRange, 1.0)));
+        lastFlywheelToleranceTps = TABLE_SPEED_WINDOW_USE * shot.halfWindowMps
+                * Math.abs(ShooterCalc.tpsPerBallSpeed(v / 39.37));
         return Result.OK;
     }
 

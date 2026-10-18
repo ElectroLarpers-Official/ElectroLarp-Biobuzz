@@ -5,6 +5,7 @@ import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
 import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.math.Pose;
@@ -12,18 +13,16 @@ import com.pedropathing.math.Vector2D;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.electrolightsftc.pulse.electropathing.AutoPathRuntime;
-import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.electrolightsftc.pulse.electropathing.PulseFollower;
-
+import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Latch;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
-import org.firstinspires.ftc.teamcode.subsystem.Transfer;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 // TODO: pick one shooter logic version (control.shotcheck or control.pasted) and delete the other; until then these imports must match Tele's.
+import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.TurretCalc;
@@ -38,7 +37,6 @@ public final class Robot {
     public final Alliance alliance;
     public final PulseFollower follower;
     public final Intake intake;
-    public final Transfer transfer;
     public final Latch latch;
     public final Turret turret;
     public final Shooter shooter;
@@ -46,20 +44,21 @@ public final class Robot {
 
     private final List<LynxModule> hubs;
     private long feedStartNanos = 0;
+    private boolean underHive = false;
     private long lastLoopNanos = 0;
     private double loopMs = 0;
 
 
     public Robot(HardwareMap hardwareMap, Alliance alliance) {
-        PulseRuntime.attach(Constants.create(hardwareMap));
+        PulseRuntime.attach((PulseFollower) Constants.create(hardwareMap));
         this.alliance = alliance;
         hubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-        follower = PulseRuntime.follower();
+
+        follower = Constants.create(hardwareMap);
         intake = new Intake(hardwareMap);
-        transfer = new Transfer(hardwareMap);
         latch = new Latch(hardwareMap);
         turret = new Turret(hardwareMap);
         shooter = new Shooter(hardwareMap);
@@ -93,6 +92,19 @@ public final class Robot {
         Pose goal = ShooterCalc.goal(alliance, currPose.y());
         Vector2D robotToGoal = Turret.getTurretToGoalVector(turretPose, goal);
 
+        // Under the HIVE: don't run the solver (no shot exists there). Hold a fixed flywheel speed and hood, keep the
+        // turret pointed at the cell so it's ready on the way out, and block shooting.
+        if (ShooterCalc.hiveMode && ShooterConstants.underHive(currPose.x(), currPose.y())) {
+            underHive = true;
+            shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
+            hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
+            double bearingDeg = Math.toDegrees(robotToGoal.theta() - currPose.heading());
+            turret.setPosition(TurretCalc.solve(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity, alliance));
+            ShotCheck.blockUnderHive();
+            return;
+        }
+        underHive = false;
+
         double feedMs = (feedStartNanos == 0) ? 0.0 : (System.nanoTime() - feedStartNanos) / 1e6;
         ShooterCalc.burstCompActive = feedStartNanos != 0 && feedMs >= ShooterCalc.burstCompDelayMs;
 
@@ -103,6 +115,11 @@ public final class Robot {
         hood.setPosition(result[1]);
         turret.setPosition(TurretCalc.solve(result[2], angularVelocity, alliance));
         ShotCheck.check(alliance, goal);
+    }
+
+    /** True while the robot is under the HIVE (solver skipped, fixed RPM / hood). */
+    public boolean underHive() {
+        return underHive;
     }
 
     public boolean shotAllowed() {
@@ -121,33 +138,38 @@ public final class Robot {
     public void shootAll() {
         feedStartNanos = System.nanoTime();
         latch.open();
-        transfer.intake();
+        shooter.setFeeding(true);
         intake.intake();
+    }
+
+    /** True while shootAll is feeding (right trigger). */
+    public boolean isShooting() {
+        return feedStartNanos != 0;
     }
 
     public void stopShootAll() {
         feedStartNanos = 0;
         latch.close();
-        transfer.stop();
+        shooter.setFeeding(false);
         intake.stop();
     }
 
     public void outtake() {
         intake.slow();
-        transfer.slow();
     }
 
     public void stopOuttake() {
         intake.stop();
-        transfer.stop();
     }
 
     public CommandBuilder shootOne() {
         return sequential(
                 instant(latch::open),
-                instant(transfer::intake),
+                instant(() -> shooter.setFeeding(true)),
+                instant(intake::intake),
                 waitMs(SHOOT_ONE_MS),
-                instant(transfer::stop),
+                instant(intake::stop),
+                instant(() -> shooter.setFeeding(false)),
                 instant(latch::close)
         );
     }
@@ -155,8 +177,8 @@ public final class Robot {
     public void stop() {
         feedStartNanos = 0;
         intake.stop();
-        transfer.stop();
         latch.close();
+        shooter.setFeeding(false);
         shooter.stop();
     }
 

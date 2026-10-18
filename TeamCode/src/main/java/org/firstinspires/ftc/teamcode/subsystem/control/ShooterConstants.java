@@ -22,8 +22,29 @@ public class ShooterConstants {
     public static double HIVE_BLUE_TOP_X = 85.1, HIVE_BLUE_TOP_Y = 83.1;
     public static double HIVE_BLUE_BOTTOM_X = 85.1, HIVE_BLUE_BOTTOM_Y = 55.8;
 
-    /** Aim at the cell on the robot's own side of the field: robot y below the
-     *  split -> audience cell, above -> far cell. Only the up-cell can be scored,
+    /** Toggle: aim at the window centres from the field CAD (the points the shot map was simulated against)
+     *  instead of the measured points above. Keep this on while USE_AIM_TABLE is on: the table's launch angles
+     *  and speeds assume the turret points at these. */
+    public static boolean USE_MAP_AIM_POINTS = true;
+    /** Window centres from the field CAD (shooter_analysis/NOTES.md), Pedro inches. TOP = far cell (high y),
+     *  BOTTOM = audience cell (low y). Window centre height is 58.4 in. */
+    public static double MAP_RED_TOP_X = 59.25, MAP_RED_TOP_Y = 88.45;
+    public static double MAP_RED_BOTTOM_X = 59.25, MAP_RED_BOTTOM_Y = 55.55;
+    public static double MAP_BLUE_TOP_X = 84.75, MAP_BLUE_TOP_Y = 88.45;
+    public static double MAP_BLUE_BOTTOM_X = 84.75, MAP_BLUE_BOTTOM_Y = 55.55;
+
+    /** Aim point for a cell: the CAD window centre when USE_MAP_AIM_POINTS, otherwise the measured point. */
+    public static Pose hiveAimPoint(boolean red, boolean far) {
+        if (USE_MAP_AIM_POINTS) {
+            if (red) return far ? new Pose(MAP_RED_TOP_X, MAP_RED_TOP_Y) : new Pose(MAP_RED_BOTTOM_X, MAP_RED_BOTTOM_Y);
+            return far ? new Pose(MAP_BLUE_TOP_X, MAP_BLUE_TOP_Y) : new Pose(MAP_BLUE_BOTTOM_X, MAP_BLUE_BOTTOM_Y);
+        }
+        if (red) return far ? new Pose(HIVE_RED_TOP_X, HIVE_RED_TOP_Y) : new Pose(HIVE_RED_BOTTOM_X, HIVE_RED_BOTTOM_Y);
+        return far ? new Pose(HIVE_BLUE_TOP_X, HIVE_BLUE_TOP_Y) : new Pose(HIVE_BLUE_BOTTOM_X, HIVE_BLUE_BOTTOM_Y);
+    }
+
+    /** Aim at the alliance's own HIVE (red -> red HIVE, blue -> blue HIVE), at the cell on the robot's side
+     *  of the field: robot y below the split -> audience cell, above -> far cell. Only the up-cell can be scored,
      *  and it can only be entered from its own side, so drive to the side whose
      *  cell is up. */
     public static double HIVE_SIDE_SPLIT_Y = 72.0; // TODO(new robot): old-robot value
@@ -32,6 +53,23 @@ public class ShooterConstants {
      *  and forth. Switches far above split+band, audience below split-band, and
      *  holds its last choice in between. */
     public static double HIVE_SIDE_HYSTERESIS = 3.0; // TODO(new robot): old-robot value
+
+    // ---- Under the HIVE ------------------------------------------------------------
+    /** Box covering both HIVEs and their frame, Pedro inches (manual 9.6 / ShotCheck obstacle values). While the
+     *  robot pose is inside it the solver is skipped: flywheel and hood hold the constants below, the turret keeps
+     *  pointing at the cell, and shooting is blocked. The shot map has no shots in here anyway. */
+    public static boolean UNDER_HIVE_HOLD = true;
+    public static double UNDER_HIVE_X_MIN = 47.27, UNDER_HIVE_X_MAX = 96.73;
+    public static double UNDER_HIVE_Y_MIN = 46.7, UNDER_HIVE_Y_MAX = 97.3;
+    /** Flywheel target while under the HIVE, motor RPM (a typical shot speed, so it's ready on the way out). */
+    public static double UNDER_HIVE_RPM = 3300;
+    /** Hood while under the HIVE, launch angle in degrees. */
+    public static double UNDER_HIVE_LAUNCH_DEG = 72;
+
+    public static boolean underHive(double x, double y) {
+        return UNDER_HIVE_HOLD && x >= UNDER_HIVE_X_MIN && x <= UNDER_HIVE_X_MAX
+                && y >= UNDER_HIVE_Y_MIN && y <= UNDER_HIVE_Y_MAX;
+    }
 
     public static double SCORE_ANGLE = -17; // TODO(new robot): old-robot value
 
