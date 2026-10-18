@@ -9,6 +9,7 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.math.Vector2D;
 
 import org.firstinspires.ftc.teamcode.subsystem.control.Braking;
+import org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable;
 import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
@@ -78,12 +79,61 @@ public class ShooterCalc {
 
     /** Window centroid above the tiles, inches. */
     public static double hiveAimHeight = 65; // TODO(new robot): old-robot value
-    /** Shooter exit above the tiles, inches. Target heights here are relative to the launch point. */
-    public static double launchHeight = 14.0; // TODO(new robot): old-robot value
+    /** Shooter exit above the tiles, inches. Target heights here are relative to the launch point.
+     *  CAD: 10.4 in (steepest) to 11.6 in (flattest) release height. */
+    public static double launchHeight = 11.0;
     /** Entry angle into the window, degrees. If balls rebound off the back wall and out, try -40. */
     public static double hiveEntryDeg = -50.0; // TODO(new robot): old-robot value
     /** Calibration trim on aim height, inches. Consistently short -> raise. */
     public static double hiveHeightTrim = 0.0; // TODO(new robot): old-robot value
+    /** Calibration trim on entry angle, degrees (with the aim table: added to the table's entry angle).
+     *  More negative = steeper, loftier shot. */
+    public static double hiveEntryTrimDeg = 0.0;
+
+    // ---- Shot-map aim table ---------------------------------------------------
+    // The old solver above is kept: solveStatic(range, score height, entry angle) -> (launch angle, speed), no drag.
+    // With the table on, the score height and entry angle are no longer fixed (65 in / -50 deg). At every release
+    // point the shot map (drag + spin simulation of the real POLLEN, HIVE collisions, see HiveAimTable) gives the
+    // launch angle and exit speed that score, and the height / entry angle below are the ones that make the
+    // solver output exactly that shot from this range. Drag is folded into this "virtual" score height, so it is
+    // usually above the real 58.4 in window centre and grows with range. SOTM still works: the table is read at
+    // the virtual release point the lead solve ends at.
+
+    /** Use the shot-map table for score height, entry angle and flight time in HIVE mode. Off = old 65 in / -50 deg. */
+    public static boolean USE_AIM_TABLE = true;
+
+    protected static final HiveAimTable.Shot tableShot = new HiveAimTable.Shot();
+    protected static boolean tableShotOk = false;
+    protected static HiveAimTable.Cell lastCell = null;
+    protected static double lastGoalX = Double.NaN, lastGoalY = Double.NaN;
+
+    /** Telemetry: where the table was read last (virtual release point), what it said, and the solver inputs. */
+    public static double lastTableX = 0.0, lastTableY = 0.0;
+    public static double lastTableLaunchDeg = 0.0, lastTableSpeedMps = 0.0, lastTableWindowPct = 0.0;
+    public static boolean lastTableValid = false, lastTableDependsOnOtherHive = false;
+    public static double lastAimHeight = 0.0, lastEntryDeg = 0.0;
+
+    /** True when this loop's score height / entry angle / flight time came from the table. */
+    public static boolean aimTableInUse() { return hiveMode && USE_AIM_TABLE && tableShotOk; }
+    public static HiveAimTable.Shot tableShot() { return tableShot; }
+
+    /** Look up the table for the release point {@code range} inches from the goal, approaching along field
+     *  bearing {@code bearing} (release point -> goal, radians). Needs goal() to have run this loop. */
+    protected static void queryAimTable(double range, double bearing) {
+        tableShotOk = false;
+        if (!hiveMode || !USE_AIM_TABLE || lastCell == null || isNaN(lastGoalX)) return;
+        double px = lastGoalX - range * Math.cos(bearing);
+        double py = lastGoalY - range * Math.sin(bearing);
+        if (!HiveAimTable.lookup(lastCell, px, py, tableShot)) return;
+        tableShotOk = tableShot.speedMps > 0.0;
+        lastTableX = px;
+        lastTableY = py;
+        lastTableLaunchDeg = tableShot.launchDeg;
+        lastTableSpeedMps = tableShot.speedMps;
+        lastTableWindowPct = 100.0 * tableShot.halfWindowMps / Math.max(tableShot.speedMps, 1e-6);
+        lastTableValid = tableShot.valid;
+        lastTableDependsOnOtherHive = tableShot.dependsOnOtherHive;
+    }
 
     private static boolean hiveAimFar = true;
     private static boolean hiveSideLatched = false;
@@ -95,7 +145,7 @@ public class ShooterCalc {
      *  MEASURE THIS: log flywheel TPS through a burst and map the drop at ball 2's exit
      *  back to ball speed. 0.03 is a starting estimate. */
     public static double burstSpeedSag = 0.03; // TODO(new robot): old-robot value
-    public static boolean burstCompEnabled = true;
+    public static boolean burstCompEnabled = false;
     /** Delay from feed start to applying the comp. 30 ms lands after ball 1 exits and
      *  leaves the hood servo time to move before ball 2. */
     public static double burstCompDelayMs = 30.0; // TODO(new robot): old-robot value
@@ -107,7 +157,7 @@ public class ShooterCalc {
     /** Velocity comp, LATCHED: direction is decided when speed first crosses the threshold
      *  and held until it drops back under. Offsets stay 0 until moving shots show a
      *  consistent direction-dependent miss that stationary shots do not. */
-    public static boolean velCompEnabled = true;
+    public static boolean velCompEnabled = false;
     public static double velCompThreshold = 12.0;  // in/s; TODO(new robot): old-robot value
     public static double velCompToward = 0.0;      // hood signal, TUNE; TODO(new robot): old-robot value
     public static double velCompAway = 0.0;        // ADDED to Toward when retreating; TODO(new robot): old-robot value
@@ -121,6 +171,9 @@ public class ShooterCalc {
         velCompLatchedOffset = 0.0;
         burstCompActive = false;
         hiveSideLatched = false;
+        tableShotOk = false;
+        lastCell = null;
+        HiveAimTable.load();
         filteredAlongTrackAccel = 0.0;
         revAmpedActive = false;
         lastAlongTrackAccel = 0.0;
@@ -156,18 +209,63 @@ public class ShooterCalc {
 
     protected static final double G_IN = 32.174 * 12.0;
 
-    // Ball speed (m/s) -> flywheel ticks/s: tps = A*v^2 + B*v + C, fit on the old robot.
-    protected static final double TPS_A = -16.19; // TODO(new robot): old-robot value
-    protected static final double TPS_B = 449.11; // TODO(new robot): old-robot value
-    protected static final double TPS_C = -964.9; // TODO(new robot): old-robot value
+    // ---- Ball exit speed -> flywheel ticks/s ------------------------------------
+    /** New robot: 3 in flywheel, 20T GT2 on the motors -> 40T on the flywheel (motors spin 2x the flywheel),
+     *  goBILDA 5203 encoders (28 counts per motor rev). Off = the old robot's quadratic fit. */
+    public static boolean useBeltFlywheelModel = true;
+    /** Ball exit speed / flywheel surface speed. 0.88 from the DECODE regression on the same hood rollers;
+     *  calibrate with 240 fps video (NOTES.md, calibration step 1). */
+    public static double FLYWHEEL_EXIT_EFFICIENCY = 0.88;
+    public static double FLYWHEEL_DIAMETER_IN = 3.0;
+    public static double MOTOR_PULLEY_TEETH = 20;
+    public static double FLYWHEEL_PULLEY_TEETH = 40;
+    public static double MOTOR_TICKS_PER_REV = 28;
 
-    public static double tpsForBallSpeed(double mps) { return TPS_A * mps * mps + TPS_B * mps + TPS_C; }
-    protected static final double HOOD_MIN = Math.toRadians(46.0); // TODO(new robot): old-robot value
-    protected static final double HOOD_MAX = Math.toRadians(80); // TODO(new robot): old-robot value
+    // Old robot: tps = A*v^2 + B*v + C (DECODE ball, old shooter). Used only with useBeltFlywheelModel off.
+    protected static final double TPS_A = -16.19;
+    protected static final double TPS_B = 449.11;
+    protected static final double TPS_C = -964.9;
+
+    /** Exit speed (m/s) -> motor encoder ticks/s. */
+    public static double tpsForBallSpeed(double mps) {
+        if (!useBeltFlywheelModel) return TPS_A * mps * mps + TPS_B * mps + TPS_C;
+        double flywheelRevPerSec = mps / FLYWHEEL_EXIT_EFFICIENCY / (Math.PI * FLYWHEEL_DIAMETER_IN * 0.0254);
+        return flywheelRevPerSec * (FLYWHEEL_PULLEY_TEETH / MOTOR_PULLEY_TEETH) * MOTOR_TICKS_PER_REV;
+    }
+
+    // ---- Launch angle limits and hood servo -------------------------------------
+    /** Launch angle range the hood can reach, degrees above horizontal (team, 2026-10-17). */
+    public static double LAUNCH_MIN_DEG = 43.01765;
+    public static double LAUNCH_MAX_DEG = 80.0;
+    protected static double hoodMinRad() { return Math.toRadians(LAUNCH_MIN_DEG); }
+    protected static double hoodMaxRad() { return Math.toRadians(LAUNCH_MAX_DEG); }
+
+    /** Hood drive: 33T gear on the servo -> 200T on the hood, goBILDA servo with 300 deg over position 0..1
+     *  (Hood sets the 500-2500 us PWM range for that). Servo position 0 = the flattest launch angle,
+     *  LAUNCH_MIN_DEG; position rises as the hood steepens. 80 deg launch -> about 0.747. */
+    public static double HOOD_SERVO_TEETH = 33;
+    public static double HOOD_GEAR_TEETH = 200;
+    public static double HOOD_SERVO_RANGE_DEG = 300;
+    /** Servo position at LAUNCH_MIN_DEG. Trim this if the hood doesn't sit exactly on the flat stop at 0. */
+    public static double HOOD_SERVO_POS_AT_LAUNCH_MIN = 0.0;
+
+    /** Launch angle (deg) -> hood servo position: every hood degree is 200/33 servo degrees. */
+    public static double hoodServoPosition(double launchDeg) {
+        double servoDeg = (launchDeg - LAUNCH_MIN_DEG) * (HOOD_GEAR_TEETH / HOOD_SERVO_TEETH);
+        return HOOD_SERVO_POS_AT_LAUNCH_MIN + servoDeg / HOOD_SERVO_RANGE_DEG;
+    }
     private static final double CLOSE_ZONE_END = 66.29; // TODO(new robot): old-robot value
     private static final double FAR_ZONE_START = 123.0; // TODO(new robot): old-robot value
 
+    /** Score height above the launch point, inches. Aim table: the height that makes solveStatic reproduce the
+     *  map's launch angle and speed from this range (drag folded in). Otherwise the fixed window height. */
     public static double targetHeight(double range) {
+        if (aimTableInUse()) {
+            double th = Math.toRadians(tableShot.launchDeg);
+            double v = tableShot.speedMps * 39.37;
+            double c = Math.cos(th);
+            return range * Math.tan(th) - G_IN * range * range / (2.0 * v * v * c * c) + hiveHeightTrim;
+        }
         if (hiveMode) return hiveAimHeight - launchHeight + hiveHeightTrim;
         double poly = 0.0032 * range * range - 0.6653 * range + 66.888; // TODO(new robot): old-robot value
         if (range <= CLOSE_ZONE_END) return poly + 0.3;
@@ -177,8 +275,16 @@ public class ShooterCalc {
         return (poly + (36.0 - poly) * f) - 1.8; // TODO(new robot): old-robot value
     }
 
+    /** Path angle at the score point, radians (negative = falling). Aim table: the slope of the map's shot at
+     *  this range, so solveStatic returns the map's launch angle. Otherwise the fixed entry angle. */
     public static double entryAngle(double range) {
-        if (hiveMode) return Math.toRadians(hiveEntryDeg);
+        if (aimTableInUse()) {
+            double th = Math.toRadians(tableShot.launchDeg);
+            double v = tableShot.speedMps * 39.37;
+            double c = Math.cos(th);
+            return Math.atan(Math.tan(th) - G_IN * range / (v * v * c * c)) + Math.toRadians(hiveEntryTrimDeg);
+        }
+        if (hiveMode) return Math.toRadians(hiveEntryDeg + hiveEntryTrimDeg);
         double closeDeg = 0.6106 * range - 57.478; // TODO(new robot): old-robot value
         double midDeg = SCORE_ANGLE;
         double farDeg = -30.0; // TODO(new robot): old-robot value
@@ -202,15 +308,15 @@ public class ShooterCalc {
     }
 
     public static double[] solveStatic(double range, double height, double entry) {
-        if (range <= 1e-6) return new double[]{HOOD_MAX, 0.0};
+        if (range <= 1e-6) return new double[]{hoodMaxRad(), 0.0};
 
         double hood = Math.atan(2.0 * height / range - Math.tan(entry));
-        if (isNaN(hood)) hood = HOOD_MAX;
-        hood = clamp(hood, HOOD_MIN, HOOD_MAX);
+        if (isNaN(hood)) hood = hoodMaxRad();
+        hood = clamp(hood, hoodMinRad(), hoodMaxRad());
 
         double denom = 2.0 * Math.pow(Math.cos(hood), 2) * (range * Math.tan(hood) - height);
         if (denom <= 0.0) {
-            hood = HOOD_MAX;
+            hood = hoodMaxRad();
             denom = 2.0 * Math.pow(Math.cos(hood), 2) * (range * Math.tan(hood) - height);
             if (denom <= 0.0) return new double[]{hood, 0.0};
         }
@@ -231,6 +337,7 @@ public class ShooterCalc {
         boolean red = alliance == Alliance.RED;
         if (!hiveMode) {
             hiveSideLatched = false;
+            lastCell = null;
             return red ? GOAL_POS_RED : GOAL_POS_BLUE;
         }
         if (!hiveSideLatched) {
@@ -241,15 +348,19 @@ public class ShooterCalc {
         } else if (robotY < HIVE_SIDE_SPLIT_Y - HIVE_SIDE_HYSTERESIS) {
             hiveAimFar = false;
         }
-        if (red) {
-            return hiveAimFar ? new Pose(HIVE_RED_TOP_X, HIVE_RED_TOP_Y) : new Pose(HIVE_RED_BOTTOM_X, HIVE_RED_BOTTOM_Y);
-        }
-        return hiveAimFar ? new Pose(HIVE_BLUE_TOP_X, HIVE_BLUE_TOP_Y) : new Pose(HIVE_BLUE_BOTTOM_X, HIVE_BLUE_BOTTOM_Y);
+        // Alliance picks the HIVE (red -> red HIVE, blue -> blue HIVE); field side picks the cell.
+        Pose aim = ShooterConstants.hiveAimPoint(red, hiveAimFar);
+        lastCell = HiveAimTable.Cell.of(red, hiveAimFar);
+        lastGoalX = aim.x();
+        lastGoalY = aim.y();
+        return aim;
     }
 
     public static boolean hiveAimFar() { return hiveAimFar; }
 
     public static double flightTime(double range) {
+        // Aim table: the simulated flight time to the window (drag makes it longer than the no-drag time below).
+        if (aimTableInUse() && tableShot.flightSec > 0.0) return dragTimeFactor * tableShot.flightSec;
         double[] s = solveStatic(range, targetHeight(range), entryAngle(range));
         double horizontal = s[1] * Math.cos(s[0]);
         if (horizontal < 1e-6) return Double.NaN;
@@ -373,6 +484,8 @@ public class ShooterCalc {
         double parallelComponent = sotmActive ? Math.cos(coordinateTheta) * projectedSpeed : 0.0;
         double perpendicularComponent = sotmActive ? Math.sin(coordinateTheta) * projectedSpeed : 0.0;
 
+        // Look up the shot map at the projected release point; flightTime/targetHeight/entryAngle use it.
+        queryAimTable(projectedRange, goalTheta + projectedBearingShift);
         double tf = flightTime(projectedRange);
         if (isNaN(tf) || tf <= 0.0) tf = 0.5;
 
@@ -388,6 +501,7 @@ public class ShooterCalc {
             virtualY = -leadGain * perpendicularComponent * tf;
             virtualRange = Math.hypot(virtualX, virtualY);
             if (virtualRange < 1.0) virtualRange = 1.0;
+            queryAimTable(virtualRange, goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX));
 
             double nextTf = flightTime(virtualRange);
             if (isNaN(nextTf) || nextTf <= 0.0) break;
@@ -403,7 +517,11 @@ public class ShooterCalc {
         lastConverged = converged;
         lastFlightTime = tf;
 
-        double[] sol = solveStatic(virtualRange, targetHeight(virtualRange), entryAngle(virtualRange));
+        // Shot map at the final virtual release point -> score height / entry angle for the solver.
+        queryAimTable(virtualRange, goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX));
+        lastAimHeight = targetHeight(virtualRange);
+        lastEntryDeg = Math.toDegrees(entryAngle(virtualRange));
+        double[] sol = solveStatic(virtualRange, lastAimHeight, Math.toRadians(lastEntryDeg));
         double hoodAngle = sol[0];
         double launchSpeed = sol[1];
         double ballSpeedMps = launchSpeed / 39.37;
@@ -423,7 +541,7 @@ public class ShooterCalc {
         if (tps < 0.0) tps = 0.0;
 
         requiredTPS = tps;
-        requiredRPM = tps * 60.0 / 28.0; // TODO(new robot): old-robot value
+        requiredRPM = tps * 60.0 / MOTOR_TICKS_PER_REV;
 
         lastBurstHoodDeltaDeg = 0.0;
         if (burstCompEnabled && burstCompActive && burstSpeedSag > 0.0 && launchSpeed > 0.0) {
@@ -441,15 +559,15 @@ public class ShooterCalc {
                 compHood = Math.atan(v / Math.sqrt(v * v - 2.0 * G_IN * h));
             }
             if (!isNaN(compHood)) {
-                compHood = clamp(compHood, HOOD_MIN, HOOD_MAX);
+                compHood = clamp(compHood, hoodMinRad(), hoodMaxRad());
                 lastBurstHoodDeltaDeg = Math.toDegrees(compHood - hoodAngle);
                 hoodAngle = compHood;
             }
         }
 
         double hoodDegrees = Math.toDegrees(hoodAngle);
-        // Hood launch angle (deg) -> servo position, fit on the old robot.
-        double hoodTime = (0.01625 * hoodDegrees) - 0.6; // TODO(new robot): old-robot value
+        // Hood launch angle (deg) -> servo position (two-point calibration, see hoodServoPosition).
+        double hoodTime = hoodServoPosition(hoodDegrees);
 
         if (velCompEnabled) {
             if (!velCompLatched && currentSpeed > velCompThreshold) {
