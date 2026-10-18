@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.pedro;
 import com.pedropathing.algorithm.Foresight;
 import com.pedropathing.algorithm.ForesightConfig;
 import com.pedropathing.controllers.Controller;
+import com.pedropathing.drivetrain.Drivetrain;
+import com.pedropathing.follower.Follower;
 import com.pedropathing.math.Matrix;
 import com.pedropathing.math.Vector2D;
 import com.pedropathing.revhub.drivetrains.Mecanum;
@@ -10,11 +12,12 @@ import com.pedropathing.revhub.drivetrains.MecanumConfig;
 import com.pedropathing.revhub.localizers.PinpointConfig;
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.electrolightsftc.pulse.electropathing.PulseFollower;
 
+import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.firstinspires.ftc.teamcode.HardwareNames;
 
 /**
@@ -74,12 +77,18 @@ public class Constants {
                 c.naturalStrafeDeceleration.set(104.49787535782846);
             }
     );
+    public static boolean drivetrainConnected = false;
 
     public static PulseFollower create(HardwareMap h) {
+        drivetrainConnected = h.tryGet(DcMotorEx.class, HardwareNames.FRONT_LEFT) != null
+                                && h.tryGet(DcMotorEx.class, HardwareNames.FRONT_RIGHT) != null
+                               && h.tryGet(DcMotorEx.class, HardwareNames.BACK_LEFT) != null
+                               && h.tryGet(DcMotorEx.class, HardwareNames.BACK_RIGHT) != null;
+               Drivetrain drivetrain = drivetrainConnected ? new Mecanum(h, drivetrainConfig) : new NoDrivetrain();
         return new PulseFollower(
                 new PinpointLocalizer(h, localizerConfig),
-                new Mecanum(h, drivetrainConfig),
-                new Foresight(foresightConfig),
-                foresightConfig);
+                drivetrain,
+                FYMalgorithmbro,
+                new Foresight(foresightConfig));
     }
 }

@@ -17,8 +17,14 @@ public class ShooterCalc extends org.firstinspires.ftc.teamcode.subsystem.contro
     public static double lastLaunchHoodRad = 0.0;        // launch angle the speed was solved for
     public static double lastProjectedBearing = 0.0;     // field rad, projected launch point -> goal
 
-    public static double tpsPerBallSpeed(double mps) { return 2.0 * TPS_A * mps + TPS_B; }
-    public static double maxFitBallSpeedMps() { return -TPS_B / (2.0 * TPS_A); }
+    /** d(ticks/s) / d(exit speed m/s) at this speed. */
+    public static double tpsPerBallSpeed(double mps) {
+        return useBeltFlywheelModel ? tpsForBallSpeed(1.0) : 2.0 * TPS_A * mps + TPS_B;
+    }
+    /** Fastest exit speed the speed model covers. The old quadratic fit turns over at 13.87 m/s; the belt model has no limit. */
+    public static double maxFitBallSpeedMps() {
+        return useBeltFlywheelModel ? Double.POSITIVE_INFINITY : -TPS_B / (2.0 * TPS_A);
+    }
     static double gravity() { return G_IN; }
 
     public static Double[] solve(
@@ -138,6 +144,8 @@ public class ShooterCalc extends org.firstinspires.ftc.teamcode.subsystem.contro
         double parallelComponent = sotmActive ? Math.cos(coordinateTheta) * projectedSpeed : 0.0;
         double perpendicularComponent = sotmActive ? Math.sin(coordinateTheta) * projectedSpeed : 0.0;
 
+        // Look up the shot map at the projected release point; flightTime/targetHeight/entryAngle use it.
+        queryAimTable(projectedRange, goalTheta + projectedBearingShift);
         double tf = flightTime(projectedRange);
         if (isNaN(tf) || tf <= 0.0) tf = 0.5;
 
@@ -153,6 +161,7 @@ public class ShooterCalc extends org.firstinspires.ftc.teamcode.subsystem.contro
             virtualY = -leadGain * perpendicularComponent * tf;
             virtualRange = Math.hypot(virtualX, virtualY);
             if (virtualRange < 1.0) virtualRange = 1.0;
+            queryAimTable(virtualRange, goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX));
 
             double nextTf = flightTime(virtualRange);
             if (isNaN(nextTf) || nextTf <= 0.0) break;
@@ -168,7 +177,11 @@ public class ShooterCalc extends org.firstinspires.ftc.teamcode.subsystem.contro
         lastConverged = converged;
         lastFlightTime = tf;
 
-        double[] sol = solveStatic(virtualRange, targetHeight(virtualRange), entryAngle(virtualRange));
+        // Shot map at the final virtual release point -> score height / entry angle for the solver.
+        queryAimTable(virtualRange, goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX));
+        lastAimHeight = targetHeight(virtualRange);
+        lastEntryDeg = Math.toDegrees(entryAngle(virtualRange));
+        double[] sol = solveStatic(virtualRange, lastAimHeight, Math.toRadians(lastEntryDeg));
         double hoodAngle = sol[0];
         double launchSpeed = sol[1];
         double ballSpeedMps = launchSpeed / 39.37;
@@ -188,7 +201,7 @@ public class ShooterCalc extends org.firstinspires.ftc.teamcode.subsystem.contro
         if (tps < 0.0) tps = 0.0;
 
         requiredTPS = tps;
-        requiredRPM = tps * 60.0 / 28.0; // TODO(new robot): old-robot value
+        requiredRPM = tps * 60.0 / MOTOR_TICKS_PER_REV;
 
         lastBurstHoodDeltaDeg = 0.0;
         if (burstCompEnabled && burstCompActive && burstSpeedSag > 0.0 && launchSpeed > 0.0) {
@@ -206,15 +219,15 @@ public class ShooterCalc extends org.firstinspires.ftc.teamcode.subsystem.contro
                 compHood = Math.atan(v / Math.sqrt(v * v - 2.0 * G_IN * h));
             }
             if (!isNaN(compHood)) {
-                compHood = clamp(compHood, HOOD_MIN, HOOD_MAX);
+                compHood = clamp(compHood, hoodMinRad(), hoodMaxRad());
                 lastBurstHoodDeltaDeg = Math.toDegrees(compHood - hoodAngle);
                 hoodAngle = compHood;
             }
         }
 
         double hoodDegrees = Math.toDegrees(hoodAngle);
-        // Hood launch angle (deg) -> servo position, fit on the old robot.
-        double hoodTime = (0.01625 * hoodDegrees) - 0.6; // TODO(new robot): old-robot value
+        // Hood launch angle (deg) -> servo position (two-point calibration, see hoodServoPosition).
+        double hoodTime = hoodServoPosition(hoodDegrees);
 
         if (velCompEnabled) {
             if (!velCompLatched && currentSpeed > velCompThreshold) {

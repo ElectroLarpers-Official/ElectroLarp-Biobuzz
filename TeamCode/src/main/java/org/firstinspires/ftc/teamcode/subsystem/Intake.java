@@ -1,22 +1,27 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
+/**
+ * Intake + transfer. They are belted together on the robot, so they run as one subsystem: the "intake" motor and,
+ * if it is in the config, the "transfer" motor, always at the same power. (The old Transfer subsystem is disabled.)
+ * Directions as tuned in FlywheelPIDFTest: intake motor reversed, transfer motor forward.
+ */
 @Configurable
 public final class Intake {
-    public static boolean REVERSED = false; // TODO: check direction on the new robot
+    public static boolean REVERSED = true;            // FlywheelPIDFTest ran the intake at -1
+    public static boolean TRANSFER_REVERSED = false;  // and the transfer at +1
 
     public static double INTAKE = 1.0;
     public static double OUTTAKE = -1.0;
     public static double SLOW = -0.5; // slow reverse, used to clear a jam
     public static double STOPPED = 0;
-
-
 
     public enum IntakeState {
         INTAKE,
@@ -26,30 +31,42 @@ public final class Intake {
     }
 
     private final CachedMotor motor;
+    private final CachedMotor transferMotor; // null if "transfer" isn't configured
     private IntakeState state = IntakeState.STOPPED;
 
     public Intake(HardwareMap hw) {
         motor = new CachedMotor(hw, HardwareNames.INTAKE);
         motor.setDirection(REVERSED ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
+        if (hw.tryGet(DcMotorEx.class, HardwareNames.TRANSFER) != null) {
+            transferMotor = new CachedMotor(hw, HardwareNames.TRANSFER);
+            transferMotor.setDirection(TRANSFER_REVERSED ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
+        } else {
+            transferMotor = null;
+        }
+    }
+
+    private void setPower(double power) {
+        motor.setPower(power);
+        if (transferMotor != null) transferMotor.setPower(power);
     }
 
     public void intake() {
-        motor.setPower(INTAKE);
+        setPower(INTAKE);
         state = IntakeState.INTAKE;
     }
 
     public void outtake() {
-        motor.setPower(OUTTAKE);
+        setPower(OUTTAKE);
         state = IntakeState.OUTTAKE;
     }
 
     public void slow() {
-        motor.setPower(SLOW);
+        setPower(SLOW);
         state = IntakeState.SLOW;
     }
 
     public void stop() {
-        motor.setPower(STOPPED);
+        setPower(STOPPED);
         state = IntakeState.STOPPED;
     }
 
@@ -59,5 +76,9 @@ public final class Intake {
 
     public boolean atState(IntakeState state) {
         return state == this.state;
+    }
+
+    public boolean hasTransferMotor() {
+        return transferMotor != null;
     }
 }

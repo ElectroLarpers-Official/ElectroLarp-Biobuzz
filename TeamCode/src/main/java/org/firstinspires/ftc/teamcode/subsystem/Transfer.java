@@ -1,3 +1,6 @@
+// DISABLED: the transfer is belted to the intake on the robot, so Intake now drives both motors.
+// Kept for reference; delete once you're happy with Intake.
+/*
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -67,3 +70,4 @@ public final class Transfer {
         return state == this.state;
     }
 }
+*/

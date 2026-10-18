@@ -11,18 +11,20 @@ import org.firstinspires.ftc.teamcode.HardwareNames;
 
 @Configurable
 public final class Turret {
-    private final ServoImplEx turret;
+    private final ServoImplEx turret; // null if turretServo1 isn't in the config (not plugged in yet): setPosition is a no-op
     private double LAST_POSITION = -1;
     public static double SERVO_THRESHOLD = 0.0002; // TODO(new robot): old-robot value
     // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot.
-    public static double TURRET_FORWARD_OFFSET = -0.52588; // TODO(new robot): old-robot value
+    public static double TURRET_FORWARD_OFFSET = 0; // aim from the robot pose itself (CAD has the axis 1.571 in behind centre; not applied)
     public static double TURRET_STRAFE_OFFSET = 0; // TODO(new robot): old-robot value
     private double CENTER = 0.5; // TODO(new robot): old-robot value
 
     public Turret(HardwareMap hw) {
-        turret = hw.get(ServoImplEx.class, HardwareNames.TURRET);
-        turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // TODO(new robot): old-robot value
-        turret.setPosition(CENTER);
+        turret = hw.tryGet(ServoImplEx.class, HardwareNames.TURRET);
+        if (turret != null) {
+            turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // TODO(new robot): old-robot value
+            turret.setPosition(CENTER);
+        }
     }
 
     public static Pose getTurretPose(Pose robotPose) {
@@ -41,11 +43,14 @@ public final class Turret {
         return Vector2D.polar(Math.hypot(dx, dy), Math.atan2(dy, dx));
     }
 
+    public boolean isConnected() { return turret != null; }
+
     public void setPosition(double pos) {
+        if (turret == null) return;
         if (LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
             turret.setPosition(pos);
             LAST_POSITION = pos;
         }
     }
 
-}
+}
