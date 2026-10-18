@@ -51,6 +51,7 @@ public final class Robot {
 
 
     public Robot(HardwareMap hardwareMap, Alliance alliance) {
+        PulseRuntime.attach(Constants.create(hardwareMap));
         this.alliance = alliance;
         hubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : hubs) {

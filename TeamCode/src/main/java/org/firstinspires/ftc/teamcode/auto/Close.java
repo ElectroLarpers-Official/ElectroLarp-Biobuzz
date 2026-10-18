@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.auto;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.follow;
+import org.electrolightsftc.pulse.electropathing.*;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
 
+import org.electrolightsftc.pulse.electropathing.opmode.PulseOpMode;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.auto.paths.ClosePaths;
 import org.firstinspires.ftc.teamcode.util.Alliance;
@@ -19,7 +21,9 @@ public class Close extends CommandOpMode {
     Robot robot;
     boolean started = false;
 
-    public Close(Alliance a) {this.a = a;}
+    public Close(Alliance a) {this.a = a;
+   
+    }
 
     @Override
     public void initialize() {
