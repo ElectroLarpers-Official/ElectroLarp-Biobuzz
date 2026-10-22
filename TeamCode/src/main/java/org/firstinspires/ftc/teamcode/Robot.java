@@ -57,7 +57,7 @@ public final class Robot {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-        follower = Constants.create(hardwareMap);
+        follower = PulseRuntime.follower();
         intake = new Intake(hardwareMap);
         latch = new Latch(hardwareMap);
         turret = new Turret(hardwareMap);

@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.tele;
 import static com.pedropathing.ivy.commands.Commands.infinite;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
 
@@ -48,6 +50,7 @@ public class Tele extends CommandOpMode {
     Robot robot;
     GamepadEx gp1;
     Command shootOne;
+    TelemetryManager panels;
 
     public Tele(Alliance a) {
         this.a = a;
@@ -64,6 +67,7 @@ public class Tele extends CommandOpMode {
         robot.follower.setPose(startPose());
         robot.follower.update();
         gp1 = new GamepadEx(gamepad1);
+        panels = PanelsTelemetry.INSTANCE.getTelemetry();
         shootOne = robot.shootOne();
         gp1.left_trigger_button(FloatSupplier::isPress);
         gp1.right_trigger_button(FloatSupplier::isPress);
@@ -181,5 +185,25 @@ public class Tele extends CommandOpMode {
         telemetry.addData("Intake", robot.intake.getState());
         telemetry.addData("Loop ms", robot.loopMs());
         telemetry.update();
+
+        // Panels (graph tab): numbers only, so each one can be plotted over time.
+        double targetRpm = robot.shooter.isSpinning() ? robot.shooter.targetRpm() : 0;
+        panels.addData("Motor RPM", robot.shooter.rpm());
+        panels.addData("Target RPM", targetRpm);
+        panels.addData("RPM error", targetRpm - robot.shooter.rpm());
+        panels.addData("Shooter power", robot.shooter.power());
+        panels.addData("Battery V", robot.shooter.voltage());
+        panels.addData("Feeding", robot.isShooting() ? 1 : 0);
+        panels.addData("Ready", robot.readyToShoot() ? 1 : 0);
+        panels.addData("Hood pos", robot.hood.position());
+        panels.addData("Launch deg (map)", ShooterCalc.lastTableLaunchDeg);
+        panels.addData("Exit speed m/s (map)", ShooterCalc.lastTableSpeedMps);
+        panels.addData("Range in", ShooterCalc.lastRange);
+        panels.addData("Virtual range in", ShooterCalc.lastVirtualRange);
+        panels.addData("Turret angle deg", ShooterCalc.lastHeadingAngle);
+        panels.addData("Robot speed in/s (proj)", ShooterCalc.lastProjectedSpeed);
+        panels.addData("Accel in/s^2 (filt)", ShooterCalc.lastAlongTrackAccel);
+        panels.addData("Loop ms", robot.loopMs());
+        panels.update();   // Panels only; the Driver Station lines above are sent by telemetry.update()
     }
 }
