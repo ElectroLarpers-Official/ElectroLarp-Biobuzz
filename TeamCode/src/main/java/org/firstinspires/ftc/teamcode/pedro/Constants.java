@@ -87,8 +87,9 @@ public class Constants {
                Drivetrain drivetrain = drivetrainConnected ? new Mecanum(h, drivetrainConfig) : new NoDrivetrain();
         return new PulseFollower(
                 new PinpointLocalizer(h, localizerConfig),
+                //new Mecanum(h, drivetrainConfig),
                 drivetrain,
-                FYMalgorithmbro,
-                new Foresight(foresightConfig));
+                new Foresight(foresightConfig),
+                foresightConfig);
     }
 }
