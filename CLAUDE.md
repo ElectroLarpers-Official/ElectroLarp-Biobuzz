@@ -105,7 +105,7 @@ Design notes for when it comes back — constraints, findings, CPU levers and op
 ## Git workflow (team-specific — see `TeamCode/.../teamcode/gitInstructions.md` for full detail)
 
 - `main` mirrors Pedro's upstream template branch (currently `upstream/pedro3`, tracked via a second `upstream` remote pointing at `Pedro-Pathing/Quickstart`) and is not where feature work happens. Feature/season work happens on branches like `Biobuzz` or `Offseason-2026`, which periodically merge `main` down to pick up template/Pedro updates.
-- Commit message format: `[day] [type of day] [tag]: short desc`, e.g. `D6 meet feat: added slew rate`.
-  - Day: sequential meet/day counter for the season.
-  - Type of day: `comp` | `meet` | `scrim`.
-  - Tag: `test` | `feat` | `fix` | `chore` | `docs`.
+- Commit message format: `D[day] [Regular|Home] Meet: [what changed]`, e.g. `D10 Regular Meet: fix mirroring`.
+  - Day: sequential meet counter for the season — same number as the last commit if it's the same meet, last + 1 for a new meet (no skipping, no going back).
+  - Meet type: `Regular` (normal team meeting) or `Home` (working from home).
+- Enforced by `.githooks/commit-msg` (refuses bad messages at commit time) and `.github/workflows/commit-messages.yml` (red X on bad pushes; can't block — private repo on the free plan). Merges are allowed except `Merge branch 'Biobuzz' of …` / `origin/Biobuzz` self-merges from a plain `git pull`. `TeamCode/build.gradle` sets `core.hooksPath .githooks`, `pull.rebase true` and `rebase.autoStash true` on every Gradle sync/build.

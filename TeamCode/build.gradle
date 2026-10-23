@@ -12,6 +12,20 @@ apply plugin: 'com.android.application'
 
 // Custom definitions may go here
 
+// Git setup for this clone, runs on every Gradle sync/build so nobody has to do it by hand
+// (see gitInstructions.md): our hooks (commit message check), and pulls that rebase instead of merge.
+[['core.hooksPath', '.githooks'], ['pull.rebase', 'true'], ['rebase.autoStash', 'true']].each { key, value ->
+    try {
+        providers.exec {
+            workingDir rootDir
+            commandLine 'git', 'config', key, value
+            ignoreExitValue = true
+        }.result.get()
+    } catch (Exception ignored) {
+        // git not installed / not on PATH, never fail the build over this
+    }
+}
+
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
