@@ -11,7 +11,8 @@ import java.util.List;
  * into POINTS, commit, then clear the file on the Hub (hold BACK in the tuner).
  *
  * <p>p(cell, x, y, motor RPM, hood servo position). x, y = shooter release point (turret position), Pedro inches.
- * Tune red: blue uses these turned 180 degrees while TunedShotTable.MIRROR_BLUE is on.
+ * With TunedShotTable.ONE_CELL_FOR_ALL on (default) every point is RED_AUD (red HIVE, audience cell, nearest
+ * (0, 0)) and the other three cells use them mirrored.
  */
 public final class TunedShotPoints {
     private TunedShotPoints() {}
