@@ -150,6 +150,23 @@ public class Tele extends CommandOpMode {
         robot.stop();
     }
 
+    /** Where the RPM / hood come from: hand-tuned points (TunedShotTable) or the shot map. */
+    public static String shotSourceText() {
+        double near = ShooterCalc.lastTunedNearestIn;
+        switch (ShooterCalc.lastShotSource) {
+            case TUNED:
+                if (!ShooterCalc.tableShot().valid)
+                    return String.format("none: nearest tuned point %.1f in away (MAP_FALLBACK off)", near);
+                return String.format("TUNED (%d point%s, nearest %.1f in)", ShooterCalc.lastTunedPointsUsed,
+                        ShooterCalc.lastTunedPointsUsed == 1 ? "" : "s", near);
+            case MAP:
+                return Double.isNaN(near) ? "MAP (no tuned points for this cell)"
+                        : String.format("MAP (nearest tuned point %.1f in away)", near);
+            default:
+                return "none";
+        }
+    }
+
     private void updateTelemetry() {
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
@@ -167,6 +184,7 @@ public class Tele extends CommandOpMode {
                 ShooterCalc.lastTableLaunchDeg, ShooterCalc.lastTableSpeedMps, ShooterCalc.lastTableWindowPct,
                 ShooterCalc.lastTableValid ? "" : ", NO SHOT HERE",
                 ShooterCalc.lastTableDependsOnOtherHive ? ", needs other HIVE tilted right" : ""));
+        telemetry.addData("Shot source", shotSourceText());
         telemetry.addData("Score height / entry", "%.1f in / %.1f deg", ShooterCalc.lastAimHeight, ShooterCalc.lastEntryDeg);
         telemetry.addData("Shot", robot.readyToShoot() ? "READY" : ShotCheck.status());
         telemetry.addData("Tolerance turret deg / flywheel tps", "%.2f / %.0f",
@@ -198,6 +216,8 @@ public class Tele extends CommandOpMode {
         panels.addData("Hood pos", robot.hood.position());
         panels.addData("Launch deg (map)", ShooterCalc.lastTableLaunchDeg);
         panels.addData("Exit speed m/s (map)", ShooterCalc.lastTableSpeedMps);
+        panels.addData("Shot source (0 none, 1 tuned, 2 map)", ShooterCalc.lastShotSource.ordinal());
+        panels.addData("Nearest tuned point in", Double.isNaN(ShooterCalc.lastTunedNearestIn) ? -1 : ShooterCalc.lastTunedNearestIn);
         panels.addData("Range in", ShooterCalc.lastRange);
         panels.addData("Virtual range in", ShooterCalc.lastVirtualRange);
         panels.addData("Turret angle deg", ShooterCalc.lastHeadingAngle);
