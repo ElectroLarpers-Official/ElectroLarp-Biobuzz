@@ -11,6 +11,7 @@ import com.pedropathing.math.Vector2D;
 import org.firstinspires.ftc.teamcode.subsystem.control.Braking;
 import org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable;
 import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
+import org.firstinspires.ftc.teamcode.subsystem.control.TunedShotTable;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
 
@@ -113,19 +114,66 @@ public class ShooterCalc {
     public static boolean lastTableValid = false, lastTableDependsOnOtherHive = false;
     public static double lastAimHeight = 0.0, lastEntryDeg = 0.0;
 
-    /** True when this loop's score height / entry angle / flight time came from the table. */
-    public static boolean aimTableInUse() { return hiveMode && USE_AIM_TABLE && tableShotOk; }
+    // ---- Hand-tuned points (TunedShotTable) ----------------------------------------
+    // Where a tuned point is close enough, its RPM and hood replace the shot map: they are turned into the launch
+    // angle and exit speed the solver would need to output exactly that RPM and hood from this range, so SOTM,
+    // the turret and ShotCheck work unchanged. Flight time is computed from the launch angle and range.
+
+    /** Where this loop's shot came from. */
+    public enum ShotSource { NONE, TUNED, MAP }
+    public static ShotSource lastShotSource = ShotSource.NONE;
+    /** Release point -> nearest tuned point of the cell, inches. NaN: the cell has no tuned points. */
+    public static double lastTunedNearestIn = Double.NaN;
+    public static int lastTunedPointsUsed = 0;
+    /** No tuned point close enough and TunedShotTable.MAP_FALLBACK off: no shot here. */
+    protected static boolean lastNeedsTunedPoint = false;
+    protected static final TunedShotTable.Shot tunedShot = new TunedShotTable.Shot();
+
+    /** True when this loop's score height / entry angle / flight time came from a tuned point or the map. */
+    public static boolean aimTableInUse() { return hiveMode && tableShotOk; }
+    /** True when this loop's shot came from tuned points. */
+    public static boolean tunedShotInUse() { return aimTableInUse() && lastShotSource == ShotSource.TUNED; }
+    /** True when shooting needs a tuned point here and none is close enough (MAP_FALLBACK off). */
+    public static boolean needsTunedPoint() { return aimTableInUse() && lastNeedsTunedPoint; }
     public static HiveAimTable.Shot tableShot() { return tableShot; }
 
-    /** Look up the table for the release point {@code range} inches from the goal, approaching along field
-     *  bearing {@code bearing} (release point -> goal, radians). Needs goal() to have run this loop. */
+    /** Look up the shot for the release point {@code range} inches from the goal, approaching along field
+     *  bearing {@code bearing} (release point -> goal, radians): tuned points first, then the shot map.
+     *  Needs goal() to have run this loop. */
     protected static void queryAimTable(double range, double bearing) {
         tableShotOk = false;
-        if (!hiveMode || !USE_AIM_TABLE || lastCell == null || isNaN(lastGoalX)) return;
+        lastShotSource = ShotSource.NONE;
+        lastNeedsTunedPoint = false;
+        if (!hiveMode || lastCell == null || isNaN(lastGoalX)) return;
         double px = lastGoalX - range * Math.cos(bearing);
         double py = lastGoalY - range * Math.sin(bearing);
-        if (!HiveAimTable.lookup(lastCell, px, py, tableShot)) return;
-        tableShotOk = tableShot.speedMps > 0.0;
+
+        boolean useTuned = TunedShotTable.USE_TUNED_POINTS;
+        boolean haveTuned = useTuned && TunedShotTable.lookup(lastCell, px, py, tunedShot);
+        lastTunedNearestIn = haveTuned ? tunedShot.nearestIn : Double.NaN;
+        lastTunedPointsUsed = haveTuned && tunedShot.valid ? tunedShot.pointsUsed : 0;
+
+        if (haveTuned && tunedShot.valid) {
+            fillFromTuned(range, true);
+        } else if (useTuned && !TunedShotTable.MAP_FALLBACK) {
+            // No tuned point close enough and no map fallback: no shot. Keep the flywheel and hood near a real
+            // shot (nearest tuned point, else the map) so they're ready once the robot gets to a tuned spot.
+            lastNeedsTunedPoint = true;
+            if (haveTuned) {
+                fillFromTuned(range, false);
+            } else if (USE_AIM_TABLE && HiveAimTable.lookup(lastCell, px, py, tableShot)) {
+                tableShot.valid = false;
+                tableShotOk = tableShot.speedMps > 0.0;
+                lastShotSource = ShotSource.MAP;
+            }
+        } else if (USE_AIM_TABLE && HiveAimTable.lookup(lastCell, px, py, tableShot)) {
+            tableShotOk = tableShot.speedMps > 0.0;
+            lastShotSource = ShotSource.MAP;
+        }
+        if (!tableShotOk) {
+            lastShotSource = ShotSource.NONE;
+            return;
+        }
         lastTableX = px;
         lastTableY = py;
         lastTableLaunchDeg = tableShot.launchDeg;
@@ -133,6 +181,30 @@ public class ShooterCalc {
         lastTableWindowPct = 100.0 * tableShot.halfWindowMps / Math.max(tableShot.speedMps, 1e-6);
         lastTableValid = tableShot.valid;
         lastTableDependsOnOtherHive = tableShot.dependsOnOtherHive;
+    }
+
+    /** Tuned RPM / hood -> the table shot (launch angle, exit speed, flight time) the solver reproduces them from. */
+    private static void fillFromTuned(double range, boolean valid) {
+        double launchDeg = clamp(launchDegForHoodPosition(tunedShot.hood), LAUNCH_MIN_DEG, LAUNCH_MAX_DEG);
+        double mps = ballSpeedForMotorRpm(tunedShot.rpm);
+        double th = Math.toRadians(launchDeg);
+        // Flight time to the window centre from the launch angle and range alone (no exit speed needed):
+        // a no-drag arc through the window has t = sqrt(2 (R tan(th) - h) / g); drag adds a few percent.
+        double h = TunedShotTable.WINDOW_CENTRE_HEIGHT_IN - launchHeight;
+        double rise = range * Math.tan(th) - h;
+        double tf;
+        if (rise > 0.0) tf = TunedShotTable.FLIGHT_TIME_FACTOR * Math.sqrt(2.0 * rise / G_IN);
+        else tf = mps > 0.0 ? range / (mps * 39.37 * Math.cos(th)) : 0.0;
+
+        tableShot.launchDeg = launchDeg;
+        tableShot.speedMps = mps;
+        tableShot.flightSec = tf;
+        tableShot.halfWindowMps = TunedShotTable.TUNED_SPEED_WINDOW_MPS;
+        tableShot.valid = valid;
+        tableShot.dependsOnOtherHive = false;
+        tableShot.blended = tunedShot.pointsUsed > 1;
+        tableShotOk = mps > 0.0;
+        lastShotSource = ShotSource.TUNED;
     }
 
     private static boolean hiveAimFar = true;
@@ -174,6 +246,7 @@ public class ShooterCalc {
         tableShotOk = false;
         lastCell = null;
         HiveAimTable.load();
+        TunedShotTable.load();
         filteredAlongTrackAccel = 0.0;
         revAmpedActive = false;
         lastAlongTrackAccel = 0.0;
@@ -254,6 +327,26 @@ public class ShooterCalc {
         double servoDeg = (launchDeg - LAUNCH_MIN_DEG) * (HOOD_GEAR_TEETH / HOOD_SERVO_TEETH);
         return HOOD_SERVO_POS_AT_LAUNCH_MIN + servoDeg / HOOD_SERVO_RANGE_DEG;
     }
+    /** Inverse of hoodServoPosition: hood servo position -> launch angle, degrees. */
+    public static double launchDegForHoodPosition(double position) {
+        double servoDeg = (position - HOOD_SERVO_POS_AT_LAUNCH_MIN) * HOOD_SERVO_RANGE_DEG;
+        return LAUNCH_MIN_DEG + servoDeg * (HOOD_SERVO_TEETH / HOOD_GEAR_TEETH);
+    }
+
+    /** Inverse of tpsForBallSpeed: motor RPM -> ball exit speed, m/s. Tuned points round-trip exactly whatever
+     *  FLYWHEEL_EXIT_EFFICIENCY is, because the solver turns the speed back into RPM with the same model. */
+    public static double ballSpeedForMotorRpm(double motorRpm) {
+        double tps = motorRpm * MOTOR_TICKS_PER_REV / 60.0;
+        if (useBeltFlywheelModel) {
+            double flywheelRevPerSec = tps / MOTOR_TICKS_PER_REV / (FLYWHEEL_PULLEY_TEETH / MOTOR_PULLEY_TEETH);
+            return flywheelRevPerSec * Math.PI * FLYWHEEL_DIAMETER_IN * 0.0254 * FLYWHEEL_EXIT_EFFICIENCY;
+        }
+        // Old quadratic fit: rising branch of A v^2 + B v + C = tps.
+        double disc = TPS_B * TPS_B - 4.0 * TPS_A * (TPS_C - tps);
+        if (disc < 0.0) return -TPS_B / (2.0 * TPS_A);
+        return (-TPS_B + Math.sqrt(disc)) / (2.0 * TPS_A);
+    }
+
     private static final double CLOSE_ZONE_END = 66.29; // TODO(new robot): old-robot value
     private static final double FAR_ZONE_START = 123.0; // TODO(new robot): old-robot value
 
