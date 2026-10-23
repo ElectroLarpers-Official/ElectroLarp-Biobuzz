@@ -23,7 +23,8 @@ public final class ShotCheck {
         BLOCKED_FRAME("HIVE frame is in the way"),
         NOT_ON_MAP("shot map: no scoring shot from here"),
         UNDER_HIVE("under the HIVE: holding fixed RPM / hood, no shot"),
-        TOO_TIGHT("shot map: shot too tight (speed window not over the minimum)");
+        TOO_TIGHT("shot map: shot too tight (speed window not over the minimum)"),
+        NO_TUNED_POINT("no tuned shot point close enough (MAP_FALLBACK is off)");
 
         public final String text;
         Result(String text) { this.text = text; }
@@ -213,10 +214,12 @@ public final class ShotCheck {
     }
 
     /**
-     * Aim-table mode. The table already checked the window, the HIVE and the frame in the simulation, and the
-     * geometric checks above assume the real window height, which the table's virtual score height is not.
-     * So this only asks the table whether the spot scores, and takes the flywheel tolerance from the map's
-     * exit-speed window.
+     * Aim-table mode (shot map or tuned points). The table already checked the window, the HIVE and the frame in
+     * the simulation, and the geometric checks above assume the real window height, which the table's virtual
+     * score height is not. So this only asks the table whether the spot scores, and takes the flywheel tolerance
+     * from the map's exit-speed window (tuned points: TunedShotTable.TUNED_SPEED_WINDOW_MPS).
+     * A tuned point was shot for real, so the map-only checks (speed window, other HIVE, side-on window) are
+     * skipped for it.
      */
     private static Result evaluateTable(boolean turretInRange) {
         double v = ShooterCalc.lastLaunchSpeed;
@@ -226,15 +229,22 @@ public final class ShotCheck {
         if (!turretInRange) return Result.TURRET_LIMIT;
 
         HiveAimTable.Shot shot = ShooterCalc.tableShot();
+        boolean tuned = ShooterCalc.tunedShotInUse();
+        if (ShooterCalc.needsTunedPoint()) return Result.NO_TUNED_POINT;
         if (!shot.valid) return Result.NOT_ON_MAP;
-        if (MIN_SPEED_WINDOW_MPS > 0 && shot.halfWindowMps <= MIN_SPEED_WINDOW_MPS + 1e-9) return Result.TOO_TIGHT;
-        if (shot.dependsOnOtherHive && !ALLOW_OTHER_HIVE_DEPENDENT) return Result.BLOCKED_OTHER_HIVE;
+        if (!tuned) {
+            if (MIN_SPEED_WINDOW_MPS > 0 && shot.halfWindowMps <= MIN_SPEED_WINDOW_MPS + 1e-9) return Result.TOO_TIGHT;
+            if (shot.dependsOnOtherHive && !ALLOW_OTHER_HIVE_DEPENDENT) return Result.BLOCKED_OTHER_HIVE;
+        }
 
         // Lateral room: the window looks narrower from the side (it spans x, faces +/- y).
         double bearing = ShooterCalc.lastProjectedBearing;
         double seenWidth = WINDOW_WIDTH * Math.max(Math.abs(Math.sin(bearing)), 0.3);
         double lateralRoom = (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
-        if (lateralRoom <= 0) return Result.WINDOW_TOO_NARROW;
+        if (lateralRoom <= 0) {
+            if (!tuned) return Result.WINDOW_TOO_NARROW;
+            lateralRoom = APERTURE_MARGIN;   // proven on the field: keep a small turret tolerance
+        }
         lastTurretToleranceDeg = Math.toDegrees(Math.atan2(lateralRoom, Math.max(ShooterCalc.lastVirtualRange, 1.0)));
         lastFlywheelToleranceTps = TABLE_SPEED_WINDOW_USE * shot.halfWindowMps
                 * Math.abs(ShooterCalc.tpsPerBallSpeed(v / 39.37));
