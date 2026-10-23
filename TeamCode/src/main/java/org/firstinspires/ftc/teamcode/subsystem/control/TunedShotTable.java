@@ -29,8 +29,12 @@ import java.util.Locale;
  * </ul>
  * When a set is good, print it from the tuner (BACK), paste it into TunedShotPoints, commit, and clear the file.
  *
- * <p>Tune red only: with {@link #MIRROR_BLUE} on, blue uses the red points turned 180 degrees about the field
- * centre (x -> 144 - x, y -> 144 - y; red audience cell <-> blue far cell).
+ * <p>Mirroring. The field is symmetric about x = 72 and y = 72, so one cell's points can serve all four.
+ * With {@link #ONE_CELL_FOR_ALL} on (default), every point is stored for RED_AUD (red HIVE, audience cell, the one
+ * nearest (0, 0)) and the others use it mirrored: red far cell = flipped across y = 72, blue audience cell =
+ * flipped across x = 72, blue far cell = both (turned 180 degrees). Saving from any cell stores the point for
+ * RED_AUD. With it off, {@link #MIRROR_BLUE} turns red points 180 degrees for blue (red audience <-> blue far,
+ * red far <-> blue audience) and the two red cells are tuned separately.
  */
 @Configurable
 public final class TunedShotTable {
@@ -49,7 +53,9 @@ public final class TunedShotTable {
     /** Added to every tuned RPM / hood position (motor RPM / servo position). For a new batch of balls etc. */
     public static double RPM_TRIM = 0.0;
     public static double HOOD_TRIM = 0.0;
-    /** Blue uses the red points turned 180 degrees. Off = blue needs its own points. */
+    /** Every cell uses the RED_AUD points, mirrored (see the class comment). */
+    public static boolean ONE_CELL_FOR_ALL = true;
+    /** Only when ONE_CELL_FOR_ALL is off: blue uses the red points turned 180 degrees. Off = every cell has its own. */
     public static boolean MIRROR_BLUE = true;
     /** Saving a point removes file points of the same cell this close, and a file point hides code points this
      *  close, inches. */
@@ -153,8 +159,9 @@ public final class TunedShotTable {
     public static File file() { return new File(AppUtil.FIRST_FOLDER, FILE_NAME); }
     public static String lastError() { return lastError; }
 
-    /** The cell whose points serve this cell, and whether coordinates are turned 180 degrees to get there. */
+    /** The cell whose points serve this cell. */
     private static HiveAimTable.Cell storedCell(HiveAimTable.Cell cell) {
+        if (ONE_CELL_FOR_ALL) return HiveAimTable.Cell.RED_AUD;
         if (!MIRROR_BLUE) return cell;
         switch (cell) {
             case BLUE_FAR: return HiveAimTable.Cell.RED_AUD;
@@ -162,7 +169,17 @@ public final class TunedShotTable {
             default: return cell;
         }
     }
-    private static boolean rotated(HiveAimTable.Cell cell) { return storedCell(cell) != cell; }
+    private static boolean isRed(HiveAimTable.Cell c) { return c == HiveAimTable.Cell.RED_AUD || c == HiveAimTable.Cell.RED_FAR; }
+    private static boolean isFar(HiveAimTable.Cell c) { return c == HiveAimTable.Cell.RED_FAR || c == HiveAimTable.Cell.BLUE_FAR; }
+
+    /** A point (x, y) for {@code cell} in the frame of the cell its points are stored for: flipped across x = 72
+     *  when the alliance differs, across y = 72 when the side (audience / far) differs. Its own inverse. */
+    private static double[] toStored(HiveAimTable.Cell cell, double x, double y) {
+        HiveAimTable.Cell sc = storedCell(cell);
+        if (isRed(sc) != isRed(cell)) x = FIELD_SIZE_IN - x;
+        if (isFar(sc) != isFar(cell)) y = FIELD_SIZE_IN - y;
+        return new double[]{x, y};
+    }
 
     /**
      * Tuned shot for a release point (Pedro inches) at a cell. Returns false when the cell has no points at all.
@@ -171,7 +188,8 @@ public final class TunedShotTable {
     public static synchronized boolean lookup(HiveAimTable.Cell cell, double x, double y, Shot out) {
         ensureLoaded();
         HiveAimTable.Cell sc = storedCell(cell);
-        if (rotated(cell)) { x = FIELD_SIZE_IN - x; y = FIELD_SIZE_IN - y; }
+        double[] q = toStored(cell, x, y);
+        x = q[0]; y = q[1];
 
         int k = Math.max(1, BLEND_POINTS);
         Point[] best = new Point[k];
@@ -220,11 +238,12 @@ public final class TunedShotTable {
     public static synchronized Point save(HiveAimTable.Cell cell, double x, double y, double rpm, double hood) throws IOException {
         ensureLoaded();
         HiveAimTable.Cell sc = storedCell(cell);
-        if (rotated(cell)) { x = FIELD_SIZE_IN - x; y = FIELD_SIZE_IN - y; }
+        double[] s = toStored(cell, x, y);
+        x = s[0]; y = s[1];
         Point p = new Point(sc, x, y, rpm - RPM_TRIM, hood - HOOD_TRIM, true);
         for (int i = filePoints.size() - 1; i >= 0; i--) {
-            Point q = filePoints.get(i);
-            if (q.cell == sc && Math.hypot(q.x - x, q.y - y) <= REPLACE_RADIUS_IN) filePoints.remove(i);
+            Point o = filePoints.get(i);
+            if (o.cell == sc && Math.hypot(o.x - x, o.y - y) <= REPLACE_RADIUS_IN) filePoints.remove(i);
         }
         filePoints.add(p);
         writeFile();
@@ -236,7 +255,8 @@ public final class TunedShotTable {
     public static synchronized Point nearest(HiveAimTable.Cell cell, double x, double y) {
         ensureLoaded();
         HiveAimTable.Cell sc = storedCell(cell);
-        if (rotated(cell)) { x = FIELD_SIZE_IN - x; y = FIELD_SIZE_IN - y; }
+        double[] q = toStored(cell, x, y);
+        x = q[0]; y = q[1];
         Point best = null;
         double bestD = Double.POSITIVE_INFINITY;
         for (Point p : active) {
@@ -249,8 +269,8 @@ public final class TunedShotTable {
 
     /** Distance from a release point to a stored point, in the cell's frame. */
     public static double distance(HiveAimTable.Cell cell, double x, double y, Point p) {
-        if (rotated(cell)) { x = FIELD_SIZE_IN - x; y = FIELD_SIZE_IN - y; }
-        return Math.hypot(p.x - x, p.y - y);
+        double[] q = toStored(cell, x, y);
+        return Math.hypot(p.x - q[0], p.y - q[1]);
     }
 
     /** Removes a file point. Code points can't be removed here (edit TunedShotPoints). */
