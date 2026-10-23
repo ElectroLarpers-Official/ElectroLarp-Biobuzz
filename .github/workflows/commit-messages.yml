@@ -1,0 +1,40 @@
+name: Commit messages
+
+on:
+  push:
+    branches: [Biobuzz]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check pushed commit messages
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          # Commits authored before this date are skipped (older history predates the format)
+          CHECK_SINCE: "2026-10-22"
+        run: |
+          if git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            commits=$(git rev-list --reverse --topo-order "$BEFORE..$AFTER")
+          else
+            # New branch or force push: use the commits GitHub lists for this push
+            commits=$(jq -r '.commits[].id' "$GITHUB_EVENT_PATH")
+          fi
+
+          bad=0
+          for c in $commits; do
+            [[ $(git log -1 --format=%as "$c") < $CHECK_SINCE ]] && continue
+            git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
+            merge=0
+            [ "$(git rev-list --parents -n1 "$c" | wc -w)" -gt 2 ] && merge=1
+            if ! CHECK_BASE="$c^" CHECK_MERGE="$merge" bash .githooks/commit-msg "$RUNNER_TEMP/msg"; then
+              echo "::error::$(git log -1 --format='%h by %an: %s' "$c")"
+              bad=1
+            fi
+          done
+          exit $bad

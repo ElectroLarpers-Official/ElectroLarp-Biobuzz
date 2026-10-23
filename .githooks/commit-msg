@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Commit message check: D<day> <Regular|Home> Meet: <what changed>
+#   - day is the last commit's day (same meet) or last + 1 (new meet)
+#   - merges are allowed, except merging an old copy of Biobuzz back in (plain `git pull`)
+#
+# Setup, once per clone:  git config core.hooksPath .githooks
+#
+# CI (.github/workflows/commit-messages.yml) runs this for each pushed commit with
+# CHECK_BASE (the commit's parent) and CHECK_MERGE (1 for merge commits) set.
+
+msg_file="$1"
+base="${CHECK_BASE:-HEAD}"
+
+if [ -n "${CHECK_MERGE+x}" ]; then
+  is_merge="$CHECK_MERGE"
+elif git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+  is_merge=1
+else
+  is_merge=0
+fi
+
+subject=$(grep -v '^#' "$msg_file" | grep -m1 -v '^[[:space:]]*$')
+
+fail() {
+  echo "" >&2
+  echo "Bad commit message: $1" >&2
+  echo "  Message: $subject" >&2
+  echo "  Format:  D<day> <Regular|Home> Meet: <what changed>" >&2
+  echo "  Example: D10 Regular Meet: fix mirroring" >&2
+  [ -n "$2" ] && echo "$2" >&2
+  echo "" >&2
+  exit 1
+}
+
+if [ "$is_merge" = 1 ]; then
+  if printf '%s\n' "$subject" | grep -Eq "^Merge (remote-tracking )?branch '(origin/)?Biobuzz'"; then
+    fail "this merges an old copy of Biobuzz back in (a plain 'git pull')." \
+"  Undo it and pull with rebase instead:
+    git merge --abort
+    git pull --rebase
+  To make pulls always rebase:  git config --global pull.rebase true"
+  fi
+  exit 0
+fi
+
+if ! printf '%s\n' "$subject" | grep -Eq '^D[0-9]+ (Regular|Home) Meet: [^ ]'; then
+  fail "doesn't match the team format."
+fi
+
+day=${subject#D}
+day=${day%% *}
+
+last_subject=$(git log --first-parent --format=%s -n 300 "$base" 2>/dev/null | grep -Em1 '^D[0-9]+ ')
+if [ -n "$last_subject" ]; then
+  last=${last_subject#D}
+  last=${last%% *}
+  if [ $((10#$day)) -ne $((10#$last)) ] && [ $((10#$day)) -ne $((10#$last + 1)) ]; then
+    fail "day should be D$((10#$last)) (same meet) or D$((10#$last + 1)) (new meet), not D$day." \
+"  Last commit: $last_subject"
+  fi
+fi
+
+exit 0

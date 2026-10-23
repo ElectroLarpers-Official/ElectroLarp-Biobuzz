@@ -18,71 +18,89 @@ git remote -v
 ```
 Should show `origin` (our repo) and `upstream` (Pedro's repo).
 
+The commit message check and pull settings turn on **automatically** the first time Android Studio syncs or builds the project (`TeamCode/build.gradle` runs them), so normally you dont have to do anything. They are:
+- `core.hooksPath .githooks` - git uses the hooks in our `.githooks` folder, so a bad commit message gets refused before the commit is even made
+- `pull.rebase true` - `git pull` rebases instead of merging. A plain merge pull is what kept bringing old commits with bad messages back after they got fixed
+- `rebase.autoStash true` - `git pull` stashes your uncommitted changes and brings them back by itself
+
+Check they're on (should print `.githooks` and `true`):
+```bash
+git config core.hooksPath
+git config pull.rebase
+```
+
+If not (git wasnt installed when you built, or you havent built yet), run them by hand:
+```bash
+git config core.hooksPath .githooks
+git config pull.rebase true
+git config rebase.autoStash true
+```
+
+In Android Studio's **Git → Update Project** dialog, pick **Rebase**, not Merge.
+
 ---
 
 ## Commit Message Format
 
-Format: `[day] [type of day] [tag]: short desc`
+Format: `D[day] [Regular or Home] Meet: [what changed]`
 
-Example: `D1 comp fix: driver 2 offset step changes`
+Example: `D10 Regular Meet: fix mirroring`
 
 ### Day
-Meet counter, allows to easily navigate changes and roll back if needed
+Meet counter, allows to easily navigate changes and roll back if needed. Look at the last commit's number:
+- same meet as the last commit → **same number** (last was D10, you're still at that meet → D10)
+- new meet → **last number + 1** (last was D10, this is the next meet → D11)
 
-### Type of Day
-- **comp** - competition day, stuff changed/fixed at an actual comp
-- **meet** - regular meeting, normal day
-- **scrim** - scrimmage day, meet with other teams
+Skipping numbers or going backwards gets refused. Check the last number with:
+```bash
+git log --oneline -5
+```
 
-### Tag (what kind of change)
-- **test** - not final code, creating something new to test later
-- **feat** - new feature, added something that wasnt there before (new subsystem, new paths, new commands, etc.)
-- **fix** - bug fix, dealing with something thats not working/broke
-- **chore** - cleanup, refactor, renaming stuff, no actual "behavior" change
-- **docs** - new md or txt file, readme updates, comments
+### Type of Meet
+- **Regular** - normal team meeting
+- **Home** - working from home
 
 ### Examples
 ```
-D6 meet feat: added slew rate
-D7 scrim fix: updated turret offset in auto
-D41 comp chore: moves old autos to trash
-D67 meet docs: added more got commands 
+D10 Regular Meet: fix mirroring
+D10 Regular Meet: add 3D interpolator with tuned shot points
+D11 Home Meet: add panels logging
+```
+
+### What gets checked
+The hook (`.githooks/commit-msg`) checks every commit you make, and GitHub Actions (`.github/workflows/commit-messages.yml`) checks every push to `Biobuzz` with the same script. GitHub cant actually block a push on our plan, so a bad push still goes through but gets a red X and the person who pushed gets an email. Dont skip the hook with `--no-verify`.
+
+Merges are fine (Pedro updates, merge conflict commits), except `Merge branch 'Biobuzz' of ...` / `Merge remote-tracking branch 'origin/Biobuzz'`, those come from a plain `git pull` and get refused.
+
+### If your commit gets refused
+Bad message, the commit wasnt made, just run it again with a fixed message:
+```bash
+git commit -m "D11 Regular Meet: what you changed"
+```
+
+Already committed with a bad message and havent pushed yet, fix the last commit's message:
+```bash
+git commit --amend -m "D11 Regular Meet: what you changed"
+```
+
+`git pull` got refused (`merges an old copy of Biobuzz back in`), undo the merge and pull with rebase instead:
+```bash
+git merge --abort
+git pull --rebase
 ```
 
 ---
-## Template Updates
+## Branches
 
-Use this workflow when making global template changes, update base configurations, or fix something directly on `main` so that every other branch can inherit the update.
+`Biobuzz` is the default branch and the only branch on our repo. All current code lives there, so thats the one you clone, pull and push.
 
-`main` is our template branch. It currently mirrors Pedro's `pedro3` branch since Pedro hasn't merged that into their `master` yet. Once they do, we'll pull from `upstream/master` instead — check with whoever manages the repo if unsure which one is current.
-
-1. Switch to main and pull the absolute latest from Pedro:
+There is no `main` anymore. It used to be a template branch that mirrored Pedro's repo, but it was deprecated and deleted. It was the exact same commit as Pedro's `upstream/master`, so if we ever want it back:
 ```bash
-git checkout main
 git fetch upstream
-git merge upstream/pedro3
-```
-(swap `upstream/pedro3` for `upstream/master` once Pedro merges their beta stuff in)
-
-2. Make edits directly to the files.
-
-3. Commit the template changes using the team format:
-```bash
-git add .
-git commit -m "D[X] meet chore: updated template configurations"
+git branch main upstream/master
 ```
 
-4. Push the changes to the team's remote repository:
-```bash
-git push origin main
-```
-
-5. Copy the updates down to your development branches (repeat this for `Offseason-2026`, `Biobuzz`, etc.):
-```bash
-git checkout Offseason-2026
-git merge main
-git push origin Offseason-2026
-```
+Template/Pedro updates now get merged straight into `Biobuzz`, see "Pulling Updates From Pedro Repo" below.
 
 ---
 
@@ -114,26 +132,17 @@ Still relevant when we want fresh pedro code without losing our stuff.
 git stash
 ```
 
-2. Update the tracker branch (this branch just mirrors whatever pedro has):
-```bash
-git checkout main
-git fetch upstream
-git merge upstream/pedro3
-```
-
-If pedro merged pedro3 into master instead, do this:
+2. Grab the latest from Pedro (their branch is `master`, the old `pedro3` branch got merged into it and deleted):
 ```bash
 git fetch upstream
-git checkout main
-git merge upstream/master
 ```
 
-3. Go back to your actual branch and merge main in:
+3. Merge it straight into Biobuzz (there is no `main` in between anymore):
 ```bash
-git checkout Offseason-2026
-git merge main
+git checkout Biobuzz
+git merge upstream/master --allow-unrelated-histories
 ```
-(swap Offseason-2026 for Biobuzz or whatever branch)
+`Biobuzz` and Pedro's `master` dont share any history, so git refuses the merge without `--allow-unrelated-histories`, and expect a LOT of conflicts the first time. Dont do this right before a comp, and check with whoever manages the repo first.
 
 4. Bring your stashed work back:
 ```bash
@@ -180,9 +189,9 @@ or a specific file, safer if you only want certain changes going in:
 git add filename
 ```
 
-Actually commit, the message goes in quotes after -m:
+Actually commit, the message goes in quotes after -m (see Commit Message Format above):
 ```bash
-git commit -m "mon meet fix: x was fixed"
+git commit -m "D11 Regular Meet: x was fixed"
 ```
 
 Push to remote, sends your commits up to github:
@@ -190,7 +199,7 @@ Push to remote, sends your commits up to github:
 git push
 ```
 
-Pull latest from remote, grabs whatever teammates pushed and merges into your current branch:
+Pull latest from remote, grabs whatever teammates pushed and puts your new commits on top (rebase, see Repo Setup above). Uncommitted changes get stashed and brought back automatically:
 ```bash
 git pull
 ```
@@ -249,7 +258,7 @@ git reset --hard HEAD~1
 
 Force overwrite a local branch to exactly match a remote branch (careful, throws away any local commits that arent on the remote):
 ```bash
-git reset --hard upstream/pedro3
+git reset --hard origin/Biobuzz
 ```
 
 Merge one branch into the current one, brings in all the commits from other-branch:
