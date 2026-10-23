@@ -30,9 +30,9 @@ public final class Shooter {
     /** Fixed flywheel target for party mode, ticks/s. Party mode is reserved for driver 2 controls, which are not added yet. */
     public static double PARTY_MODE_VELOCITY = 1800; // TODO: confirm real value
 
-    public static boolean MOTORS_REVERSED = false;
+    public static boolean MOTORS_REVERSED = true;
     /** Flip if the RPM reads negative while the wheel spins the right way. */
-    public static boolean ENCODER_REVERSED = true;
+    public static boolean ENCODER_REVERSED = false;
     /** Encoder counts per motor revolution (goBILDA 5203). */
     public static double TICKS_PER_REV = 28;
 
