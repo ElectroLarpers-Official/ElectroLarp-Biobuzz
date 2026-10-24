@@ -13,11 +13,9 @@ import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import com.pedropathing.math.Pose;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
-// TODO: pick one shooter logic version (control.shotcheck or control.pasted) and delete the other; until then these imports must match Robot's.
-import org.firstinspires.ftc.teamcode.pedro.Constants;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.TurretCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShotCheck;
+import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.OpModeStorage;
@@ -242,9 +240,8 @@ public class Tele extends CommandOpMode {
                 robot.shooter.mode(), robot.shooter.power());
         telemetry.addData("Range now / projected / virtual", "%.1f / %.1f / %.1f",
                 ShooterCalc.lastRange, ShooterCalc.lastProjectedRange, ShooterCalc.lastVirtualRange);
-        telemetry.addData("Aim", !ShooterCalc.hiveMode ? "DECODE goal"
-                : (ShooterCalc.hiveAimFar() ? "HIVE far cell" : "HIVE audience cell")
-                + (robot.underHive() ? " (UNDER HIVE: fixed RPM / hood)" : ""));
+        telemetry.addData("Aim", (ShooterCalc.hiveAimFar() ? "HIVE far cell" : "HIVE audience cell")
+                +(robot.underHive() ? " (UNDER HIVE: fixed RPM / hood)" : ""));
         telemetry.addData("Aim table", !ShooterCalc.aimTableInUse() ? "off (fixed score height / entry)"
                 : String.format("launch %.1f deg, %.2f m/s +/-%.1f%%%s%s",
                 ShooterCalc.lastTableLaunchDeg, ShooterCalc.lastTableSpeedMps, ShooterCalc.lastTableWindowPct,

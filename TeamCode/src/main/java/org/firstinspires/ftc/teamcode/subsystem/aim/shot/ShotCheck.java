@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.subsystem.control.shotcheck;
+package org.firstinspires.ftc.teamcode.subsystem.aim.shot;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.math.Pose;
 
-import org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable;
+import org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable;
+import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
 @Configurable
@@ -31,7 +32,7 @@ public final class ShotCheck {
     }
 
     // ---- Ball and shooter ----------------------------------------------------
-    /** Ball diameter, inches. DECODE ball on the old robot. New robot shoots POLLEN: 2.8. */
+    /** Ball diameter, inches. */
     public static double BALL_DIAMETER = 2.8; // POLLEN, 71.1 mm
     /** Highest flywheel speed the motors can hold, motor ticks/s: 5800 rpm (free speed tested at 12 V) x 28 / 60.
      *  TODO(new robot): measure (full power, read telemetry). */
@@ -77,10 +78,6 @@ public final class ShotCheck {
 
     /** Samples along the flight for the obstacle check. */
     public static int FLIGHT_SAMPLES = 40;
-
-    // ---- DECODE mode (no window model) ----------------------------------------
-    public static double DECODE_TURRET_TOLERANCE_DEG = 2.0; // TODO: placeholder, no old-robot value exists
-    public static double DECODE_FLYWHEEL_TOLERANCE_TPS = 100; // TODO: placeholder, no old-robot value exists
 
     // ---- Outputs -----------------------------------------------------------
     public static Result lastResult = Result.NO_SOLUTION;
@@ -131,8 +128,7 @@ public final class ShotCheck {
         double virtualRange = ShooterCalc.lastVirtualRange;
 
         if (!ShooterCalc.lastSolveOk || v <= 0 || tf <= 0) return Result.NO_SOLUTION;
-        double vMps = v / 39.37;
-        if (vMps > ShooterCalc.maxFitBallSpeedMps()) return Result.PAST_FLYWHEEL_FIT;
+        if (v / 39.37 > ShooterCalc.maxFitBallSpeedMps()) return Result.PAST_FLYWHEEL_FIT;
         if (ShooterCalc.requiredTPS > MAX_FLYWHEEL_TPS) return Result.FLYWHEEL_LIMIT;
 
         if (!turretInRange) return Result.TURRET_LIMIT;
@@ -149,67 +145,56 @@ public final class ShotCheck {
         double dx = vh * cb / speedEnd, dy = vh * sb / speedEnd, dz = vzEnd / speedEnd;
         double descent = Math.atan2(-vzEnd, vh);
 
-        double lateralRoom, verticalRoom;
-        if (ShooterCalc.hiveMode) {
-            if (vzEnd >= 0) return Result.TOO_CLOSE;
+        if (vzEnd >= 0) return Result.TOO_CLOSE;
 
-            double side = ShooterCalc.hiveAimFar() ? 1.0 : -1.0;
-            double elev = Math.toRadians(WINDOW_NORMAL_ELEVATION_DEG);
-            double ny = side * Math.cos(elev), nz = Math.sin(elev);
-            double wy = -side * Math.sin(elev), wz = Math.cos(elev);
+        double side = ShooterCalc.hiveAimFar() ? 1.0 : -1.0;
+        double elev = Math.toRadians(WINDOW_NORMAL_ELEVATION_DEG);
+        double ny = side * Math.cos(elev), nz = Math.sin(elev);
+        double wy = -side * Math.sin(elev), wz = Math.cos(elev);
 
-            double cosIncidence = -(dy * ny + dz * nz);
-            lastIncidenceDeg = Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, cosIncidence))));
-            if (cosIncidence <= 0 || dy * side >= 0) return Result.BEHIND_WINDOW;
-            if (lastIncidenceDeg > MAX_INCIDENCE_DEG) return Result.TOO_EDGE_ON;
+        double cosIncidence = -(dy * ny + dz * nz);
+        lastIncidenceDeg = Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, cosIncidence))));
+        if (cosIncidence <= 0 || dy * side >= 0) return Result.BEHIND_WINDOW;
+        if (lastIncidenceDeg > MAX_INCIDENCE_DEG) return Result.TOO_EDGE_ON;
 
-            double du = dx;
-            double dw = dy * wy + dz * wz;
-            double seenWidth = WINDOW_WIDTH * Math.sqrt(Math.max(0, 1 - du * du));
-            double seenHeight = WINDOW_HEIGHT * Math.sqrt(Math.max(0, 1 - dw * dw));
-            lateralRoom = (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
-            verticalRoom = (seenHeight - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
-            if (lateralRoom <= 0 || verticalRoom <= 0) return Result.WINDOW_TOO_NARROW;
+        double du = dx;
+        double dw = dy * wy + dz * wz;
+        double seenWidth = WINDOW_WIDTH * Math.sqrt(Math.max(0, 1 - du * du));
+        double seenHeight = WINDOW_HEIGHT * Math.sqrt(Math.max(0, 1 - dw * dw));
+        double lateralRoom = (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
+        double verticalRoom = (seenHeight - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
+        if (lateralRoom <= 0 || verticalRoom <= 0) return Result.WINDOW_TOO_NARROW;
 
-            boolean red = alliance == Alliance.RED;
-            double otherXMin = red ? BLUE_HIVE_X_MIN : RED_HIVE_X_MIN;
-            double otherXMax = red ? BLUE_HIVE_X_MAX : RED_HIVE_X_MAX;
-            double r = BALL_DIAMETER / 2.0;
-            double prevX = launchX;
-            for (int i = 1; i <= FLIGHT_SAMPLES; i++) {
-                double t = tf * i / FLIGHT_SAMPLES;
-                double f = t / tf;
-                double px = launchX + (goal.x() - launchX) * f;
-                double py = launchY + (goal.y() - launchY) * f;
-                double pz = z0 + vz0 * t - 0.5 * ShooterCalc.gravity() * t * t;
+        boolean red = alliance == Alliance.RED;
+        double otherXMin = red ? BLUE_HIVE_X_MIN : RED_HIVE_X_MIN;
+        double otherXMax = red ? BLUE_HIVE_X_MAX : RED_HIVE_X_MAX;
+        double r = BALL_DIAMETER / 2.0;
+        double prevX = launchX;
+        for (int i = 1; i <= FLIGHT_SAMPLES; i++) {
+            double t = tf * i / FLIGHT_SAMPLES;
+            double f = t / tf;
+            double px = launchX + (goal.x() - launchX) * f;
+            double py = launchY + (goal.y() - launchY) * f;
+            double pz = z0 + vz0 * t - 0.5 * ShooterCalc.gravity() * t * t;
 
-                if (px > otherXMin - r && px < otherXMax + r
-                        && py > HIVE_Y_MIN - r && py < HIVE_Y_MAX + r
-                        && pz > HIVE_BOTTOM - r && pz < HIVE_TOP + r) {
-                    return Result.BLOCKED_OTHER_HIVE;
-                }
-                if (crossesFramePlate(prevX, px, FRAME_X_MIN, py, pz, r)
-                        || crossesFramePlate(prevX, px, FRAME_X_MAX, py, pz, r)) {
-                    return Result.BLOCKED_FRAME;
-                }
-                prevX = px;
+            if (px > otherXMin - r && px < otherXMax + r
+                    && py > HIVE_Y_MIN - r && py < HIVE_Y_MAX + r
+                    && pz > HIVE_BOTTOM - r && pz < HIVE_TOP + r) {
+                return Result.BLOCKED_OTHER_HIVE;
             }
-        } else {
-            lateralRoom = Double.NaN;
-            verticalRoom = Double.NaN;
+            if (crossesFramePlate(prevX, px, FRAME_X_MIN, py, pz, r)
+                    || crossesFramePlate(prevX, px, FRAME_X_MAX, py, pz, r)) {
+                return Result.BLOCKED_FRAME;
+            }
+            prevX = px;
         }
 
-        if (ShooterCalc.hiveMode) {
-            lastTurretToleranceDeg = Math.toDegrees(Math.atan2(lateralRoom, Math.max(virtualRange, 1.0)));
-            double cosHood = Math.cos(hood);
-            double dzPerDv = ShooterCalc.gravity() * virtualRange * virtualRange / (v * v * v * cosHood * cosHood);
-            double allowedDz = verticalRoom / Math.max(Math.cos(descent), 0.05);
-            double allowedDvMps = (allowedDz / dzPerDv) / 39.37;
-            lastFlywheelToleranceTps = allowedDvMps * Math.abs(ShooterCalc.tpsPerBallSpeed(vMps));
-        } else {
-            lastTurretToleranceDeg = DECODE_TURRET_TOLERANCE_DEG;
-            lastFlywheelToleranceTps = DECODE_FLYWHEEL_TOLERANCE_TPS;
-        }
+        lastTurretToleranceDeg = Math.toDegrees(Math.atan2(lateralRoom, Math.max(virtualRange, 1.0)));
+        double cosHood = Math.cos(hood);
+        double dzPerDv = ShooterCalc.gravity() * virtualRange * virtualRange / (v * v * v * cosHood * cosHood);
+        double allowedDz = verticalRoom / Math.max(Math.cos(descent), 0.05);
+        double allowedDvMps = (allowedDz / dzPerDv) / 39.37;
+        lastFlywheelToleranceTps = allowedDvMps * Math.abs(ShooterCalc.tpsPerBallSpeed());
         return Result.OK;
     }
 
@@ -247,7 +232,7 @@ public final class ShotCheck {
         }
         lastTurretToleranceDeg = Math.toDegrees(Math.atan2(lateralRoom, Math.max(ShooterCalc.lastVirtualRange, 1.0)));
         lastFlywheelToleranceTps = TABLE_SPEED_WINDOW_USE * shot.halfWindowMps
-                * Math.abs(ShooterCalc.tpsPerBallSpeed(v / 39.37));
+                * Math.abs(ShooterCalc.tpsPerBallSpeed());
         return Result.OK;
     }
 

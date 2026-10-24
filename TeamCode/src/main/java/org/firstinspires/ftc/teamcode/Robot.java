@@ -21,11 +21,10 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Latch;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
-// TODO: pick one shooter logic version (control.shotcheck or control.pasted) and delete the other; until then these imports must match Tele's.
-import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.TurretCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterConstants;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShotCheck;
+import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import com.pedropathing.math.Velocity;
 import java.util.List;
@@ -137,7 +136,7 @@ public final class Robot {
 
         // Under the HIVE: don't run the solver (no shot exists there). Hold a fixed flywheel speed and hood, keep the
         // turret pointed at the cell so it's ready on the way out, and block shooting.
-        if (ShooterCalc.hiveMode && ShooterConstants.underHive(currPose.x(), currPose.y())) {
+        if (ShooterConstants.underHive(currPose.x(), currPose.y())) {
             underHive = true;
             shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
             hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);

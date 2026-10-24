@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystem.control;
+package org.firstinspires.ftc.teamcode.subsystem.aim.shot;
 
 import com.bylazar.configurables.annotations.Configurable;
 

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
 /**
  * Intake + transfer. They are belted together on the robot, so they run as one subsystem: the "intake" motor and,
- * if it is in the config, the "transfer" motor, always at the same power. (The old Transfer subsystem is disabled.)
+ * if it is in the config, the "transfer" motor, always at the same power.
  * Directions as tuned in FlywheelPIDFTest: intake motor reversed, transfer motor forward.
  */
 @Configurable

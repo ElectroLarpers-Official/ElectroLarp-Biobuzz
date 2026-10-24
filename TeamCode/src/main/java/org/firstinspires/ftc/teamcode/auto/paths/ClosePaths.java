@@ -66,18 +66,6 @@ public final class ClosePaths {
         Poses waypoints = new Poses(a);
         return line(waypoints.point5, waypoints.point6).constant(waypoints.point6);
     }
-    //ts is the bank for later i commented it so its not cluttering if you want to use a pose callback in the fricking shi follow this, keep this shit for later
-    /*public static Path posecallbacktest(Alliance a, Command onReach) {
-        Poses waypoints = new Poses(a);
-        return withCallbacks(
-                line(waypoints.start, waypoints.poseCallbackTestEnd).constant(waypoints.poseCallbackTestEnd),
-                poseCallback(waypoints.poseCallbackTestTrigger, onReach, 2)
-        );
-    }*/
-    /*public static Path posecallbacktest2(Alliance a, Command onReach) {
-        Poses waypoints = new Poses(a);
-        return Piece
-    }*/
     public static Path posecallbacktest2(Alliance a, Command onReach) {
         Poses waypoints = new Poses(a);
         return withCallbacks(

@@ -13,7 +13,7 @@ apply plugin: 'com.android.application'
 // Custom definitions may go here
 
 // Git setup for this clone, runs on every Gradle sync/build so nobody has to do it by hand
-// (see gitInstructions.md): our hooks (commit message check), and pulls that rebase instead of merge.
+// (see docs/git.md): our hooks (commit message check), and pulls that rebase instead of merge.
 [['core.hooksPath', '.githooks'], ['pull.rebase', 'true'], ['rebase.autoStash', 'true']].each { key, value ->
     try {
         providers.exec {

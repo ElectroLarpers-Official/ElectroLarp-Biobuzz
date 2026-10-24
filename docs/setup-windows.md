@@ -118,7 +118,7 @@ git pull --rebase
 - `/usr/bin/env: 'bash\r': No such file or directory` → redo step 2.
 - `cannot pull with rebase: You have unstaged changes` → redo step 4's fallback commands (the `rebase.autoStash` one fixes it), or `git stash`, `git pull`, `git stash pop`.
 
-More git help: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/gitInstructions.md`
+More git help: `docs/git.md`
 
 ---
 

@@ -10,12 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
-import org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable;
-import org.firstinspires.ftc.teamcode.subsystem.control.ShooterConstants;
-import org.firstinspires.ftc.teamcode.subsystem.control.TunedShotTable;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
-import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.TurretCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterConstants;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShotCheck;
+import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable;
+import org.firstinspires.ftc.teamcode.subsystem.aim.table.TunedShotTable;
 import org.firstinspires.ftc.teamcode.tele.Tele;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
@@ -203,7 +203,7 @@ public class ShotPointTuner extends CommandOpMode {
     }
 
     private void save() {
-        if (cell == null) { message = "Not aiming at a HIVE cell (hiveMode off?)"; return; }
+        if (cell == null) { message = "Not aiming at a HIVE cell"; return; }
         if (ShooterConstants.underHive(robot.follower.pose().x(), robot.follower.pose().y())) {
             message = "Under the HIVE: TeleOp holds a fixed RPM / hood here, not saved";
             return;

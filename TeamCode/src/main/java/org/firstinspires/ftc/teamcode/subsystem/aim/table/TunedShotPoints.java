@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode.subsystem.control;
+package org.firstinspires.ftc.teamcode.subsystem.aim.table;
 
-import static org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable.Cell.RED_AUD;
-import static org.firstinspires.ftc.teamcode.subsystem.control.HiveAimTable.Cell.RED_FAR;
+import static org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable.Cell.RED_AUD;
+import static org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable.Cell.RED_FAR;
 
 import java.util.Arrays;
 import java.util.List;

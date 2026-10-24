@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystem.control.pasted;
+package org.firstinspires.ftc.teamcode.subsystem.aim.turret;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -52,19 +52,46 @@ public class TurretCalc {
         return SERVO_CENTER + (SERVO_REVERSED ? -1 : 1) * servoDeg / SERVO_RANGE_DEG;
     }
 
-    protected static double slewedTurretAngle = Double.NaN;
-    protected static double lastChosenTurretAngle = Double.NaN;
-    protected static boolean wrapping = false;
+    private static double slewedTurretAngle = Double.NaN;
+    private static double lastChosenTurretAngle = Double.NaN;
+    private static boolean wrapping = false;
     private static final ElapsedTime slewTimer = new ElapsedTime();
+
+    private static boolean outOfRange = false;
+    private static double aimErrorDeg = 0.0;
 
     public static void reset() {
         slewedTurretAngle = Double.NaN;
         lastChosenTurretAngle = Double.NaN;
         wrapping = false;
         slewTimer.reset();
+        outOfRange = false;
+        aimErrorDeg = 0.0;
     }
 
+    /** Turret command -> servo position, and records outOfRange() / aimErrorDeg() for ShotCheck. */
     public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance) {
+        double servoPosition = servoPosition(commandedAngleDeg, robotAngularVelocityRadPerSec, alliance);
+
+        aimErrorDeg = Math.abs(lastChosenTurretAngle - slewedTurretAngle);
+
+        double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
+        if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
+        double allianceOffset = (alliance == Alliance.RED) ? turretOffset : turretOffset2;
+        double base = normalizeDegrees(commandedAngleDeg + allianceOffset - angularVelDeg * yawFeedforwardGain);
+        outOfRange = true;
+        for (int k = -1; k <= 1; k++) {
+            double cand = base + 360.0 * k;
+            if (cand >= MIN_ANGLE && cand <= MAX_ANGLE) outOfRange = false;
+        }
+        return servoPosition;
+    }
+
+    public static boolean outOfRange() { return outOfRange; }
+
+    public static double aimErrorDeg() { return aimErrorDeg; }
+
+    private static double servoPosition(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance) {
         double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
         if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
         double feedforwardOffset = angularVelDeg * yawFeedforwardGain;
@@ -80,7 +107,7 @@ public class TurretCalc {
         return servoPositionSignal + activeOffset;
     }
 
-    protected static double normalizeDegrees(double degrees) {
+    private static double normalizeDegrees(double degrees) {
         return Math.IEEEremainder(degrees, 360.0);
     }
 

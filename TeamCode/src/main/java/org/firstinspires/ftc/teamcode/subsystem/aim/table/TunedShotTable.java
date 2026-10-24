@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystem.control;
+package org.firstinspires.ftc.teamcode.subsystem.aim.table;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.util.RobotLog;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystem.control;
+package org.firstinspires.ftc.teamcode.util.control;
 
 import com.qualcomm.robotcore.util.Range;
 

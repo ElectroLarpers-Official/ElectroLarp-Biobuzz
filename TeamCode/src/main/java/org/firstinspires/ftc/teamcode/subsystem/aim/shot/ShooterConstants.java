@@ -1,13 +1,10 @@
-package org.firstinspires.ftc.teamcode.subsystem.control;
+package org.firstinspires.ftc.teamcode.subsystem.aim.shot;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.math.Pose;
 
 @Configurable
 public class ShooterConstants {
-
-    public static Pose GOAL_POS_RED = new Pose(140, 140.5); // TODO(new robot): old-robot value
-    public static Pose GOAL_POS_BLUE = new Pose(3, 140.5); // TODO(new robot): old-robot value.
 
     // ---- BIOBUZZ HIVE aim points -------------------------------------------
     // One hardcoded (x, y) per CELL. The solver aims at whichever cell is on the
@@ -71,10 +68,6 @@ public class ShooterConstants {
                 && y >= UNDER_HIVE_Y_MIN && y <= UNDER_HIVE_Y_MAX;
     }
 
-    public static double SCORE_ANGLE = -17; // TODO(new robot): old-robot value
-
     public static double PASS_THROUGH_POINT_RADIUS = 0; //inches change to 4 if goon; TODO(new robot): old-robot value
-
-    public static double RAISE_TIME = 0.15; // TODO(new robot): old-robot value
 
 }

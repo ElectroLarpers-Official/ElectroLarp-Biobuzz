@@ -4,7 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
-import org.firstinspires.ftc.teamcode.subsystem.control.pasted.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
 

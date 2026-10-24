@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.HardwareNames;
-import org.firstinspires.ftc.teamcode.subsystem.control.pasted.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
 
 @Configurable
 public final class Hood {
