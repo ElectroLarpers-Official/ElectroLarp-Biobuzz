@@ -19,6 +19,8 @@ public final class Turret {
     // turretServo2-4, only with Turret(hw, true) and only the ones in the config: the 4 servos on their own ports
     // (no Y-split). Written by setPositionAll, never by setPosition.
     private final List<ServoImplEx> extraServos = new ArrayList<>();
+    /** Turret servo names this Turret looked for and didn't find in the config (telemetry). */
+    private final List<String> missing = new ArrayList<>();
     private double LAST_POSITION = -1;
     public static double SERVO_THRESHOLD = 0.0002; // TODO(new robot): old-robot value
     // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot.
@@ -30,8 +32,11 @@ public final class Turret {
     public Turret(HardwareMap hw) {
         turret = hw.tryGet(ServoImplEx.class, HardwareNames.TURRET);
         if (turret != null) {
-            turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 350 deg travel over 500-2500 us
+            turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 355 deg travel over 500-2500 us
+            turret.setDirection(Servo.Direction.REVERSE); // all turret servos reversed except turretServo2
             turret.setPosition(CENTER);
+        } else {
+            missing.add(HardwareNames.TURRET);
         }
     }
 
@@ -42,9 +47,13 @@ public final class Turret {
         if (!fourServos) return;
         for (String name : new String[]{HardwareNames.TURRET_2, HardwareNames.TURRET_3, HardwareNames.TURRET_4}) {
             ServoImplEx servo = hw.tryGet(ServoImplEx.class, name);
-            if (servo == null) continue;
-            servo.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 350 deg travel over 500-2500 us
-            if (name.equals(HardwareNames.TURRET_2)) servo.setDirection(Servo.Direction.REVERSE); // mounted mirrored
+            if (servo == null) {
+                missing.add(name);
+                continue;
+            }
+            servo.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 355 deg travel over 500-2500 us
+            // Every turret servo is reversed except turretServo2 (mounted mirrored to the others).
+            servo.setDirection(name.equals(HardwareNames.TURRET_2) ? Servo.Direction.FORWARD : Servo.Direction.REVERSE);
             servo.setPosition(CENTER);
             extraServos.add(servo);
         }
@@ -67,6 +76,9 @@ public final class Turret {
     }
 
     public boolean isConnected() { return turret != null; }
+
+    /** Turret servos looked for but not in the config: turretServo1, plus turretServo2-4 with Turret(hw, true). */
+    public List<String> missing() { return missing; }
 
     /** Turret servos found: turretServo1 plus any of turretServo2-4 from Turret(hw, true). */
     public int servoCount() { return (turret != null ? 1 : 0) + extraServos.size(); }

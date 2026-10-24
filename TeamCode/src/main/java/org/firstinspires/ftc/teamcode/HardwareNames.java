@@ -27,10 +27,9 @@ public final class HardwareNames {
     public static String HOOD = "hoodServo";
     public static String LATCH = "stopperServo";
 
-    // 4 servos on one signal wire; Y-split into one device: turretServo1 on Control Hub servo port 0
+    // Turret: 4 Axon MAXes on their own ports. Robot drives all four (Robot.TURRET_ALL_SERVOS, Turret(hw, true) +
+    // setPositionAll); with that off, or with a Y-split, only turretServo1 is used.
     public static String TURRET = "turretServo1";
-    // Only when the 4 turret servos are on their own ports (no Y-split): read by Turret(hw, true) and written by
-    // Turret.setPositionAll (test/TurretTest). Robot uses Turret(hw) + setPosition, i.e. turretServo1 only.
     public static String TURRET_2 = "turretServo2";
     public static String TURRET_3 = "turretServo3";
     public static String TURRET_4 = "turretServo4";

@@ -110,7 +110,7 @@ public class Tele extends CommandOpMode {
     private String notConnected() {
         StringBuilder s = new StringBuilder();
         if (!Constants.drivetrainConnected) s.append("drive motors ");
-        if (!robot.turret.isConnected()) s.append("turret ");
+        for (String name : robot.turret.missing()) s.append(name).append(' ');
         if (!robot.latch.isConnected()) s.append("latch ");
         return s.length() == 0 ? "none" : s.toString().trim();
     }

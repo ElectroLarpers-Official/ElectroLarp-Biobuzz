@@ -285,9 +285,10 @@ public class ShooterCalc {
     // ---- Ball exit speed -> flywheel ticks/s ------------------------------------
     // 3 in flywheel, 20T GT2 on the motors -> 40T on the flywheel (motors spin 2x the flywheel),
     // goBILDA 5203 encoders (28 counts per motor rev).
-    /** Ball exit speed / flywheel surface speed. 0.88 from the DECODE regression on the same hood rollers;
-     *  calibrate with 240 fps video (NOTES.md, calibration step 1). */
-    public static double FLYWHEEL_EXIT_EFFICIENCY = 0.88;
+    /** Ball exit speed / flywheel surface speed. 0.79 tuned on the BIOBUZZ robot (2026-10-20, video + shots); the
+     *  tuned points imply about 0.77 at 3600-3900 motor RPM and more at lower RPM. Only matters where the shot map
+     *  is used (no tuned point nearby): tuned points replay their RPM exactly whatever this is. */
+    public static double FLYWHEEL_EXIT_EFFICIENCY = 0.79;
     public static double FLYWHEEL_DIAMETER_IN = 3.0;
     public static double MOTOR_PULLEY_TEETH = 20;
     public static double FLYWHEEL_PULLEY_TEETH = 40;

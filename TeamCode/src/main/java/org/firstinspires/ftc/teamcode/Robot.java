@@ -33,6 +33,9 @@ import java.util.List;
 @Configurable
 public final class Robot {
     public static double SHOOT_ONE_MS = 250; // TODO: tune
+    /** Drive all 4 turret servos (turretServo1-4 on their own ports, turretServo2 reversed in Turret). Off = only
+     *  turretServo1, e.g. with the Y-split or to run on one servo. Read when the OpMode is initialised. */
+    public static boolean TURRET_ALL_SERVOS = true;
 
     // ---- Driver 2 live trims: added to every shot (tuned points, shot map, manual presets) ----------------------
     /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
@@ -87,7 +90,7 @@ public final class Robot {
         follower = PulseRuntime.follower();
         intake = new Intake(hardwareMap);
         latch = new Latch(hardwareMap);
-        turret = new Turret(hardwareMap);
+        turret = new Turret(hardwareMap, TURRET_ALL_SERVOS);
         shooter = new Shooter(hardwareMap);
         hood = new Hood(hardwareMap);
         ShooterCalc.resetProjectionFilter();
@@ -126,7 +129,7 @@ public final class Robot {
             }
             shooter.setTargetRpm(rpm + LIVE_RPM_TRIM);
             hood.setPosition(hoodPos + LIVE_HOOD_TRIM);
-            turret.setPosition(TurretCalc.solve(manualTurretDeg, 0.0, alliance));
+            turret.setPositionAll(TurretCalc.solve(manualTurretDeg, 0.0, alliance));
             return;
         }
 
@@ -141,7 +144,7 @@ public final class Robot {
             shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
             hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
             double bearingDeg = Math.toDegrees(robotToGoal.theta() - currPose.heading());
-            turret.setPosition(TurretCalc.solve(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity, alliance));
+            turret.setPositionAll(TurretCalc.solve(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity, alliance));
             ShotCheck.blockUnderHive();
             return;
         }
@@ -157,7 +160,7 @@ public final class Robot {
         if (tps > 0) tps = Math.max(0, tps + LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0);
         shooter.setTargetVelocity(tps);
         hood.setPosition(result[1] + LIVE_HOOD_TRIM);
-        turret.setPosition(TurretCalc.solve(result[2], angularVelocity, alliance));
+        turret.setPositionAll(TurretCalc.solve(result[2], angularVelocity, alliance));
         ShotCheck.check(alliance, goal);
     }
 
