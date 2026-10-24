@@ -29,6 +29,11 @@ public final class HardwareNames {
 
     // 4 servos on one signal wire; Y-split into one device: turretServo1 on Control Hub servo port 0
     public static String TURRET = "turretServo1";
+    // Only when the 4 turret servos are on their own ports (no Y-split): read by Turret(hw, true) and written by
+    // Turret.setPositionAll (test/TurretTest). Robot uses Turret(hw) + setPosition, i.e. turretServo1 only.
+    public static String TURRET_2 = "turretServo2";
+    public static String TURRET_3 = "turretServo3";
+    public static String TURRET_4 = "turretServo4";
 
     // TODO: add the Limelight and Arducam names here (and in the CLAUDE.md table) when vision is added back.
 }
