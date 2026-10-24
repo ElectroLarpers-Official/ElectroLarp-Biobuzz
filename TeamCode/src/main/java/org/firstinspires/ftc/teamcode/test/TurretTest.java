@@ -5,6 +5,7 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareNames;
@@ -29,6 +30,11 @@ import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
  * Run: A = center (0.5), B = set position, Y = track HIVE.
  * Set position: dpad up / down = +/- COARSE_STEP, right bumper / left bumper = +/- FINE_STEP.
  * Tracking: push or spin the robot by hand; back = reset the pose to START_X/Y/HEADING_DEG.
+ *
+ * <p>Smoothing (test only, on top of TurretCalc's own slew): every position the modes ask for is reached through a
+ * speed + acceleration limited move that slows down before it arrives, so nothing snaps. Set position and tracking use
+ * MAX_SPEED / MAX_ACCEL; going back to center (A) uses the softer CENTER_SPEED / CENTER_ACCEL. SMOOTH = false sends
+ * the raw positions like before. The Turret constructor still centers the servos directly at init.
  */
 @Configurable
 @TeleOp(group = "Turret Full Test")
@@ -37,12 +43,21 @@ public class TurretTest extends CommandOpMode {
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
     /** Set-position steps, servo units. */
     public static double COARSE_STEP = 0.01, FINE_STEP = 0.001;
+    /** Smoothing on/off, and its limits in turret degrees (converted to servo units with TurretCalc's gearing). */
+    public static boolean SMOOTH = true;
+    public static double MAX_SPEED_DEG_PER_SEC = 90, MAX_ACCEL_DEG_PER_SEC2 = 180;
+    public static double CENTER_SPEED_DEG_PER_SEC = 60, CENTER_ACCEL_DEG_PER_SEC2 = 90;
+    /** Longest loop time the smoothing steps over, s (a slow loop moves the turret at most this much time's worth). */
+    private static final double MAX_DT = 0.05;
 
     enum Mode { CENTER, SET_POSITION, TRACK }
 
     Turret turret;
     boolean singleServo = false;
-    double position = Turret.CENTER;
+    double position = Turret.CENTER; // servo position actually sent (follows target through the smoothing)
+    double target = Turret.CENTER;   // servo position the current mode asks for
+    double velocity = 0;             // smoothing speed, servo units / s
+    final ElapsedTime loopTimer = new ElapsedTime();
     PinpointLocalizer localizer; // null if the Pinpoint isn't in the config or setup failed: tracking is unavailable
     String localizerProblem = null;
     GamepadEx gp1;
@@ -142,10 +157,41 @@ public class TurretTest extends CommandOpMode {
         turret.setExtraServosEnabled(!single);
     }
 
+    /** Moves the sent position toward {@code pos} (smoothed unless SMOOTH is off) and writes it to the servo(s). */
     private void setTurret(double pos) {
-        position = pos;
-        if (singleServo) turret.setPosition(pos);
-        else turret.setPositionAll(pos);
+        target = pos;
+        double dt = Math.min(loopTimer.seconds(), MAX_DT);
+        loopTimer.reset();
+        if (SMOOTH) {
+            smoothTowardTarget(dt);
+        } else {
+            position = target;
+            velocity = 0;
+        }
+        if (singleServo) turret.setPosition(position);
+        else turret.setPositionAll(position);
+    }
+
+    /** Speed + acceleration limited step: never faster than the speed that can still stop at the target. */
+    private void smoothTowardTarget(double dt) {
+        boolean center = mode == Mode.CENTER;
+        double maxSpeed = servoUnits(center ? CENTER_SPEED_DEG_PER_SEC : MAX_SPEED_DEG_PER_SEC);
+        double accel = servoUnits(center ? CENTER_ACCEL_DEG_PER_SEC2 : MAX_ACCEL_DEG_PER_SEC2);
+        double error = target - position;
+        double wanted = Math.signum(error) * Math.min(maxSpeed, Math.sqrt(2 * accel * Math.abs(error)));
+        velocity += Range.clip(wanted - velocity, -accel * dt, accel * dt);
+        double step = velocity * dt;
+        if (Math.signum(step) == Math.signum(error) && Math.abs(step) >= Math.abs(error)) {
+            position = target; // arrives this loop
+            velocity = 0;
+        } else {
+            position += step;
+        }
+    }
+
+    /** Turret degrees (or deg/s, deg/s^2) -> servo position units. */
+    private static double servoUnits(double turretDeg) {
+        return turretDeg / TurretCalc.turretDegPerServoDeg() / TurretCalc.SERVO_RANGE_DEG;
     }
 
     private void resetPose() {
@@ -174,8 +220,10 @@ public class TurretTest extends CommandOpMode {
         telemetry.addData("Servos (X)", "%d of %d driven%s", activeServoCount(), turret.servoCount(),
                 singleServo && turret.servoCount() > 1 ? " (others limp)" : "");
         telemetry.addData("Mode (A center / B set / Y track)", mode);
-        telemetry.addData("Servo position", "%.3f", position);
+        telemetry.addData("Servo position (sent / target)", "%.3f / %.3f", position, target);
         telemetry.addData("Turret deg (from servo position)", "%.1f", turretDegFor(position));
+        telemetry.addData("Smoothing", SMOOTH ? "%.0f turret deg/s, %.1f deg behind target" : "off",
+                velocity / servoUnits(1), Math.abs(turretDegFor(target) - turretDegFor(position)));
         if (mode == Mode.SET_POSITION) {
             telemetry.addLine("dpad up/down +/-" + COARSE_STEP + ", RB/LB +/-" + FINE_STEP);
         }

@@ -84,3 +84,6 @@ lint/tmp/
 CLAUDE.md
 .claude/
 TeamCode/src/main/java/org/firstinspires/ftc/teamcode/context/
+/AGENTS.md
+/docs/proposals/
+/tools/shotsim/
