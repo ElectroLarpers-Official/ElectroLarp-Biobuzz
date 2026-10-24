@@ -25,14 +25,19 @@ public final class Turret {
     public static double TURRET_STRAFE_OFFSET = 0; // TODO(new robot): old-robot value
     /** Servo position with the turret straight ahead. */
     public static final double CENTER = 0.5;
-    // turretServo1 direction, true = REVERSE. Read when the Turret is built: a Panels change applies on next INIT.
+    // turretServo1 direction, true = REVERSE. Changes in Panels apply live, on the next position write. Change it with
+    // the turret at center (0.5 is the same either way): away from center, a flipped servo jumps to the mirrored
+    // position and fights the others.
     public static boolean REVERSE_SERVO_1 = true;
+    /** Direction each servo was last set to (null = not set yet), so a Panels change is applied once. */
+    private final Boolean[] appliedReverse = new Boolean[4];
 
     public Turret(HardwareMap hw) {
         turret = hw.tryGet(ServoImplEx.class, HardwareNames.TURRET);
         if (turret != null) {
             turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 355 deg travel over 500-2500 us
             turret.setDirection(direction(REVERSE_SERVO_1));
+            appliedReverse[0] = REVERSE_SERVO_1;
             turret.setPosition(CENTER);
         } else {
             missing.add(HardwareNames.TURRET);
@@ -41,6 +46,14 @@ public final class Turret {
 
     private static Servo.Direction direction(boolean reversed) {
         return reversed ? Servo.Direction.REVERSE : Servo.Direction.FORWARD;
+    }
+
+    /** Sets a servo's direction if its REVERSE_SERVO_n flag changed since it was last set. True if it changed. */
+    private boolean applyDirection(ServoImplEx servo, int i, boolean reversed) {
+        if (servo == null || (appliedReverse[i] != null && appliedReverse[i] == reversed)) return false;
+        servo.setDirection(direction(reversed));
+        appliedReverse[i] = reversed;
+        return true;
     }
 
     public static Pose getTurretPose(Pose robotPose) {
@@ -66,7 +79,8 @@ public final class Turret {
 
     public void setPosition(double pos) {
         if (turret == null) return;
-        if (LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
+        boolean changed = applyDirection(turret, 0, REVERSE_SERVO_1);
+        if (changed || LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
             turret.setPosition(pos);
             LAST_POSITION = pos;
         }
@@ -76,6 +90,7 @@ public final class Turret {
     // turretServo2-4 on their own ports (no Y-split). Switch with Robot.TURRET_ALL_SERVOS. To go back to one servo
     // for good: delete this block, then fix every other "TODO delete" (setPositionAll -> setPosition, Turret(hw, x)
     // -> Turret(hw)).
+    // turretServo2-4 directions, true = REVERSE: live like REVERSE_SERVO_1 (change them with the turret at center).
     public static boolean REVERSE_SERVO_2 = false;
     public static boolean REVERSE_SERVO_3 = true;
     public static boolean REVERSE_SERVO_4 = true;
@@ -93,6 +108,9 @@ public final class Turret {
         turret2 = extraServo(hw, HardwareNames.TURRET_2, REVERSE_SERVO_2);
         turret3 = extraServo(hw, HardwareNames.TURRET_3, REVERSE_SERVO_3);
         turret4 = extraServo(hw, HardwareNames.TURRET_4, REVERSE_SERVO_4);
+        if (turret2 != null) appliedReverse[1] = REVERSE_SERVO_2;
+        if (turret3 != null) appliedReverse[2] = REVERSE_SERVO_3;
+        if (turret4 != null) appliedReverse[3] = REVERSE_SERVO_4;
     }
 
     /** Gets and centers one of turretServo2-4, or returns null (and records it as missing) if it isn't in the config. */
@@ -116,7 +134,11 @@ public final class Turret {
     /** Writes turretServo1 and turretServo2-4 (from Turret(hw, true)) with the same position. With Turret(hw) or
      *  Turret(hw, false) this is the same as setPosition. */
     public void setPositionAll(double pos) {
-        if (LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
+        boolean changed = applyDirection(turret, 0, REVERSE_SERVO_1);
+        changed |= applyDirection(turret2, 1, REVERSE_SERVO_2);
+        changed |= applyDirection(turret3, 2, REVERSE_SERVO_3);
+        changed |= applyDirection(turret4, 3, REVERSE_SERVO_4);
+        if (changed || LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
             if (turret != null) turret.setPosition(pos);
             if (turret2 != null) turret2.setPosition(pos);
             if (turret3 != null) turret3.setPosition(pos);
