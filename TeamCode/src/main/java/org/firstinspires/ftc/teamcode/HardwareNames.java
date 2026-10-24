@@ -34,6 +34,6 @@ public final class HardwareNames {
     public static String TURRET_2 = "turretServo2";
     public static String TURRET_3 = "turretServo3";
     public static String TURRET_4 = "turretServo4";
-
+    public static String FLOWER_SERVO = "flowerServo";
     // TODO: add the Limelight and Arducam names here (and in the CLAUDE.md table) when vision is added back.
 }
