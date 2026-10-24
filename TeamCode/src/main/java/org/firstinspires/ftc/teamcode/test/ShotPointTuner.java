@@ -136,7 +136,7 @@ public class ShotPointTuner extends CommandOpMode {
         Vector2D turretToGoal = Turret.getTurretToGoalVector(turretPose, goal);
         Double[] result = ShooterCalc.solve(pose.heading(), turretToGoal, Vector2D.zero(), Vector2D.zero(), 0.0);
         ShotCheck.check(alliance, goal);
-        robot.turret.setPositionAll(TurretCalc.solve(result[2], 0.0, alliance));
+        robot.turret.setPositionAll(TurretCalc.solve(result[2], 0.0, alliance)); // TODO delete: -> setPosition
 
         cell = HiveAimTable.Cell.of(alliance == Alliance.RED, ShooterCalc.hiveAimFar());
         releasePoint = turretPose;

@@ -27,9 +27,10 @@ public final class HardwareNames {
     public static String HOOD = "hoodServo";
     public static String LATCH = "stopperServo";
 
-    // Turret: 4 Axon MAXes on their own ports. Robot drives all four (Robot.TURRET_ALL_SERVOS, Turret(hw, true) +
-    // setPositionAll); with that off, or with a Y-split, only turretServo1 is used.
+    // Turret: turretServo1 (all the Axons on one Y-split signal, or just the first of 4 on their own ports).
     public static String TURRET = "turretServo1";
+    // TODO delete (quad turret): the other 3 Axons on their own ports. Robot drives all four with
+    // Robot.TURRET_ALL_SERVOS (Turret(hw, true) + setPositionAll); with that off, or a Y-split, only turretServo1.
     public static String TURRET_2 = "turretServo2";
     public static String TURRET_3 = "turretServo3";
     public static String TURRET_4 = "turretServo4";

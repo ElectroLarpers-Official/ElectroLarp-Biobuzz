@@ -16,9 +16,6 @@ import java.util.List;
 @Configurable
 public final class Turret {
     private final ServoImplEx turret; // null if turretServo1 isn't in the config (not plugged in yet): setPosition is a no-op
-    // turretServo2-4, only with Turret(hw, true) and only the ones in the config: the 4 servos on their own ports
-    // (no Y-split). Written by setPositionAll, never by setPosition.
-    private final List<ServoImplEx> extraServos = new ArrayList<>();
     /** Turret servo names this Turret looked for and didn't find in the config (telemetry). */
     private final List<String> missing = new ArrayList<>();
     private double LAST_POSITION = -1;
@@ -28,35 +25,22 @@ public final class Turret {
     public static double TURRET_STRAFE_OFFSET = 0; // TODO(new robot): old-robot value
     /** Servo position with the turret straight ahead. */
     public static final double CENTER = 0.5;
+    // turretServo1 direction, true = REVERSE. Read when the Turret is built: a Panels change applies on next INIT.
+    public static boolean REVERSE_SERVO_1 = true;
 
     public Turret(HardwareMap hw) {
         turret = hw.tryGet(ServoImplEx.class, HardwareNames.TURRET);
         if (turret != null) {
             turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 355 deg travel over 500-2500 us
-            turret.setDirection(Servo.Direction.REVERSE); // all turret servos reversed except turretServo2
+            turret.setDirection(direction(REVERSE_SERVO_1));
             turret.setPosition(CENTER);
         } else {
             missing.add(HardwareNames.TURRET);
         }
     }
 
-    /** With {@code fourServos}, also gets turretServo2-4 (each one in the config) and centers them. Drive all of
-     *  them with setPositionAll; setPosition still only writes turretServo1. */
-    public Turret(HardwareMap hw, boolean fourServos) {
-        this(hw);
-        if (!fourServos) return;
-        for (String name : new String[]{HardwareNames.TURRET_2, HardwareNames.TURRET_3, HardwareNames.TURRET_4}) {
-            ServoImplEx servo = hw.tryGet(ServoImplEx.class, name);
-            if (servo == null) {
-                missing.add(name);
-                continue;
-            }
-            servo.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 355 deg travel over 500-2500 us
-            // Every turret servo is reversed except turretServo2 (mounted mirrored to the others).
-            servo.setDirection(name.equals(HardwareNames.TURRET_2) ? Servo.Direction.FORWARD : Servo.Direction.REVERSE);
-            servo.setPosition(CENTER);
-            extraServos.add(servo);
-        }
+    private static Servo.Direction direction(boolean reversed) {
+        return reversed ? Servo.Direction.REVERSE : Servo.Direction.FORWARD;
     }
 
     public static Pose getTurretPose(Pose robotPose) {
@@ -77,11 +61,8 @@ public final class Turret {
 
     public boolean isConnected() { return turret != null; }
 
-    /** Turret servos looked for but not in the config: turretServo1, plus turretServo2-4 with Turret(hw, true). */
+    /** Turret servos looked for but not in the config (telemetry). */
     public List<String> missing() { return missing; }
-
-    /** Turret servos found: turretServo1 plus any of turretServo2-4 from Turret(hw, true). */
-    public int servoCount() { return (turret != null ? 1 : 0) + extraServos.size(); }
 
     public void setPosition(double pos) {
         if (turret == null) return;
@@ -91,25 +72,75 @@ public final class Turret {
         }
     }
 
-    /** Writes turretServo1 and turretServo2-4 (from Turret(hw, true)) with the same position. */
+    // ==== TODO delete: quad turret, from here to "end quad turret" ============================================
+    // turretServo2-4 on their own ports (no Y-split). Switch with Robot.TURRET_ALL_SERVOS. To go back to one servo
+    // for good: delete this block, then fix every other "TODO delete" (setPositionAll -> setPosition, Turret(hw, x)
+    // -> Turret(hw)).
+    public static boolean REVERSE_SERVO_2 = false;
+    public static boolean REVERSE_SERVO_3 = true;
+    public static boolean REVERSE_SERVO_4 = true;
+    // Only with Turret(hw, true) and only the ones in the config (null otherwise). Written by setPositionAll, never by
+    // setPosition. Separate fields, not a list, so setPositionAll writes them one after another without a loop.
+    private ServoImplEx turret2;
+    private ServoImplEx turret3;
+    private ServoImplEx turret4;
+
+    /** With {@code fourServos}, also gets turretServo2-4 (each one in the config, the others go in missing()) and
+     *  centers them. Drive all of them with setPositionAll; setPosition still only writes turretServo1. */
+    public Turret(HardwareMap hw, boolean fourServos) {
+        this(hw);
+        if (!fourServos) return;
+        turret2 = extraServo(hw, HardwareNames.TURRET_2, REVERSE_SERVO_2);
+        turret3 = extraServo(hw, HardwareNames.TURRET_3, REVERSE_SERVO_3);
+        turret4 = extraServo(hw, HardwareNames.TURRET_4, REVERSE_SERVO_4);
+    }
+
+    /** Gets and centers one of turretServo2-4, or returns null (and records it as missing) if it isn't in the config. */
+    private ServoImplEx extraServo(HardwareMap hw, String name, boolean reversed) {
+        ServoImplEx servo = hw.tryGet(ServoImplEx.class, name);
+        if (servo == null) {
+            missing.add(name);
+            return null;
+        }
+        servo.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 355 deg travel over 500-2500 us
+        servo.setDirection(direction(reversed));
+        servo.setPosition(CENTER);
+        return servo;
+    }
+
+    /** Turret servos found: turretServo1 plus any of turretServo2-4 from Turret(hw, true). */
+    public int servoCount() {
+        return (turret != null ? 1 : 0) + (turret2 != null ? 1 : 0) + (turret3 != null ? 1 : 0) + (turret4 != null ? 1 : 0);
+    }
+
+    /** Writes turretServo1 and turretServo2-4 (from Turret(hw, true)) with the same position. With Turret(hw) or
+     *  Turret(hw, false) this is the same as setPosition. */
     public void setPositionAll(double pos) {
         if (LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
             if (turret != null) turret.setPosition(pos);
-            for (ServoImplEx servo : extraServos) servo.setPosition(pos);
+            if (turret2 != null) turret2.setPosition(pos);
+            if (turret3 != null) turret3.setPosition(pos);
+            if (turret4 != null) turret4.setPosition(pos);
             LAST_POSITION = pos;
         }
     }
 
     /** Turns the PWM on turretServo2-4 off (they go limp) or back on at the last position. */
     public void setExtraServosEnabled(boolean enabled) {
-        for (ServoImplEx servo : extraServos) {
-            if (enabled) {
-                servo.setPwmEnable();
-                if (LAST_POSITION >= 0) servo.setPosition(LAST_POSITION);
-            } else {
-                servo.setPwmDisable();
-            }
+        setEnabled(turret2, enabled);
+        setEnabled(turret3, enabled);
+        setEnabled(turret4, enabled);
+    }
+
+    private void setEnabled(ServoImplEx servo, boolean enabled) {
+        if (servo == null) return;
+        if (enabled) {
+            servo.setPwmEnable();
+            if (LAST_POSITION >= 0) servo.setPosition(LAST_POSITION);
+        } else {
+            servo.setPwmDisable();
         }
     }
+    // ==== TODO delete: end quad turret ========================================================================
 
 }

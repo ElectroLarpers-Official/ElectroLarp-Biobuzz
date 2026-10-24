@@ -1,2 +1,5 @@
+# Normalize all text files to LF so Windows and macOS checkouts don't fight over line endings
+* text=auto eol=lf
+
 # Git hooks are bash scripts, CRLF line endings (Windows default) break them
 .githooks/* text eol=lf
