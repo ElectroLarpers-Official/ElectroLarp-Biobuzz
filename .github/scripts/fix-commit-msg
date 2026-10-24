@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Message filter for .github/workflows/fix-commit-messages.yml (git filter-branch --msg-filter).
+# Reads a commit message on stdin and prints it back. If .githooks/commit-msg refuses it, the
+# subject gets a "D<day> <Regular|Home> Meet:" prefix: the last good commit's day (+1 if this
+# commit is on a later date, same as the hook), and the commit's own Regular/Home if it typed
+# one, else the last commit's. Merge commits are left alone.
+#
+# $1 = this commit's parent in the already fixed history
+
+parent="$1"
+hook="$(cd "$(dirname "$0")/../.." && pwd)/.githooks/commit-msg"
+date=$(git log -1 --format=%ad --date=short "$GIT_COMMIT")
+
+msg=$(mktemp)
+cat > "$msg"
+
+if [ "$(git rev-list --parents -n1 "$GIT_COMMIT" | wc -w)" -gt 2 ] ||
+   CHECK_BASE="$parent" CHECK_MERGE=0 CHECK_DATE="$date" bash "$hook" "$msg" 2>/dev/null; then
+  cat "$msg"
+  exit 0
+fi
+
+last_line=$(git log --first-parent --format='%ad %s' --date=short -n 300 "$parent" | grep -Em1 '^[0-9-]+ D[0-9]+ (Regular|Home) Meet: [^ ]')
+if [ -z "$last_line" ]; then
+  cat "$msg"
+  exit 0
+fi
+last_date=${last_line%% *}
+last_subject=${last_line#* }
+day=${last_subject#D}
+day=$((10#${day%% *}))
+[ "$date" != "$last_date" ] && day=$((day + 1))
+
+last_type=${last_subject#D* }
+last_type=${last_type%% *}
+
+first=$(head -n1 "$msg")
+case "$(printf '%s' "$first" | grep -ioE '^d[0-9]*[[:space:]]*(regular|home)' | grep -ioE 'regular|home' | tr '[:upper:]' '[:lower:]')" in
+  regular) type=Regular ;;
+  home) type=Home ;;
+  *) type=$last_type ;;
+esac
+
+# Drop a wrong/half-typed prefix ("D12 Home Meet:", "d13 meet") so it isn't doubled up
+subject=$(printf '%s\n' "$first" | sed -E 's/^[Dd][0-9]+[[:space:]]*([A-Za-z]+[[:space:]]+)?[Mm]eet[[:space:]]*:?[[:space:]]*//')
+[ -z "$subject" ] && subject=$first
+
+printf 'D%s %s Meet: %s\n' "$day" "$type" "$subject"
+tail -n +2 "$msg"

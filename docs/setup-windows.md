@@ -79,9 +79,9 @@ Done. You never have to do this again on this laptop.
 `D[day] [Regular or Home] Meet: [what changed]`
 
 - **Day**: look at the last commit's number (`git log --oneline -5`)
-  - same meet as the last commit → **same number** (last was D11 → D11)
-  - new meet → **last number + 1** (last was D11 → D12)
-  - skipping numbers or going backwards gets refused
+  - same date as the last commit → **same number** (last was D11 → D11)
+  - later date (its past 12 am since the last commit) → **last number + 1** (last was D11 → D12)
+  - anything else gets refused
 - **Regular** = normal team meeting, **Home** = working from home
 
 Examples:
@@ -101,17 +101,9 @@ Already committed with a bad message but didnt push yet:
 git commit --amend -m "D11 Regular Meet: what you changed"
 ```
 
-`git pull` refused with `merges an old copy of Biobuzz back in`:
-```powershell
-git merge --abort
-```
-```powershell
-git pull --rebase
-```
-
 ## Android Studio rules
 - In the commit window, keep **Run Git hooks** checked (under the message box). Unchecking it skips the check and your push gets a red X.
-- In **Git → Update Project**, pick **Rebase**, not Merge.
+- In **Git → Update Project**, either **Rebase** or **Merge** works.
 - Never use `--no-verify`.
 
 ## Errors

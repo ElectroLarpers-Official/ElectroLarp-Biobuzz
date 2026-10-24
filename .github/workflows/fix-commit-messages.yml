@@ -1,0 +1,55 @@
+name: Fix commit messages
+
+# Rewrites bad commit messages pushed to Biobuzz into the team format and force-pushes the
+# fixed history. Only messages change (same code, same authors), but the commit ids change,
+# and the next pull brings in the fixed ones. A merge pull can bring an old bad commit back, which
+# the next run turns into the exact same fixed commit again.
+
+on:
+  push:
+    branches: [Biobuzz]
+
+concurrency:
+  group: fix-commit-messages
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Fix pushed commit messages
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          FILTER_BRANCH_SQUELCH_WARNING: 1
+        run: |
+          # New branch or force push: nothing safe to compare against, leave it
+          git cat-file -e "$BEFORE^{commit}" 2>/dev/null || exit 0
+
+          export FIX="$GITHUB_WORKSPACE/.github/scripts/fix-commit-msg"
+          tip="$AFTER"
+          for try in 1 2 3; do
+            git filter-branch -f --msg-filter 'bash "$FIX" "$(map "$(git rev-parse "$GIT_COMMIT^")")"' -- "$BEFORE..HEAD"
+
+            if [ "$(git rev-parse HEAD)" = "$tip" ]; then
+              echo "All commit messages are fine"
+              exit 0
+            fi
+
+            echo "Fixed commit messages:"
+            git log --format='  %h %an: %s' "$BEFORE..HEAD"
+            # Only replaces Biobuzz if it's still at $tip, never drops someone else's newer push
+            git push --force-with-lease="Biobuzz:$tip" origin HEAD:Biobuzz && exit 0
+
+            # Someone pushed in the meantime: redo it on top of their push
+            git fetch origin +refs/heads/Biobuzz:refs/remotes/origin/Biobuzz
+            tip=$(git rev-parse origin/Biobuzz)
+            git reset -q --hard "$tip"
+          done
+          exit 1

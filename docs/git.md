@@ -20,7 +20,7 @@ Should show `origin` (our repo) and `upstream` (Pedro's repo).
 
 The commit message check and pull settings turn on **automatically** the first time Android Studio syncs or builds the project (`TeamCode/build.gradle` runs them), so normally you dont have to do anything. They are:
 - `core.hooksPath .githooks` - git uses the hooks in our `.githooks` folder, so a bad commit message gets refused before the commit is even made
-- `pull.rebase true` - `git pull` rebases instead of merging. A plain merge pull is what kept bringing old commits with bad messages back after they got fixed
+- `pull.rebase true` - `git pull` rebases instead of merging by default, keeps history in a straight line. Merge pulls are allowed too
 - `rebase.autoStash true` - `git pull` stashes your uncommitted changes and brings them back by itself
 
 Check they're on (should print `.githooks` and `true`):
@@ -36,7 +36,7 @@ git config pull.rebase true
 git config rebase.autoStash true
 ```
 
-In Android Studio's **Git → Update Project** dialog, pick **Rebase**, not Merge.
+In Android Studio's **Git → Update Project** dialog, either **Rebase** or **Merge** works.
 
 ---
 
@@ -47,11 +47,11 @@ Format: `D[day] [Regular or Home] Meet: [what changed]`
 Example: `D10 Regular Meet: fix mirroring`
 
 ### Day
-Meet counter, allows to easily navigate changes and roll back if needed. Look at the last commit's number:
-- same meet as the last commit → **same number** (last was D10, you're still at that meet → D10)
-- new meet → **last number + 1** (last was D10, this is the next meet → D11)
+Day counter, allows to easily navigate changes and roll back if needed. It goes by date, look at the last commit's number:
+- same date as the last commit → **same number** (last was D10 today → D10)
+- later date, its past 12 am since the last commit → **last number + 1** (last was D10 yesterday → D11)
 
-Skipping numbers or going backwards gets refused. Check the last number with:
+So working past midnight means the next commit goes up a day. Anything else (skipping, going backwards, going up twice on the same date) gets refused. Check the last number with:
 ```bash
 git log --oneline -5
 ```
@@ -68,9 +68,9 @@ D11 Home Meet: add panels logging
 ```
 
 ### What gets checked
-The hook (`.githooks/commit-msg`) checks every commit you make, and GitHub Actions (`.github/workflows/commit-messages.yml`) checks every push to `Biobuzz` with the same script. GitHub cant actually block a push on our plan, so a bad push still goes through but gets a red X and the person who pushed gets an email. Dont skip the hook with `--no-verify`.
+The hook (`.githooks/commit-msg`) checks every commit you make, and GitHub Actions (`.github/workflows/commit-messages.yml`) checks every push to `Biobuzz` with the same script. GitHub cant actually block a push on our plan, so a bad push still goes through but gets a red X and the person who pushed gets an email. Then `.github/workflows/fix-commit-messages.yml` fixes it: bad messages get the last good commit's `D<day> <Regular|Home> Meet:` in front and `Biobuzz` gets force-pushed (same code, only messages change). The commit ids change when that happens. Pulling with rebase (`git pull --rebase`) handles it cleanly. A merge pull brings the old bad commit back for a moment, but the workflow fixes it again on your push. Dont skip the hook with `--no-verify`.
 
-Merges are fine (Pedro updates, merge conflict commits), except `Merge branch 'Biobuzz' of ...` / `Merge remote-tracking branch 'origin/Biobuzz'`, those come from a plain `git pull` and get refused.
+Merges are fine (plain `git pull` merges, Pedro updates, merge conflict commits), they dont need the format.
 
 ### If your commit gets refused
 Bad message, the commit wasnt made, just run it again with a fixed message:
@@ -81,12 +81,6 @@ git commit -m "D11 Regular Meet: what you changed"
 Already committed with a bad message and havent pushed yet, fix the last commit's message:
 ```bash
 git commit --amend -m "D11 Regular Meet: what you changed"
-```
-
-`git pull` got refused (`merges an old copy of Biobuzz back in`), undo the merge and pull with rebase instead:
-```bash
-git merge --abort
-git pull --rebase
 ```
 
 ---

@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Commit message check: D<day> <Regular|Home> Meet: <what changed>
-#   - day is the last commit's day (same meet) or last + 1 (new meet)
-#   - merges are allowed, except merging an old copy of Biobuzz back in (plain `git pull`)
+#   - day goes up by 1 when the date changed since the last D commit (past 12 am), else stays the same
+#   - merges are allowed (including plain `git pull` merges)
 #
 # Setup, once per clone:  git config core.hooksPath .githooks
 #
 # CI (.github/workflows/commit-messages.yml) runs this for each pushed commit with
-# CHECK_BASE (the commit's parent) and CHECK_MERGE (1 for merge commits) set.
+# CHECK_BASE (the commit's parent), CHECK_MERGE (1 for merge commits) and
+# CHECK_DATE (the commit's author date, YYYY-MM-DD in its own timezone) set.
 
 msg_file="$1"
 base="${CHECK_BASE:-HEAD}"
+today="${CHECK_DATE:-$(date +%F)}"
 
 if [ -n "${CHECK_MERGE+x}" ]; then
   is_merge="$CHECK_MERGE"
@@ -33,13 +35,6 @@ fail() {
 }
 
 if [ "$is_merge" = 1 ]; then
-  if printf '%s\n' "$subject" | grep -Eq "^Merge (remote-tracking )?branch '(origin/)?Biobuzz'"; then
-    fail "this merges an old copy of Biobuzz back in (a plain 'git pull')." \
-"  Undo it and pull with rebase instead:
-    git merge --abort
-    git pull --rebase
-  To make pulls always rebase:  git config --global pull.rebase true"
-  fi
   exit 0
 fi
 
@@ -50,12 +45,21 @@ fi
 day=${subject#D}
 day=${day%% *}
 
-last_subject=$(git log --first-parent --format=%s -n 300 "$base" 2>/dev/null | grep -Em1 '^D[0-9]+ ')
-if [ -n "$last_subject" ]; then
+last_line=$(git log --first-parent --format='%ad %s' --date=short -n 300 "$base" 2>/dev/null | grep -Em1 '^[0-9-]+ D[0-9]+ ')
+if [ -n "$last_line" ]; then
+  last_date=${last_line%% *}
+  last_subject=${last_line#* }
   last=${last_subject#D}
   last=${last%% *}
-  if [ $((10#$day)) -ne $((10#$last)) ] && [ $((10#$day)) -ne $((10#$last + 1)) ]; then
-    fail "day should be D$((10#$last)) (same meet) or D$((10#$last + 1)) (new meet), not D$day." \
+  if [ "$today" = "$last_date" ]; then
+    want=$((10#$last))
+    why="same date as the last D commit ($last_date), so same day"
+  else
+    want=$((10#$last + 1))
+    why="new date since the last D commit ($last_date), so next day"
+  fi
+  if [ $((10#$day)) -ne "$want" ]; then
+    fail "day should be D$want, not D$day: $why." \
 "  Last commit: $last_subject"
   fi
 fi

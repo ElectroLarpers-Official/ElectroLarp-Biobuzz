@@ -32,7 +32,7 @@ jobs:
             git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
             merge=0
             [ "$(git rev-list --parents -n1 "$c" | wc -w)" -gt 2 ] && merge=1
-            if ! CHECK_BASE="$c^" CHECK_MERGE="$merge" bash .githooks/commit-msg "$RUNNER_TEMP/msg"; then
+            if ! CHECK_BASE="$c^" CHECK_MERGE="$merge" CHECK_DATE="$(git log -1 --format=%ad --date=short "$c")" bash .githooks/commit-msg "$RUNNER_TEMP/msg"; then
               echo "::error::$(git log -1 --format='%h by %an: %s' "$c")"
               bad=1
             fi
