@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import static com.pedropathing.ivy.commands.Commands.instant;
+
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -50,24 +53,32 @@ public final class Intake {
         if (transferMotor != null) transferMotor.setPower(power);
     }
 
-    public void intake() {
-        setPower(INTAKE);
-        state = IntakeState.INTAKE;
+    public Command intake() {
+        return instant(() -> {
+            setPower(INTAKE);
+            state = IntakeState.INTAKE;
+        });
     }
 
-    public void outtake() {
-        setPower(OUTTAKE);
-        state = IntakeState.OUTTAKE;
+    public Command outtake() {
+        return instant(() -> {
+            setPower(OUTTAKE);
+            state = IntakeState.OUTTAKE;
+        });
     }
 
-    public void slow() {
-        setPower(SLOW);
-        state = IntakeState.SLOW;
+    public Command slow() {
+        return instant(() -> {
+            setPower(SLOW);
+            state = IntakeState.SLOW;
+        });
     }
 
-    public void stop() {
-        setPower(STOPPED);
-        state = IntakeState.STOPPED;
+    public Command stop() {
+        return instant(() -> {
+            setPower(STOPPED);
+            state = IntakeState.STOPPED;
+        });
     }
 
     public IntakeState getState() {

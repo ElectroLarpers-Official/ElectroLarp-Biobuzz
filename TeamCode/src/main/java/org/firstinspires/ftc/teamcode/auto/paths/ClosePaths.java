@@ -30,7 +30,32 @@ public final class ClosePaths {
         return new Poses(a).start;
     }
 
-    public static Path path1(Alliance a) {
+    //Real Code:
+
+    public static Path intakeLoading(Alliance a){
+        Poses waypoints = new Poses(a);
+        return line(waypoints.start, waypoints.pollenEndingPose).constant(waypoints.pollenEndingPose);
+    }
+
+    public static Path goNearFlower(Alliance a) {
+        Poses waypoints = new Poses(a);
+        return curve(waypoints.pollenEndingPose, waypoints.cpFlower, waypoints.endPointFlower)
+                .heading(Interpolator.piecewise()
+                        .until(0.1687, Interpolator.linear(waypoints.point2Segment1Start, waypoints.point2Segment1End))
+                        .until(1, Interpolator.tangent));
+    }
+
+    public static Path goInFlower(Alliance a) {
+        Poses waypoints = new Poses(a);
+        return curve(waypoints.endPointFlower, waypoints.point3Control1, waypoints.point3).constant(waypoints.point3);
+    }
+
+    public static Path moveback(Alliance a) {
+        Poses waypoints = new Poses(a);
+        return line(waypoints.point3, waypoints.point4).constant(waypoints.point4);
+    }
+
+    /*public static Path path1(Alliance a) {
         Poses waypoints = new Poses(a);
 
         return curve(waypoints.start, waypoints.path1Control1, waypoints.path1Control2, waypoints.path1Control3, waypoints.path1)
@@ -66,6 +91,19 @@ public final class ClosePaths {
         Poses waypoints = new Poses(a);
         return line(waypoints.point5, waypoints.point6).constant(waypoints.point6);
     }
+    //ts is the bank for others i commented it so its not cluttering if you want to use a pose callback in the fricking shi follow this, keep this shit for later
+    /*public static Path posecallbacktest(Alliance a, Command onReach) {
+        Poses waypoints = new Poses(a);
+        return withCallbacks(
+                line(waypoints.start, waypoints.poseCallbackTestEnd).constant(waypoints.poseCallbackTestEnd),
+                poseCallback(waypoints.poseCallbackTestTrigger, onReach, 2)
+        );
+    }*/
+    /*public static Path posecallbacktest2(Alliance a, Command onReach) {
+        Poses waypoints = new Poses(a);
+        return Piece
+    }*/
+    /*
     public static Path posecallbacktest2(Alliance a, Command onReach) {
         Poses waypoints = new Poses(a);
         return withCallbacks(
@@ -93,49 +131,34 @@ public final class ClosePaths {
                 poseCallback(waypoints.poseCallbackTestTrigger, onReach, 2)
         );
     }
+    /*
+     */
     private static final class Poses {
         final Pose start;
-
-        final Pose path1;
-        final Pose path1End;
-        final Pose path1Control1;
-        final Pose path1Control2;
-        final Pose path1Control3;
-
-        final Pose point2;
-        final Pose point2Start;
-        final Pose point2Mid;
-
+        final Pose pollenEndingPose;
+        final Pose endPointFlower;
+        final Pose cpFlower;
+        final Pose point2Segment1Start;
+        final Pose point2Segment1End;
         final Pose point3;
+        final Pose point3Control1;
         final Pose point4;
-        final Pose point5;
-        final Pose point6;
-
-        final Pose poseCallbackTestEnd;
-        final Pose poseCallbackTestTrigger;
 
         Poses(Alliance a) {
             PoseFactory poseFactory = poses(a);
 
-            start = poseFactory.of(32.52, 8.824, 90);
+            start = poseFactory.of(34.991, 6.970, 180);
+            pollenEndingPose = poseFactory.of(10.275,6.959,180);
+            endPointFlower = poseFactory.of(34.5437, 104.0597, 78.9604);
+            cpFlower = poseFactory.of(26.6689, 63.5582, 0);
+            point2Segment1Start = poseFactory.of(34.5437, 104.0597, 180);
+            point2Segment1End = poseFactory.of(34.5437, 104.0597, 90);
+            point3 = poseFactory.of(47.1346, 119.6412, 90);
+            point3Control1 = poseFactory.of(49.8421, 104.1041, 0);
+            point4 = poseFactory.of(46.639, 113.4862, 90);
 
-            path1 = poseFactory.of(48.1732, 119.417, 90);
-            path1End = poseFactory.of(48.1732, 119.417, 90);
-            path1Control1 = poseFactory.of(30.8661, 30.9884, 0);
-            path1Control2 = poseFactory.of(11.3969, 92.0999, 0);
-            path1Control3 = poseFactory.of(52.2656, 109.441, 0);
 
-            point2 = poseFactory.of(9.4665, 106.155, 180);
-            point2Start = poseFactory.of(9.4665, 106.155, 90);
-            point2Mid = poseFactory.of(9.4665, 106.155, 180);
 
-            point3 = poseFactory.of(26.4127, 48.6033, 180);
-            point4 = poseFactory.of(20.508, 48.5437, 180);
-            point5 = poseFactory.of(21.5138, 8.4811, 180);
-            point6 = poseFactory.of(9.714, 8.4068, 180);
-
-            poseCallbackTestEnd = poseFactory.of(32.52, 48, 90);
-            poseCallbackTestTrigger = poseFactory.of(32.52, 30, 90);
         }
     }
 }

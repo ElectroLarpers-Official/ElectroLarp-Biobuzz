@@ -132,24 +132,24 @@ public class Tele extends CommandOpMode {
         driver2(dt);
 
         if (gp1.left_trigger_button.isRisingEdge()) {
-            robot.intake.intake();
+            schedule(robot.intake.intake());
         }
         if (gp1.left_trigger_button.isFallingEdge()) {
-            robot.intake.stop();
+            schedule(robot.intake.stop());
         }
         // Right trigger held = shoot, but only while the shot can go in. If it stops being possible mid-burst
         // (robot moved), feeding stops; it resumes on its own once the shot is possible again.
         boolean canShoot = !REQUIRE_SHOT_ALLOWED || shotOverride() || robot.isManual() || robot.shotAllowed();
         if (gp1.right_trigger_button.isTrue() && canShoot) {
-            if (!robot.isShooting()) robot.shootAll();
+            if (!robot.isShooting()) schedule(robot.shootAll());
         } else if (robot.isShooting()) {
-            robot.stopShootAll();
+            schedule(robot.stopShootAll());
         }
         if (gp1.left_bumper.isRisingEdge()) {
-            robot.outtake();
+            schedule(robot.outtake());
         }
         if (gp1.left_bumper.isFallingEdge()) {
-            robot.stopOuttake();
+            schedule(robot.stopOuttake());
         }
         if (gp1.a.isRisingEdge() && canShoot && !Scheduler.isScheduled(shootOne)) {
             schedule(shootOne);

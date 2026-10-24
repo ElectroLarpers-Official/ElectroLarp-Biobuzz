@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import static com.pedropathing.ivy.commands.Commands.instant;
+
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.ivy.Command;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -129,12 +132,14 @@ public final class Shooter {
     public void setTargetRpm(double motorRpm) { setTargetVelocity(motorRpm * TICKS_PER_REV / 60.0); }
     /** True while balls are being fed: switches to bang-bang (if enabled). */
     public void setFeeding(boolean feeding) { this.feeding = feeding; }
-    public void partyMode() { setTargetVelocity(PARTY_MODE_VELOCITY); }
-    public void stop() {
-        targetVelocity = 0;
-        mode = Mode.OFF;
-        power = 0;
-        writePower(0);
+    public Command partyMode() { return instant(() -> setTargetVelocity(PARTY_MODE_VELOCITY)); }
+    public Command stop() {
+        return instant(() -> {
+            targetVelocity = 0;
+            mode = Mode.OFF;
+            power = 0;
+            writePower(0);
+        });
     }
 
     public boolean isSpinning() { return targetVelocity > 0; }

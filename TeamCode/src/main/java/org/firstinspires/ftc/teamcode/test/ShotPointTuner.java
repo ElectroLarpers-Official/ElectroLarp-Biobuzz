@@ -121,7 +121,7 @@ public class ShotPointTuner extends CommandOpMode {
         aim();
         handleButtons();
 
-        if (flywheelOn && tuneRpm > 0) robot.shooter.setTargetRpm(tuneRpm); else robot.shooter.stop();
+        if (flywheelOn && tuneRpm > 0) robot.shooter.setTargetRpm(tuneRpm); else robot.shooter.setTargetVelocity(0);
         robot.hood.setPosition(tuneHood);
         robot.shooter.update();
 
@@ -149,11 +149,11 @@ public class ShotPointTuner extends CommandOpMode {
     }
 
     private void handleButtons() {
-        if (gp1.right_trigger_button.isRisingEdge()) robot.shootAll();
-        if (gp1.right_trigger_button.isFallingEdge()) robot.stopShootAll();
+        if (gp1.right_trigger_button.isRisingEdge()) schedule(robot.shootAll());
+        if (gp1.right_trigger_button.isFallingEdge()) schedule(robot.stopShootAll());
         if (!robot.isShooting()) {
-            if (gp1.left_trigger_button.isRisingEdge()) robot.intake.intake();
-            if (gp1.left_trigger_button.isFallingEdge()) robot.intake.stop();
+            if (gp1.left_trigger_button.isRisingEdge()) schedule(robot.intake.intake());
+            if (gp1.left_trigger_button.isFallingEdge()) schedule(robot.intake.stop());
         }
         if (gp1.y.isRisingEdge()) flywheelOn = !flywheelOn;
 

@@ -118,7 +118,9 @@ public class FlywheelPIDFTest extends CommandOpMode {
             if (gp1.dpad_down.isRisingEdge()) TARGET_RPM = Math.max(0, TARGET_RPM - RPM_STEP);
         }
 
-        if (intakeOn || feeding) intake.intake(); else intake.stop();
+        boolean intakeWanted = intakeOn || feeding;
+        if (intakeWanted && !intake.atState(Intake.IntakeState.INTAKE)) schedule(intake.intake());
+        else if (!intakeWanted && !intake.atState(Intake.IntakeState.STOPPED)) schedule(intake.stop());
         shooter.setFeeding(feeding);
     }
 
@@ -135,7 +137,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
         lastLoopNanos = now;
 
         if (AUTO_SPEED) solveForPose();
-        if (shooterOn && TARGET_RPM > 0) shooter.setTargetRpm(TARGET_RPM); else shooter.stop();
+        if (shooterOn && TARGET_RPM > 0) shooter.setTargetRpm(TARGET_RPM); else shooter.setTargetVelocity(0);
         shooter.update();
 
         panels.addData("Motor RPM", shooter.rpm());

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 import static com.pedropathing.ivy.commands.Commands.infinite;
+import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.follow;
 import org.electrolightsftc.pulse.electropathing.*;
@@ -22,7 +23,7 @@ public class Close extends CommandOpMode {
     boolean started = false;
 
     public Close(Alliance a) {this.a = a;
-   
+
     }
 
     @Override
@@ -41,11 +42,15 @@ public class Close extends CommandOpMode {
 
     @Override
     public void onStart() {
+
         started = true;
         schedule(
                 infinite(robot::update),
                 routine()
         );
+    }
+    public Command shoot(){
+        return robot.shootAll();
     }
 
     @Override
@@ -57,12 +62,15 @@ public class Close extends CommandOpMode {
 
     private Command routine() {
         return sequential(
-                follow(robot.follower, ClosePaths.path1(a)),
-                follow(robot.follower, ClosePaths.path2(a)),
-                follow(robot.follower, ClosePaths.path3(a)),
-                follow(robot.follower, ClosePaths.path4(a)),
-                follow(robot.follower, ClosePaths.path5(a)),
-                follow(robot.follower, ClosePaths.path6(a))
+
+                waitMs(500),
+               shoot(),
+
+                follow(robot.follower, ClosePaths.intakeLoading(a)),
+
+                follow(robot.follower, ClosePaths.goNearFlower(a)),
+                follow(robot.follower, ClosePaths.goInFlower(a)),
+                follow(robot.follower, ClosePaths.moveback(a))
         );
     }
 }

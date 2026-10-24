@@ -2,12 +2,13 @@ package org.firstinspires.ftc.teamcode;
 
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
+import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
-import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
 import com.pedropathing.math.Vector2D;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -209,11 +210,15 @@ public final class Robot {
         follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, follower.pose().heading(), forwardOffsetRad));
     }
 
-    public void shootAll() {
-        feedStartNanos = System.nanoTime();
-        latch.open();
-        shooter.setFeeding(true);
-        intake.intake();
+    public Command shootAll() {
+        return parallel(
+                instant(() -> {
+                    feedStartNanos = System.nanoTime();
+                    shooter.setFeeding(true);
+                }),
+                latch.open(),
+                intake.intake()
+        );
     }
 
     /** True while shootAll is feeding (right trigger). */
@@ -221,39 +226,44 @@ public final class Robot {
         return feedStartNanos != 0;
     }
 
-    public void stopShootAll() {
-        feedStartNanos = 0;
-        latch.close();
-        shooter.setFeeding(false);
-        intake.stop();
-    }
-
-    public void outtake() {
-        intake.slow();
-    }
-
-    public void stopOuttake() {
-        intake.stop();
-    }
-
-    public CommandBuilder shootOne() {
-        return sequential(
-                instant(latch::open),
-                instant(() -> shooter.setFeeding(true)),
-                instant(intake::intake),
-                waitMs(SHOOT_ONE_MS),
-                instant(intake::stop),
-                instant(() -> shooter.setFeeding(false)),
-                instant(latch::close)
+    public Command stopShootAll() {
+        return parallel(
+                instant(() -> {
+                    feedStartNanos = 0;
+                    shooter.setFeeding(false);
+                }),
+                latch.close(),
+                intake.stop()
         );
     }
 
+    public Command outtake() {
+        return intake.slow();
+    }
+
+    public Command stopOuttake() {
+        return intake.stop();
+    }
+
+    public Command shootOne() {
+        return sequential(
+                latch.open(),
+                instant(() -> shooter.setFeeding(true)),
+                intake.intake(),
+                waitMs(SHOOT_ONE_MS),
+                intake.stop(),
+                instant(() -> shooter.setFeeding(false)),
+                latch.close()
+        );
+    }
+
+    // Called from OpMode end(), after the Scheduler has been reset, so the stop commands are run directly.
     public void stop() {
         feedStartNanos = 0;
-        intake.stop();
-        latch.close();
         shooter.setFeeding(false);
-        shooter.stop();
+        intake.stop().start();
+        latch.close().start();
+        shooter.stop().start();
     }
 
     public double loopMs() {
