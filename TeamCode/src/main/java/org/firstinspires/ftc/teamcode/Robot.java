@@ -34,6 +34,31 @@ import java.util.List;
 @Configurable
 public final class Robot {
     public static double SHOOT_ONE_MS = 250; // TODO: tune
+
+    // ---- Driver 2 live trims: added to every shot (tuned points, shot map, manual presets) ----------------------
+    /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
+    public static double LIVE_RPM_TRIM = 0;
+    /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
+    public static double LIVE_HOOD_TRIM = 0;
+
+    // ---- Manual fallback (driver 2 START): for when the pose can't be trusted ----------------------------------
+    // The turret points where driver 2 puts it (straight ahead to start), the flywheel / hood use a fixed preset and
+    // the shot check is skipped. Defaults are tuned points: close = (60, 30) blend, 26 in from the cell;
+    // mid = (54.8, 17.1), 39 in; far = (118.9, 16.8), 71 in.
+    public static double MANUAL_CLOSE_RPM = 3608, MANUAL_CLOSE_HOOD = 0.574;
+    public static double MANUAL_MID_RPM = 3719, MANUAL_MID_HOOD = 0.435;
+    public static double MANUAL_FAR_RPM = 3746, MANUAL_FAR_HOOD = 0.303;
+    /** Turret speed under driver 2's right stick in manual mode, deg/s at full stick. */
+    public static double MANUAL_TURRET_RATE_DEG_S = 120;
+
+    // ---- Pose reset (driver 1 X) ---------------------------------------------------------------------------------
+    /** Where the robot is when driver 1 presses X, Pedro inches / degrees: the red alliance corner with the robot
+     *  squared against both walls. SET THESE for the robot: x / y = distance from each wall to the pose point (half
+     *  the robot's width / length for a centred pose point), heading = which way the robot faces there. Blue uses
+     *  the same spot turned 180 degrees about the field centre (144 - x, 144 - y, heading + 180). */
+    public static double RESET_X = 9, RESET_Y = 9, RESET_HEADING_DEG = 90;
+
+    public enum ManualShot { CLOSE, MID, FAR }
     public final Alliance alliance;
     public final PulseFollower follower;
     public final Intake intake;
@@ -47,6 +72,9 @@ public final class Robot {
     private boolean underHive = false;
     private long lastLoopNanos = 0;
     private double loopMs = 0;
+    private boolean manual = false;
+    private ManualShot manualShot = ManualShot.MID;
+    private double manualTurretDeg = 0;
 
 
     public Robot(HardwareMap hardwareMap, Alliance alliance) {
@@ -88,6 +116,21 @@ public final class Robot {
         Vector2D accel = Vector2D.zero();
         double angularVelocity = vel.omega;
 
+        // Manual fallback: the pose isn't trusted, so no solver, no under-HIVE box, no shot check.
+        if (manual) {
+            underHive = false;
+            double rpm, hoodPos;
+            switch (manualShot) {
+                case CLOSE: rpm = MANUAL_CLOSE_RPM; hoodPos = MANUAL_CLOSE_HOOD; break;
+                case FAR: rpm = MANUAL_FAR_RPM; hoodPos = MANUAL_FAR_HOOD; break;
+                default: rpm = MANUAL_MID_RPM; hoodPos = MANUAL_MID_HOOD; break;
+            }
+            shooter.setTargetRpm(rpm + LIVE_RPM_TRIM);
+            hood.setPosition(hoodPos + LIVE_HOOD_TRIM);
+            turret.setPosition(TurretCalc.solve(manualTurretDeg, 0.0, alliance));
+            return;
+        }
+
         Pose turretPose = Turret.getTurretPose(currPose);
         Pose goal = ShooterCalc.goal(alliance, currPose.y());
         Vector2D robotToGoal = Turret.getTurretToGoalVector(turretPose, goal);
@@ -111,10 +154,38 @@ public final class Robot {
         Double[] result = ShooterCalc.solve(
                 currPose.heading(), robotToGoal, velocity, accel, angularVelocity);
 
-        shooter.setTargetVelocity(result[0]);
-        hood.setPosition(result[1]);
+        double tps = result[0];
+        if (tps > 0) tps = Math.max(0, tps + LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0);
+        shooter.setTargetVelocity(tps);
+        hood.setPosition(result[1] + LIVE_HOOD_TRIM);
         turret.setPosition(TurretCalc.solve(result[2], angularVelocity, alliance));
         ShotCheck.check(alliance, goal);
+    }
+
+    // ---- Manual fallback ---------------------------------------------------------------------------------------
+    public boolean isManual() { return manual; }
+    /** Turn manual mode on / off. Turning it on starts with the turret straight ahead. */
+    public void setManual(boolean on) {
+        if (on && !manual) manualTurretDeg = 0;
+        manual = on;
+    }
+    public ManualShot manualShot() { return manualShot; }
+    public void setManualShot(ManualShot shot) { manualShot = shot; }
+    public double manualTurretDeg() { return manualTurretDeg; }
+    /** Turns the manual turret aim by {@code deg} (+ = counter-clockwise), inside the turret's travel. */
+    public void nudgeManualTurret(double deg) {
+        manualTurretDeg = Math.max(TurretCalc.MIN_ANGLE, Math.min(TurretCalc.MAX_ANGLE, manualTurretDeg + deg));
+    }
+
+    // ---- Pose reset ------------------------------------------------------------------------------------------
+    /** The pose reset spot for an alliance (RESET_X / Y / HEADING_DEG for red, turned 180 deg for blue). */
+    public static Pose resetPose(Alliance alliance) {
+        if (alliance == Alliance.RED) return new Pose(RESET_X, RESET_Y, Math.toRadians(RESET_HEADING_DEG));
+        return new Pose(144 - RESET_X, 144 - RESET_Y, Math.toRadians(RESET_HEADING_DEG + 180));
+    }
+    /** Tells the localizer the robot is at the reset spot now. */
+    public void resetPose() {
+        follower.setPose(resetPose(alliance));
     }
 
     /** True while the robot is under the HIVE (solver skipped, fixed RPM / hood). */

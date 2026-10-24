@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShooterCalc;
 import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.ShotCheck;
+import org.firstinspires.ftc.teamcode.subsystem.control.shotcheck.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.OpModeStorage;
@@ -46,9 +47,16 @@ public class Tele extends CommandOpMode {
     /** Rumble length while trying to shoot a shot that can't go in, ms. */
     public static int CANT_SHOOT_RUMBLE_MS = 250;
 
+    /** Driver 2 trim steps: motor RPM, hood servo position, turret degrees. */
+    public static double RPM_TRIM_STEP = 25, HOOD_TRIM_STEP = 0.005, TURRET_TRIM_STEP_DEG = 1;
+    /** Driver 2 right stick dead band in manual mode. */
+    public static double MANUAL_STICK_DEADBAND = 0.05;
+
     Alliance a;
     Robot robot;
     GamepadEx gp1;
+    GamepadEx gp2;
+    long lastExecNanos = 0;
     Command shootOne;
     TelemetryManager panels;
 
@@ -67,6 +75,8 @@ public class Tele extends CommandOpMode {
         robot.follower.setPose(startPose());
         robot.follower.update();
         gp1 = new GamepadEx(gamepad1);
+        gp2 = new GamepadEx(gamepad2);
+        gp2.left_trigger_button(FloatSupplier::isPress);
         panels = PanelsTelemetry.INSTANCE.getTelemetry();
         shootOne = robot.shootOne();
         gp1.left_trigger_button(FloatSupplier::isPress);
@@ -109,9 +119,19 @@ public class Tele extends CommandOpMode {
 
     @Override
     public void execute() {
-        // TODO: add driver 2 controls (Shooter.partyMode(), HOOD_STEP hood nudge, ShooterCalc.verticalShiftStep) and manual
-        //  fallbacks (turret/hood/flywheel) for when auto-aim or localization fails.
         gp1.update();
+        gp2.update();
+        long now = System.nanoTime();
+        double dt = lastExecNanos == 0 ? 0.0 : Math.min(0.1, (now - lastExecNanos) / 1e9);
+        lastExecNanos = now;
+
+        // Driver 1 X: pose reset. Robot squared in the reset corner (Robot.RESET_X / Y / HEADING_DEG).
+        if (gp1.x.isRisingEdge()) {
+            robot.resetPose();
+            gamepad1.rumble(200);
+        }
+
+        driver2(dt);
 
         if (gp1.left_trigger_button.isRisingEdge()) {
             robot.intake.intake();
@@ -121,7 +141,7 @@ public class Tele extends CommandOpMode {
         }
         // Right trigger held = shoot, but only while the shot can go in. If it stops being possible mid-burst
         // (robot moved), feeding stops; it resumes on its own once the shot is possible again.
-        boolean canShoot = !REQUIRE_SHOT_ALLOWED || robot.shotAllowed();
+        boolean canShoot = !REQUIRE_SHOT_ALLOWED || shotOverride() || robot.isManual() || robot.shotAllowed();
         if (gp1.right_trigger_button.isTrue() && canShoot) {
             if (!robot.isShooting()) robot.shootAll();
         } else if (robot.isShooting()) {
@@ -141,6 +161,48 @@ public class Tele extends CommandOpMode {
             gamepad1.rumble(CANT_SHOOT_RUMBLE_MS);
         }
 
+    }
+
+    /** Driver 2 holding the left trigger: shoot even where the shot check says no. */
+    private boolean shotOverride() { return gp2.left_trigger_button.isTrue(); }
+
+    /**
+     * Driver 2: LT hold = shot-check override; d-pad up / down = RPM trim; d-pad right / left = hood trim
+     * (steeper / flatter); RB / LB = turret offset for this alliance (+ = counter-clockwise); BACK = all trims to 0;
+     * START = manual mode on / off. In manual mode: right stick X turns the turret, A / B / Y = close / mid / far preset.
+     */
+    private void driver2(double dt) {
+        if (gp2.dpad_up.isRisingEdge()) Robot.LIVE_RPM_TRIM += RPM_TRIM_STEP;
+        if (gp2.dpad_down.isRisingEdge()) Robot.LIVE_RPM_TRIM -= RPM_TRIM_STEP;
+        if (gp2.dpad_right.isRisingEdge()) Robot.LIVE_HOOD_TRIM += HOOD_TRIM_STEP;
+        if (gp2.dpad_left.isRisingEdge()) Robot.LIVE_HOOD_TRIM -= HOOD_TRIM_STEP;
+        if (gp2.right_bumper.isRisingEdge()) setTurretOffset(turretOffset() + TURRET_TRIM_STEP_DEG);
+        if (gp2.left_bumper.isRisingEdge()) setTurretOffset(turretOffset() - TURRET_TRIM_STEP_DEG);
+        if (gp2.back.isRisingEdge()) {
+            Robot.LIVE_RPM_TRIM = 0;
+            Robot.LIVE_HOOD_TRIM = 0;
+            setTurretOffset(0);
+            gamepad2.rumble(200);
+        }
+        if (gp2.start.isRisingEdge()) {
+            robot.setManual(!robot.isManual());
+            gamepad2.rumble(robot.isManual() ? 500 : 200);
+        }
+        if (robot.isManual()) {
+            if (gp2.a.isRisingEdge()) robot.setManualShot(Robot.ManualShot.CLOSE);
+            if (gp2.b.isRisingEdge()) robot.setManualShot(Robot.ManualShot.MID);
+            if (gp2.y.isRisingEdge()) robot.setManualShot(Robot.ManualShot.FAR);
+            double stick = gp2.right_stick_x.getVal();
+            if (Math.abs(stick) > MANUAL_STICK_DEADBAND) {
+                // stick right = turret clockwise (negative angle)
+                robot.nudgeManualTurret(-stick * Robot.MANUAL_TURRET_RATE_DEG_S * dt);
+            }
+        }
+    }
+
+    private double turretOffset() { return a == Alliance.RED ? TurretCalc.turretOffset : TurretCalc.turretOffset2; }
+    private void setTurretOffset(double deg) {
+        if (a == Alliance.RED) TurretCalc.turretOffset = deg; else TurretCalc.turretOffset2 = deg;
     }
 
     @Override
@@ -170,6 +232,10 @@ public class Tele extends CommandOpMode {
     private void updateTelemetry() {
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
+        telemetry.addData("Driver 2", "%s%s | trims %+.0f RPM, hood %+.3f, turret %+.0f deg",
+                robot.isManual() ? String.format("MANUAL %s, turret %.0f deg", robot.manualShot(), robot.manualTurretDeg())
+                        : "auto", shotOverride() ? " | SHOT CHECK OVERRIDE" : "",
+                Robot.LIVE_RPM_TRIM, Robot.LIVE_HOOD_TRIM, turretOffset());
         telemetry.addData("Shooter", "%.0f / %.0f motor RPM (%s, %s, power %.2f)",
                 robot.shooter.rpm(), robot.shooter.targetRpm(),
                 robot.shooter.atTarget() ? "at speed" : robot.shooter.isSpinning() ? "spinning up" : "off",
@@ -223,6 +289,11 @@ public class Tele extends CommandOpMode {
         panels.addData("Turret angle deg", ShooterCalc.lastHeadingAngle);
         panels.addData("Robot speed in/s (proj)", ShooterCalc.lastProjectedSpeed);
         panels.addData("Accel in/s^2 (filt)", ShooterCalc.lastAlongTrackAccel);
+        panels.addData("Manual mode", robot.isManual() ? 1 : 0);
+        panels.addData("Shot override", shotOverride() ? 1 : 0);
+        panels.addData("Live RPM trim", Robot.LIVE_RPM_TRIM);
+        panels.addData("Live hood trim", Robot.LIVE_HOOD_TRIM);
+        panels.addData("Turret offset deg", turretOffset());
         panels.addData("Loop ms", robot.loopMs());
         panels.update();   // Panels only; the Driver Station lines above are sent by telemetry.update()
     }

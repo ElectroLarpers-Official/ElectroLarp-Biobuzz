@@ -17,12 +17,13 @@ public final class Turret {
     // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot.
     public static double TURRET_FORWARD_OFFSET = 0; // aim from the robot pose itself (CAD has the axis 1.571 in behind centre; not applied)
     public static double TURRET_STRAFE_OFFSET = 0; // TODO(new robot): old-robot value
-    private double CENTER = 0.5; // TODO(new robot): old-robot value
+    /** Servo position with the turret straight ahead. */
+    public static final double CENTER = 0.5;
 
     public Turret(HardwareMap hw) {
         turret = hw.tryGet(ServoImplEx.class, HardwareNames.TURRET);
         if (turret != null) {
-            turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // TODO(new robot): old-robot value
+            turret.setPwmRange(new PwmControl.PwmRange(500, 2500)); // Axon MAX: full 350 deg travel over 500-2500 us
             turret.setPosition(CENTER);
         }
     }
