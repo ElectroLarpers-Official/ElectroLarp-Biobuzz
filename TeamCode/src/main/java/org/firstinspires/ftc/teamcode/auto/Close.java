@@ -6,6 +6,7 @@ import static com.pedropathing.ivy.groups.Groups.sequential;
 import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.follow;
 import org.electrolightsftc.pulse.electropathing.*;
 
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
 
@@ -49,9 +50,7 @@ public class Close extends CommandOpMode {
                 routine()
         );
     }
-    public Command shoot(){
-        return robot.shootAll();
-    }
+
 
     @Override
     public void end() {
@@ -64,12 +63,16 @@ public class Close extends CommandOpMode {
         return sequential(
 
                 waitMs(500),
-               shoot(),
+               robot.shootAll(),
+               robot.intake.intake(),
 
                 follow(robot.follower, ClosePaths.intakeLoading(a)),
-
-                follow(robot.follower, ClosePaths.goNearFlower(a)),
+                robot.shootAll(),
+                robot.intake.intake(),
+                follow(robot.follower, ClosePaths.goNearFlower(a, robot.flower(true))),
                 follow(robot.follower, ClosePaths.goInFlower(a)),
+                robot.shootAll(),
+                robot.intake.stop(),
                 follow(robot.follower, ClosePaths.moveback(a))
         );
     }

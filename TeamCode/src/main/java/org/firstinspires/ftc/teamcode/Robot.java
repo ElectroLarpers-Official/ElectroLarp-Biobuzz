@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.subsystem.Flower;
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Latch;
@@ -65,6 +66,8 @@ public final class Robot {
     public final Alliance alliance;
     public final PulseFollower follower;
     public final Intake intake;
+
+    public Flower flower;
     public final Latch latch;
     public final Turret turret;
     public final Shooter shooter;
@@ -87,6 +90,7 @@ public final class Robot {
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+        flower = new Flower(hardwareMap);
 
         follower = PulseRuntime.follower();
         intake = new Intake(hardwareMap);
@@ -224,6 +228,9 @@ public final class Robot {
     /** True while shootAll is feeding (right trigger). */
     public boolean isShooting() {
         return feedStartNanos != 0;
+    }
+    public Command flower(boolean status) {
+        return flower.toggleFlower(status);
     }
 
     public Command stopShootAll() {

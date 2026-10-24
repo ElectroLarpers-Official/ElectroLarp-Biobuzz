@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.auto.paths;
 import static com.pedropathing.api.Paths.curve;
 import static com.pedropathing.api.Paths.line;
 
-
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
@@ -37,12 +36,15 @@ public final class ClosePaths {
         return line(waypoints.start, waypoints.pollenEndingPose).constant(waypoints.pollenEndingPose);
     }
 
-    public static Path goNearFlower(Alliance a) {
+    public static Path goNearFlower(Alliance a, Command openFlower) {
         Poses waypoints = new Poses(a);
-        return curve(waypoints.pollenEndingPose, waypoints.cpFlower, waypoints.endPointFlower)
-                .heading(Interpolator.piecewise()
-                        .until(0.1687, Interpolator.linear(waypoints.point2Segment1Start, waypoints.point2Segment1End))
-                        .until(1, Interpolator.tangent));
+        return withCallbacks(
+                curve(waypoints.pollenEndingPose, waypoints.cpFlower, waypoints.endPointFlower)
+                        .heading(Interpolator.piecewise()
+                                .until(0.1687, Interpolator.linear(waypoints.point2Segment1Start, waypoints.point2Segment1End))
+                                .until(1, Interpolator.tangent)),
+                poseCallback(waypoints.flowerTrigger, openFlower, 1.0)
+        );
     }
 
     public static Path goInFlower(Alliance a) {
@@ -91,7 +93,7 @@ public final class ClosePaths {
         Poses waypoints = new Poses(a);
         return line(waypoints.point5, waypoints.point6).constant(waypoints.point6);
     }
-    //ts is the bank for others i commented it so its not cluttering if you want to use a pose callback in the fricking shi follow this, keep this shit for later
+    //pose callback incase others were curious
     /*public static Path posecallbacktest(Alliance a, Command onReach) {
         Poses waypoints = new Poses(a);
         return withCallbacks(
@@ -138,6 +140,7 @@ public final class ClosePaths {
         final Pose pollenEndingPose;
         final Pose endPointFlower;
         final Pose cpFlower;
+        final Pose flowerTrigger;
         final Pose point2Segment1Start;
         final Pose point2Segment1End;
         final Pose point3;
@@ -151,6 +154,7 @@ public final class ClosePaths {
             pollenEndingPose = poseFactory.of(10.275,6.959,180);
             endPointFlower = poseFactory.of(34.5437, 104.0597, 78.9604);
             cpFlower = poseFactory.of(26.6689, 63.5582, 0);
+            flowerTrigger = poseFactory.of(32.633, 94.595, 78);
             point2Segment1Start = poseFactory.of(34.5437, 104.0597, 180);
             point2Segment1End = poseFactory.of(34.5437, 104.0597, 90);
             point3 = poseFactory.of(47.1346, 119.6412, 90);
