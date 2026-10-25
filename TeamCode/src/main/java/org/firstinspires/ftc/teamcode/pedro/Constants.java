@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.HardwareNames;
 /**
  * TODO(new robot): old-robot values. Copied from the old Pedro3+Ivy branch (tuned on last season's robot, commit c1856d8).
  * Re-tune on this robot with AutoTune and paste the results over them.
+ * Exception: the Pinpoint pod offsets are from the new robot's CAD (pod directions are still old-robot).
  */
 public class Constants {
     public static MecanumConfig drivetrainConfig = new MecanumConfig(
@@ -44,8 +45,12 @@ public class Constants {
     public static PinpointConfig localizerConfig = new PinpointConfig(
             c -> {
                 c.name.set(HardwareNames.PINPOINT);
-                c.xPodOffset.set(4.742048969418984);
-                c.yPodOffset.set(-0.4026494814654974);
+                // Pod offsets from the new robot's CAD (Oct 2026), inches from the frame centre
+                // (midway between the backplate and the front of the side panels; intake end is front).
+                // xPodOffset: forward pod's sideways offset, left +. It is 3.87 in left of centre.
+                // yPodOffset: strafe pod's forward offset, forward +. It is 6.80 in behind centre.
+                c.xPodOffset.set(3.87);
+                c.yPodOffset.set(-6.80);
                 c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
                 c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.REVERSED);
             }
