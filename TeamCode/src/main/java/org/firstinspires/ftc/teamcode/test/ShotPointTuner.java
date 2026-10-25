@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable;
 import org.firstinspires.ftc.teamcode.subsystem.aim.table.TunedShotTable;
 import org.firstinspires.ftc.teamcode.tele.Tele;
+import org.firstinspires.ftc.teamcode.util.TeleTelemetry;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.input.FloatSupplier;
@@ -121,7 +122,7 @@ public class ShotPointTuner extends CommandOpMode {
         aim();
         handleButtons();
 
-        if (flywheelOn && tuneRpm > 0) robot.shooter.setTargetRpm(tuneRpm); else robot.shooter.setTargetVelocity(0);
+        if (flywheelOn && tuneRpm > 0) robot.shooter.setTargetRpm(tuneRpm); else robot.shooter.stop();
         robot.hood.setPosition(tuneHood);
         robot.shooter.update();
 
@@ -149,11 +150,11 @@ public class ShotPointTuner extends CommandOpMode {
     }
 
     private void handleButtons() {
-        if (gp1.right_trigger_button.isRisingEdge()) schedule(robot.shootAll());
-        if (gp1.right_trigger_button.isFallingEdge()) schedule(robot.stopShootAll());
+        if (gp1.right_trigger_button.isRisingEdge()) robot.startShooting();
+        if (gp1.right_trigger_button.isFallingEdge()) robot.stopShooting();
         if (!robot.isShooting()) {
-            if (gp1.left_trigger_button.isRisingEdge()) schedule(robot.intake.intake());
-            if (gp1.left_trigger_button.isFallingEdge()) schedule(robot.intake.stop());
+            if (gp1.left_trigger_button.isRisingEdge()) robot.intake.on();
+            if (gp1.left_trigger_button.isFallingEdge()) robot.intake.off();
         }
         if (gp1.y.isRisingEdge()) flywheelOn = !flywheelOn;
 
@@ -249,7 +250,7 @@ public class ShotPointTuner extends CommandOpMode {
         telemetry.addData("Hood", "%.3f (%.1f deg launch)", robot.hood.position(),
                 ShooterCalc.launchDegForHoodPosition(robot.hood.position()));
         telemetry.addData("Mode", follow ? "FOLLOW prediction" : "MANUAL (START = follow)");
-        telemetry.addData("Prediction", "%.0f RPM, hood %.3f, from %s", predRpm, predHood, Tele.shotSourceText());
+        telemetry.addData("Prediction", "%.0f RPM, hood %.3f, from %s", predRpm, predHood, TeleTelemetry.shotSourceText());
         telemetry.addData("TeleOp would", ShotCheck.allowed() ? "shoot here" : "not shoot: " + ShotCheck.status());
         telemetry.addData("Nearest point", near == null ? "none for this cell"
                 : String.format(Locale.US, "%.1f in: %.0f RPM, hood %.3f (%s)", nearD, near.rpm, near.hood,
@@ -266,7 +267,7 @@ public class ShotPointTuner extends CommandOpMode {
         panels.addData("Motor RPM", robot.shooter.rpm());
         panels.addData("Target RPM", flywheelOn ? tuneRpm : 0);
         panels.addData("Hood pos", robot.hood.position());
-        panels.addData("Feeding", robot.isShooting() ? 1 : 0);
+        panels.addData("Shooting", robot.isShooting() ? 1 : 0);
         panels.update();
     }
 

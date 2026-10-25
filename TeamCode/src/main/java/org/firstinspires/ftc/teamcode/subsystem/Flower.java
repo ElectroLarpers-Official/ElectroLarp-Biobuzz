@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import static com.pedropathing.ivy.commands.Commands.instant;
-
-import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
@@ -18,10 +15,8 @@ public class Flower {
         flower = hw.tryGet(ServoImplEx.class, HardwareNames.FLOWER_SERVO);
     }
 
-    public Command toggleFlower(boolean state) {
-        return instant(() -> {
-            if (flower != null) flower.setPosition(state ? OPEN_POS : CLOSED_POS);
-        });
+    public void toggleFlower(boolean state) {
+        if (flower != null) flower.setPosition(state ? OPEN_POS : CLOSED_POS);
     }
 
     public boolean isConnected() { return flower != null; }

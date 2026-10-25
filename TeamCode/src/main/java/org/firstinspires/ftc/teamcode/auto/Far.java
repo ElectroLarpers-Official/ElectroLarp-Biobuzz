@@ -52,7 +52,7 @@ public class Far extends CommandOpMode {
 
     /**
      * TODO: fill in once FarPaths has real paths, e.g.
-     * {@code sequential(follow(robot.follower, FarPaths.toScore(a)), robot.shootOne(), ...)}.
+     * {@code sequential(follow(robot.follower, FarPaths.toScore(a)), robot.shootCycle(), ...)}.
      */
     private Command routine() {
         return instant(() -> {});

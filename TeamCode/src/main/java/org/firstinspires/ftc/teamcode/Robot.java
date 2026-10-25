@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
-import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -34,7 +33,8 @@ import java.util.List;
 
 @Configurable
 public final class Robot {
-    public static double SHOOT_ONE_MS = 250; // TODO: tune
+    /** How long shootCycle() keeps the latch open and the transfer running, ms. */
+    public static double SHOOT_DELAY_MS = 250; // TODO: tune
     /** Drive all 4 turret servos (turretServo1-4 on their own ports, directions in Turret). Off = only
      *  turretServo1, e.g. with the Y-split or to run on one servo. Read when the OpMode is initialised. */
     public static boolean TURRET_ALL_SERVOS = true; // TODO delete (quad turret)
@@ -74,7 +74,7 @@ public final class Robot {
     public final Hood hood;
 
     private final List<LynxModule> hubs;
-    private long feedStartNanos = 0;
+    private long shootStartNanos = 0;
     private boolean underHive = false;
     private long lastLoopNanos = 0;
     private double loopMs = 0;
@@ -156,8 +156,8 @@ public final class Robot {
         }
         underHive = false;
 
-        double feedMs = (feedStartNanos == 0) ? 0.0 : (System.nanoTime() - feedStartNanos) / 1e6;
-        ShooterCalc.burstCompActive = feedStartNanos != 0 && feedMs >= ShooterCalc.burstCompDelayMs;
+        double shootMs = (shootStartNanos == 0) ? 0.0 : (System.nanoTime() - shootStartNanos) / 1e6;
+        ShooterCalc.burstCompActive = shootStartNanos != 0 && shootMs >= ShooterCalc.burstCompDelayMs;
 
         Double[] result = ShooterCalc.solve(
                 currPose.heading(), robotToGoal, velocity, accel, angularVelocity);
@@ -214,63 +214,46 @@ public final class Robot {
         follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, follower.pose().heading(), forwardOffsetRad));
     }
 
-    public Command shootAll() {
-        return parallel(
-                instant(() -> {
-                    feedStartNanos = System.nanoTime();
-                    shooter.setFeeding(true);
-                }),
-                latch.open(),
-                intake.intake()
-        );
+    /** Open latch, transfer on. Stays on until stopShooting() (Tele right trigger hold). */
+    public void startShooting() {
+        shootStartNanos = System.nanoTime();
+        latch.open();
+        intake.on();
+        shooter.setShooting(true);
     }
 
-    /** True while shootAll is feeding (right trigger). */
+    /** Transfer off, close latch. */
+    public void stopShooting() {
+        shootStartNanos = 0;
+        intake.off();
+        latch.close();
+        shooter.setShooting(false);
+    }
+
+    /** True between startShooting() and stopShooting(). */
     public boolean isShooting() {
-        return feedStartNanos != 0;
-    }
-    public Command flower(boolean status) {
-        return flower.toggleFlower(status);
+        return shootStartNanos != 0;
     }
 
-    public Command stopShootAll() {
-        return parallel(
-                instant(() -> {
-                    feedStartNanos = 0;
-                    shooter.setFeeding(false);
-                }),
-                latch.close(),
-                intake.stop()
-        );
-    }
-
-    public Command outtake() {
-        return intake.slow();
-    }
-
-    public Command stopOuttake() {
-        return intake.stop();
-    }
-
-    public Command shootOne() {
+    /** Open latch, transfer on, wait SHOOT_DELAY_MS, transfer off, close latch. */
+    public Command shootCycle() {
         return sequential(
-                latch.open(),
-                instant(() -> shooter.setFeeding(true)),
-                intake.intake(),
-                waitMs(SHOOT_ONE_MS),
-                intake.stop(),
-                instant(() -> shooter.setFeeding(false)),
-                latch.close()
+                instant(this::startShooting),
+                waitMs(SHOOT_DELAY_MS),
+                instant(this::stopShooting)
         );
     }
 
-    // Called from OpMode end(), after the Scheduler has been reset, so the stop commands are run directly.
+    public void flower(boolean status) {
+        flower.toggleFlower(status);
+    }
+
     public void stop() {
-        feedStartNanos = 0;
-        shooter.setFeeding(false);
-        intake.stop().start();
-        latch.close().start();
-        shooter.stop().start();
+        shootStartNanos = 0;
+        intake.off();
+        latch.close();
+        shooter.setShooting(false);
+        shooter.stop();
     }
 
     public double loopMs() {

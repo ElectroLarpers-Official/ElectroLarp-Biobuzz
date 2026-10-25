@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 import static com.pedropathing.ivy.commands.Commands.infinite;
+import static com.pedropathing.ivy.commands.Commands.instant;
 import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static org.electrolightsftc.pulse.electropathing.AutoPathRuntime.follow;
@@ -61,18 +62,16 @@ public class Close extends CommandOpMode {
 
     private Command routine() {
         return sequential(
-
                 waitMs(500),
-               robot.shootAll(),
-               robot.intake.intake(),
-
+               robot.shootCycle(),
+               instant(robot.intake::on),
                 follow(robot.follower, ClosePaths.intakeLoading(a)),
-                robot.shootAll(),
-                robot.intake.intake(),
-                follow(robot.follower, ClosePaths.goNearFlower(a, robot.flower(true))),
+                robot.shootCycle(),
+                instant(robot.intake::on),
+                follow(robot.follower, ClosePaths.goNearFlower(a, instant(() -> robot.flower(true)))),
                 follow(robot.follower, ClosePaths.goInFlower(a)),
-                robot.shootAll(),
-                robot.intake.stop(),
+                robot.shootCycle(),
+                instant(robot.intake::off),
                 follow(robot.follower, ClosePaths.moveback(a))
         );
     }

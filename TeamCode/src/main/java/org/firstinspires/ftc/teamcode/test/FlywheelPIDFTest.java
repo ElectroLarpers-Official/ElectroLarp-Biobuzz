@@ -28,10 +28,10 @@ import java.util.List;
 
 /**
  * Shooter bench test using the robot's real subsystems: Intake (intake + belted transfer), Shooter (Meta PIDF,
- * bang-bang while feeding) and Hood. No Robot, Follower, drivetrain, turret or latch is constructed.
+ * bang-bang while shooting) and Hood. No Robot, Follower, drivetrain, turret or latch is constructed.
  * Flywheel gains and directions live in Shooter / Intake and are edited in Panels there.
  *
- * <p>Gamepad 1: A = intake on/off, B = feed (intake on + flywheel in bang-bang, like shooting), Y = shooter on/off,
+ * <p>Gamepad 1: A = intake on/off, B = shoot (intake on + flywheel in bang-bang), Y = shooter on/off,
  * X = auto speed on/off.
  * Auto speed ON: the robot is assumed to sit at ROBOT_X / ROBOT_Y / ROBOT_HEADING_DEG (Pedro inches); target RPM
  * and hood come from the same solver + shot map TeleOp uses. Dpad moves that pose by POSE_STEP (up = +y,
@@ -61,7 +61,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
     TelemetryManager panels;
     String problem = null;
 
-    boolean intakeOn = false, feeding = false, shooterOn = false;
+    boolean intakeOn = false, shooting = false, shooterOn = false;
     double loopMs = 0;
     long lastLoopNanos = 0;
 
@@ -90,7 +90,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
     @Override
     public void initializeLoop() {
         if (showProblem()) return;
-        telemetry.addLine("A = intake, B = feed, Y = shooter, X = auto speed (dpad moves pose, RB = alliance)");
+        telemetry.addLine("A = intake, B = shoot, Y = shooter, X = auto speed (dpad moves pose, RB = alliance)");
         telemetry.addData("Auto speed", AUTO_SPEED ? "ON at (" + ROBOT_X + ", " + ROBOT_Y + ")" : "OFF");
         telemetry.addData("Transfer motor", intake.hasTransferMotor() ? "found, runs with intake" : "not in config");
         telemetry.addData("Hood servo", hood != null ? "found" : "not in config (hood stays manual)");
@@ -104,7 +104,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
         gp1.update();
 
         if (gp1.a.isRisingEdge()) intakeOn = !intakeOn;
-        if (gp1.b.isRisingEdge()) feeding = !feeding;
+        if (gp1.b.isRisingEdge()) shooting = !shooting;
         if (gp1.y.isRisingEdge()) shooterOn = !shooterOn;
         if (gp1.x.isRisingEdge()) AUTO_SPEED = !AUTO_SPEED;
         if (AUTO_SPEED) {
@@ -118,10 +118,8 @@ public class FlywheelPIDFTest extends CommandOpMode {
             if (gp1.dpad_down.isRisingEdge()) TARGET_RPM = Math.max(0, TARGET_RPM - RPM_STEP);
         }
 
-        boolean intakeWanted = intakeOn || feeding;
-        if (intakeWanted && !intake.atState(Intake.IntakeState.INTAKE)) schedule(intake.intake());
-        else if (!intakeWanted && !intake.atState(Intake.IntakeState.STOPPED)) schedule(intake.stop());
-        shooter.setFeeding(feeding);
+        if (intakeOn || shooting) intake.on(); else intake.off();
+        shooter.setShooting(shooting);
     }
 
     private boolean showProblem() {
@@ -137,7 +135,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
         lastLoopNanos = now;
 
         if (AUTO_SPEED) solveForPose();
-        if (shooterOn && TARGET_RPM > 0) shooter.setTargetRpm(TARGET_RPM); else shooter.setTargetVelocity(0);
+        if (shooterOn && TARGET_RPM > 0) shooter.setTargetRpm(TARGET_RPM); else shooter.stop();
         shooter.update();
 
         panels.addData("Motor RPM", shooter.rpm());
@@ -149,7 +147,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
         panels.addData("Mode", shooter.mode().name());
         panels.addData("Shooter (Y)", shooterOn ? "ON" : "OFF");
         panels.addData("Intake (A)", intakeOn ? "ON" : "OFF");
-        panels.addData("Feeding (B)", feeding ? "ON" : "OFF");
+        panels.addData("Shooting (B)", shooting ? "ON" : "OFF");
         panels.addData("Auto speed (X)", AUTO_SPEED ? "ON" : "OFF");
         if (AUTO_SPEED) {
             panels.addData("Pose", String.format("(%.0f, %.0f) %.0f deg, %s alliance", ROBOT_X, ROBOT_Y,

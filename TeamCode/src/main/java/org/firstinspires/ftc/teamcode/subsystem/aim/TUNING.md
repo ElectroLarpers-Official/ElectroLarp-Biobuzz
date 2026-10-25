@@ -8,7 +8,7 @@ Files (all under `teamcode/`):
 
 | File | What's in it |
 |---|---|
-| `subsystem/Shooter.java` | Flywheel speed loop (PIDF: `kP` / `kI` / `kD` / `kF`, optional bang-bang while feeding) |
+| `subsystem/Shooter.java` | Flywheel speed loop (PIDF: `kP` / `kI` / `kD` / `kF`, optional bang-bang while shooting) |
 | `subsystem/Hood.java` | Hood servo limits |
 | `subsystem/Turret.java` | Turret pivot position on the robot, servo write threshold |
 | `subsystem/aim/shot/ShooterConstants.java` | Where the HIVE cells are on the field, which cell to aim at, under-HIVE hold |
@@ -51,7 +51,7 @@ Meta Infinity's PIDF on **motor RPM**: power = (`kF` × target RPM / 5200 + `kP`
 | `kF` | 1.1 | Feedforward. `kF = 1` is full power at 5200 motor RPM. Tune first with `kP = 0`: the wheel should settle close to target on its own. |
 | `kP` | 0.0006 | Power per RPM of error. Raise if it recovers slowly after a shot; lower if it oscillates. |
 | `kI` / `kD` | 0 / 0 | Usually leave at 0. |
-| `BANG_BANG_WHILE_FEEDING` | false | Turn on to use full power (`BANG_POWER`, 1.0) whenever the wheel is more than `DEADBAND_RPM` (15) under target while balls are fed. Off = PIDF the whole time. |
+| `BANG_BANG_WHILE_SHOOTING` | false | Turn on to use full power (`BANG_POWER`, 1.0) whenever the wheel is more than `DEADBAND_RPM` (15) under target while shooting. Off = PIDF the whole time. |
 | `VELOCITY_TOLERANCE` | 100 ticks/s | How close counts as "at speed" on telemetry. Shooting uses ShotCheck's own tolerance (section 10). |
 | `ENCODER_REVERSED` / `MOTORS_REVERSED` | true / false | Flip `ENCODER_REVERSED` if the RPM reads negative while the wheel spins the right way. |
 | `WRITE_THRESHOLD` | 0.005 | Only writes motor power when it changes by more than this. |
@@ -126,7 +126,7 @@ Accel filtering (usually leave alone): `accelFilterAlphaDecel` (0.5), `accelFilt
 
 Check `RevAmped braking active` on telemetry to see when it's on.
 
-### 9. Rapid-fire (shootAll) — `ShooterCalc`
+### 9. Rapid-fire (burst) — `ShooterCalc`
 The burst comp is **off by default** (`burstCompEnabled = false`). Turn it on if balls 2+ of a burst fall short.
 
 | Symptom | Number | Direction |
@@ -135,12 +135,12 @@ The burst comp is **off by default** (`burstCompEnabled = false`). Turn it on if
 | Balls 2+ now go long | `burstSpeedSag` | Lower. |
 | Ball 1 affected by the comp | `burstCompDelayMs` (30) | Raise (must stay under the time between balls). |
 
-Only the right-trigger burst (`shootAll`) starts the comp's timer; single shots on A never use it.
+The comp's timer starts every time the robot starts shooting (`Robot.startShooting()`: right-trigger hold, and `Robot.shootCycle()` on A and in auto).
 
 `velCompEnabled` (false) with `velCompToward` / `velCompAway` (0 / 0) adds a hood offset (servo units) when driving toward/away from the goal. Leave it off unless moving shots miss short/long in one direction only and stationary shots are fine.
 
 ### 10. Shot check (can it go in?) — `ShotCheck`
-Every loop the planned shot is checked. **Shot** on telemetry shows `READY` or the reason it can't go in. With `Tele.REQUIRE_SHOT_ALLOWED` on (default), **TeleOp only feeds balls while the shot can go in**: holding the right trigger shoots, feeding pauses if the shot becomes impossible and resumes on its own. The gamepad rumbles while you try to shoot a shot that can't go in. Turn `REQUIRE_SHOT_ALLOWED` off to test shooting from anywhere.
+Every loop the planned shot is checked. **Shot** on telemetry shows `READY` or the reason it can't go in. With `Tele.REQUIRE_SHOT_ALLOWED` on (default), **TeleOp only shoots while the shot can go in**: holding the right trigger shoots, shooting pauses if the shot becomes impossible and resumes on its own. The gamepad rumbles while you try to shoot a shot that can't go in. Turn `REQUIRE_SHOT_ALLOWED` off to test shooting from anywhere.
 
 With the shot map or tuned points in use (normal HIVE play), the check asks the map whether the spot scores:
 

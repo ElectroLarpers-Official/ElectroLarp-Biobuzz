@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import static com.pedropathing.ivy.commands.Commands.instant;
-
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -23,20 +20,16 @@ public final class Latch {
         open = false;
     }
 
-    public Command open() {
-        return instant(() -> {
-            if (open) return;
-            open = true;
-            if (latch != null) latch.setPosition(OPEN_POS);
-        });
+    public void open() {
+        if (open) return;
+        open = true;
+        if (latch != null) latch.setPosition(OPEN_POS);
     }
 
-    public Command close() {
-        return instant(() -> {
-            if (!open) return;
-            open = false;
-            if (latch != null) latch.setPosition(CLOSED_POS);
-        });
+    public void close() {
+        if (!open) return;
+        open = false;
+        if (latch != null) latch.setPosition(CLOSED_POS);
     }
 
     public boolean isOpen() { return open; }

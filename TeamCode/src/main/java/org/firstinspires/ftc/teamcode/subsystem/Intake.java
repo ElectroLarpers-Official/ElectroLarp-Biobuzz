@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import static com.pedropathing.ivy.commands.Commands.instant;
-
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,21 +18,20 @@ public final class Intake {
     public static boolean REVERSED = true;            // FlywheelPIDFTest ran the intake at -1
     public static boolean TRANSFER_REVERSED = false;  // and the transfer at +1
 
-    public static double INTAKE = 1.0;
-    public static double OUTTAKE = -1.0;
-    public static double SLOW = -0.5; // slow reverse, used to clear a jam
-    public static double STOPPED = 0;
+    public static double ON_POWER = 1.0;
+    public static double REVERSE_POWER = -1.0;
+    public static double SLOW_REVERSE_POWER = -0.5; // used to clear a jam
 
     public enum IntakeState {
-        INTAKE,
-        OUTTAKE,
-        SLOW,
-        STOPPED
+        ON,
+        REVERSE,
+        SLOW_REVERSE,
+        OFF
     }
 
     private final CachedMotor motor;
     private final CachedMotor transferMotor; // null if "transfer" isn't configured
-    private IntakeState state = IntakeState.STOPPED;
+    private IntakeState state = IntakeState.OFF;
 
     public Intake(HardwareMap hw) {
         motor = new CachedMotor(hw, HardwareNames.INTAKE);
@@ -53,32 +49,24 @@ public final class Intake {
         if (transferMotor != null) transferMotor.setPower(power);
     }
 
-    public Command intake() {
-        return instant(() -> {
-            setPower(INTAKE);
-            state = IntakeState.INTAKE;
-        });
+    public void on() {
+        setPower(ON_POWER);
+        state = IntakeState.ON;
     }
 
-    public Command outtake() {
-        return instant(() -> {
-            setPower(OUTTAKE);
-            state = IntakeState.OUTTAKE;
-        });
+    public void reverse() {
+        setPower(REVERSE_POWER);
+        state = IntakeState.REVERSE;
     }
 
-    public Command slow() {
-        return instant(() -> {
-            setPower(SLOW);
-            state = IntakeState.SLOW;
-        });
+    public void slowReverse() {
+        setPower(SLOW_REVERSE_POWER);
+        state = IntakeState.SLOW_REVERSE;
     }
 
-    public Command stop() {
-        return instant(() -> {
-            setPower(STOPPED);
-            state = IntakeState.STOPPED;
-        });
+    public void off() {
+        setPower(0);
+        state = IntakeState.OFF;
     }
 
     public IntakeState getState() {

@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import static com.pedropathing.ivy.commands.Commands.instant;
-
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.ivy.Command;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -23,7 +20,7 @@ import java.util.List;
  * <ul>
  *   <li>Normally PIDF on motor RPM (Meta's PIDController in velocity mode): feedforward = kF * targetRPM / 5200,
  *       plus kP / kI / kD on the RPM error, all scaled by 12 V / battery voltage.</li>
- *   <li>While feeding (setFeeding(true), done by Robot when it shoots): bang-bang, BANG_POWER whenever the wheel
+ *   <li>While shooting (setShooting(true), done by Robot when it shoots): bang-bang, BANG_POWER whenever the wheel
  *       is more than DEADBAND_RPM under target, else 0. This recovers the wheel between balls.</li>
  * </ul>
  * The rest of the code still talks in motor encoder ticks/s (setTargetVelocity, velocity()); this class converts.
@@ -45,8 +42,8 @@ public final class Shooter {
     public static double kD = 0;
     public static double kF = 1.1;
 
-    // Meta's feeding behaviour.
-    public static boolean BANG_BANG_WHILE_FEEDING = false;
+    // Meta's behaviour while balls go through the wheel.
+    public static boolean BANG_BANG_WHILE_SHOOTING = false;
     public static double DEADBAND_RPM = 15;
     public static double BANG_POWER = 1.0;
 
@@ -66,7 +63,7 @@ public final class Shooter {
     private final ElapsedTime voltageTimer = new ElapsedTime();
 
     private double targetVelocity = 0;   // ticks/s
-    private boolean feeding = false;
+    private boolean shooting = false;
     private Mode mode = Mode.OFF;
     private double rpm = 0, power = 0, voltage = 12.0;
     private double lastWrittenPower = Double.NaN;
@@ -92,7 +89,7 @@ public final class Shooter {
 
         Mode next;
         if (targetVelocity <= 0) next = Mode.OFF;
-        else if (BANG_BANG_WHILE_FEEDING && feeding) next = Mode.BANG_BANG;
+        else if (BANG_BANG_WHILE_SHOOTING && shooting) next = Mode.BANG_BANG;
         else next = Mode.PIDF;
         // Fresh integral / derivative history whenever PIDF takes over.
         if (next == Mode.PIDF && mode != Mode.PIDF) pid.reset();
@@ -130,16 +127,14 @@ public final class Shooter {
     /** Target in motor encoder ticks/s. */
     public void setTargetVelocity(double ticksPerSecond) { targetVelocity = Math.max(0, ticksPerSecond); }
     public void setTargetRpm(double motorRpm) { setTargetVelocity(motorRpm * TICKS_PER_REV / 60.0); }
-    /** True while balls are being fed: switches to bang-bang (if enabled). */
-    public void setFeeding(boolean feeding) { this.feeding = feeding; }
-    public Command partyMode() { return instant(() -> setTargetVelocity(PARTY_MODE_VELOCITY)); }
-    public Command stop() {
-        return instant(() -> {
-            targetVelocity = 0;
-            mode = Mode.OFF;
-            power = 0;
-            writePower(0);
-        });
+    /** True while balls are going through the wheel: switches to bang-bang (if enabled). */
+    public void setShooting(boolean shooting) { this.shooting = shooting; }
+    public void partyMode() { setTargetVelocity(PARTY_MODE_VELOCITY); }
+    public void stop() {
+        targetVelocity = 0;
+        mode = Mode.OFF;
+        power = 0;
+        writePower(0);
     }
 
     public boolean isSpinning() { return targetVelocity > 0; }
@@ -152,5 +147,5 @@ public final class Shooter {
     public double power() { return power; }
     public double voltage() { return voltage; }
     public Mode mode() { return mode; }
-    public boolean feeding() { return feeding; }
+    public boolean isShooting() { return shooting; }
 }
