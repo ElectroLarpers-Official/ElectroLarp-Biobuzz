@@ -91,8 +91,8 @@ public final class Turret {
     // for good: delete this block, then fix every other "TODO delete" (setPositionAll -> setPosition, Turret(hw, x)
     // -> Turret(hw)).
     // turretServo2-4 directions, true = REVERSE: live like REVERSE_SERVO_1 (change them with the turret at center).
-    public static boolean REVERSE_SERVO_2 = false;
-    public static boolean REVERSE_SERVO_3 = true;
+    public static boolean REVERSE_SERVO_2 = true;
+    public static boolean REVERSE_SERVO_3 = false;
     public static boolean REVERSE_SERVO_4 = true;
     // Only with Turret(hw, true) and only the ones in the config (null otherwise). Written by setPositionAll, never by
     // setPosition. Separate fields, not a list, so setPositionAll writes them one after another without a loop.
