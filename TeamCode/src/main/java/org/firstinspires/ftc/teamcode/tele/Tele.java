@@ -42,6 +42,9 @@ public class Tele extends CommandOpMode {
     public static double RPM_TRIM_STEP = 25, HOOD_TRIM_STEP = 0.005, TURRET_TRIM_STEP_DEG = 1;
     /** Driver 2 right stick dead band in manual mode. */
     public static double MANUAL_STICK_DEADBAND = 0.05;
+    /** Driver Station + Panels telemetry is built and sent at most this often, ms (it costs a few ms each time).
+     *  The robot loop itself runs every cycle regardless. 100 = 10 updates/s; 0 = every loop. */
+    public static double TELEMETRY_PERIOD_MS = 100;
 
     private final Alliance a;
     private Robot robot;
@@ -49,6 +52,7 @@ public class Tele extends CommandOpMode {
     private Command shootCycle;
     private TeleTelemetry tele;
     private long lastExecNanos = 0;
+    private long lastTelemetryNanos = 0;
 
     public Tele(Alliance a) {
         this.a = a;
@@ -58,11 +62,7 @@ public class Tele extends CommandOpMode {
 
     @Override
     public void initialize() {
-        // Build the Pulse follower and attach it to PulseRuntime BEFORE constructing Robot,
-        // because Robot reads it with PulseRuntime.follower(). This OpMode isn't a PulseOpMode,
-        // so nothing attaches the follower for us — we do it here, the one thing PulseOpMode.init
-        // would otherwise do. (configurePedro is a PulseOpMode instance method and can't be used here.)
-        PulseRuntime.attach((PulseFollower) Constants.create(hardwareMap));
+        // Robot builds the Pulse follower and attaches it to PulseRuntime itself (one follower, one Pinpoint setup).
         robot = new Robot(hardwareMap, a);
         robot.follower.setPose(startPose());
         robot.follower.update();
@@ -79,7 +79,11 @@ public class Tele extends CommandOpMode {
             robot.update();
             robot.drive(-gp1.left_stick_y.getVal(), -gp1.left_stick_x.getVal(), -gp1.right_stick_x.getVal(),
                     forwardOffsetRad());
-            tele.update(shotOverride(), turretOffset()); //TODO turn off later
+            long now = System.nanoTime();
+            if ((now - lastTelemetryNanos) / 1e6 >= TELEMETRY_PERIOD_MS) {
+                lastTelemetryNanos = now;
+                tele.update(shotOverride(), turretOffset()); //TODO turn off later
+            }
         }));
     }
 

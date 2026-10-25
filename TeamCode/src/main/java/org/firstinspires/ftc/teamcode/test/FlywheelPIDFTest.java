@@ -175,7 +175,7 @@ public class FlywheelPIDFTest extends CommandOpMode {
             ShotCheck.blockUnderHive();
             return;
         }
-        Double[] result = ShooterCalc.solve(robotPose.heading(), turretToGoal, Vector2D.zero(), Vector2D.zero(), 0.0);
+        double[] result = ShooterCalc.solve(robotPose.heading(), turretToGoal, Vector2D.zero(), Vector2D.zero(), 0.0);
         ShotCheck.check(alliance, goal);
         TARGET_RPM = ShooterCalc.requiredRPM;   // motor RPM (20T motor -> 40T flywheel)
         if (hood != null && AUTO_HOOD) hood.setPosition(result[1]);

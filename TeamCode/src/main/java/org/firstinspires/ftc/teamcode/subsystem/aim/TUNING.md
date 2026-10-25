@@ -38,7 +38,7 @@ The turret angle is turned into a servo position from the gearing: `servo positi
 | `TurretCalc.SERVO_REVERSED` | false | Set true if a positive angle turns the turret clockwise (positive should be counter-clockwise, to the robot's left). |
 | `SERVO_GEAR_TEETH` / `STAGE1_DRIVEN_TEETH` / `STAGE2_DRIVE_TEETH` / `TURRET_RING_TEETH` | 48 / 15 / 33 / 61 | Only if the gears change. |
 | `TurretCalc.MIN_ANGLE` / `MAX_ANGLE` | -224.75 / 224.75 | Soft limits (degrees from straight ahead), e.g. for wiring. Must stay inside what the servos reach (about ±307° with the defaults). |
-| `Turret.TURRET_FORWARD_OFFSET` / `TURRET_STRAFE_OFFSET` | 0 / 0 | Turret pivot distance from the Pinpoint/Pedro pose point, inches (forward +, left +). Currently 0: the code aims from the robot pose itself (CAD puts the axis 1.571 in behind centre, not applied). |
+| `Turret.TURRET_FORWARD_OFFSET` / `TURRET_STRAFE_OFFSET` | 0 / 0 | Turret pivot distance from the Pinpoint/Pedro pose point, inches (forward +, left +). 0 from CAD: the turret axis is on the robot's centre of rotation (middle of the four wheel axles), and the Pinpoint pod offsets in `pedro/Constants` are measured from that point. If the pod offsets move the pose point, change these to match. |
 | `Turret.SERVO_THRESHOLD` | 0.0002 | Only writes the servo if the position moved more than this. Raise if the turret buzzes while still; lower if it moves in visible steps. |
 
 Use `TurretTrackingTest` (needs only the Pinpoint and the turret servo): push/spin the robot by hand and the turret should keep pointing at the cell.
@@ -128,11 +128,13 @@ Check `RevAmped braking active` on telemetry to see when it's on.
 
 ### 9. Rapid-fire (burst) — `ShooterCalc`
 The burst comp is **off by default** (`burstCompEnabled = false`). Turn it on if balls 2+ of a burst fall short.
+While feeding, it re-aims the hood for the slower ball the sagging flywheel throws. By default (`burstCompUseMeasured = true`) the sag is measured every loop from the flywheel's real speed vs its target, so there is no sag number to tune. The hood moves toward the angle that needs the least speed (for every current tuned point that means steeper), and if the ball is too slow to reach at any angle it stops at that angle instead of jumping to a hood limit. Watch `lastBurstSag` / `lastBurstHoodDeltaDeg` in Panels during a burst.
 
 | Symptom | Number | Direction |
 |---|---|---|
-| Ball 1 lands, balls 2+ fall short | `burstCompEnabled` → `true`, then `burstSpeedSag` (0.03) | Raise `burstSpeedSag`. Log flywheel RPM during a burst to measure the real drop. |
-| Balls 2+ now go long | `burstSpeedSag` | Lower. |
+| Ball 1 lands, balls 2+ fall short | `burstCompEnabled` → `true` | Measured sag, nothing else to set. |
+| Hood twitches on small dips | `burstCompDeadband` (0.01) | Raise (fraction of target speed ignored). |
+| Prefer a fixed sag | `burstCompUseMeasured` → `false`, then `burstSpeedSag` (0.08) | 300 RPM drop at ~3700 RPM ≈ 0.08. |
 | Ball 1 affected by the comp | `burstCompDelayMs` (30) | Raise (must stay under the time between balls). |
 
 The comp's timer starts every time the robot starts shooting (`Robot.startShooting()`: right-trigger hold, and `Robot.shootCycle()` on A and in auto).
@@ -165,8 +167,9 @@ Only if neither a tuned point nor the map gives a shot (map off or failed to loa
 | `TABLE_SPEED_WINDOW_USE` | 0.8 | Share of the map's speed window the flywheel may use; the rest is left for hood error. |
 | `ALLOW_OTHER_HIVE_DEPENDENT` | true | Off = refuse spots that only score with the other HIVE tilted a particular way. |
 | `APERTURE_MARGIN` | 0.5 in | Allowed shots still miss the edges → raise. Too many spots rejected → lower. |
-| `MAX_INCIDENCE_DEG` | 70 | (Geometry check only.) Steep side shots bounce off the cell's side walls → lower. |
-| `WINDOW_*`, `*_HIVE_*`, `FRAME_*`, `HIVE_BOTTOM/TOP` | manual / visualizer | Field geometry for the geometry check. Correct from the field CAD if a check is clearly wrong. |
+| `WINDOW_*`, `*_HIVE_*`, `HIVE_BOTTOM/TOP` | manual / visualizer | Field geometry for the fallback geometry check. Correct from the field CAD if a check is clearly wrong. |
+
+The **geometry check** only runs when the shot came from neither a tuned point nor the map (tuned points switched off). It checks flywheel / turret limits, ball falling at the window, coming from the cell's side, the other HIVE in the way, and the window's room for error.
 
 **Ready to shoot** (`Robot.readyToShoot()`) = the shot can go in **and** the turret command is within the turret tolerance **and** the flywheel is within the flywheel tolerance. It is shown on telemetry (`Shot: READY`) but does **not** stop TeleOp from shooting; only "can it go in" does. The turret part only checks that the turret command has caught up with the target (the servo has no feedback), not that the turret is really there.
 - Turret tolerance = how much room the window leaves beside the ball, from where you are. The window looks narrower from the side.
@@ -185,7 +188,7 @@ For every release point on a 2 in grid (x and y from 10.5 to 132.5 in) and each 
 
 | Number | Default | Change when |
 |---|---|---|
-| `ShooterCalc.USE_AIM_TABLE` | true | Off = old fixed aim height / entry angle (`hiveAimHeight`, `hiveEntryDeg`). |
+| `ShooterCalc.USE_AIM_TABLE` | **false** (off since 2026-10-25: tuned points replaced it) | On = use the map again (also set `MAP_FALLBACK` on to use it where no tuned point is close). The map is not even loaded while off. |
 | `HiveAimTable.MAX_BLEND_SPREAD_DEG` | 4.0° | Neighbouring grid spots are blended only when their launch angles are this close; across a bigger jump (lob vs direct shot) the nearest spot is used. |
 | `HiveAimTable.OFF_GRID_MARGIN_IN` | 2.0 in | Further than this outside the grid counts as "no shot". |
 
@@ -207,7 +210,7 @@ Workflow:
 | Number | Default | Change when |
 |---|---|---|
 | `USE_TUNED_POINTS` | true | Off = shot map only. |
-| `MAP_FALLBACK` | true | Off = no shot at all where no tuned point is close enough (`NO_TUNED_POINT`). |
+| `MAP_FALLBACK` | **false** | Off = no shot where no tuned point is close enough (`NO_TUNED_POINT`); flywheel and hood still follow the nearest tuned point, and driver 2's override (LT) can still shoot. On = shot map there (needs `USE_AIM_TABLE`). |
 | `MAX_POINT_DIST_IN` | 18 in | How far a tuned point reaches. |
 | `ONE_CELL_FOR_ALL` | true | Every point is stored for the red audience cell and mirrored to the other three: red far = flipped across y = 72, blue audience = flipped across x = 72, blue far = both. Off = tune cells separately. |
 | `MIRROR_BLUE` | true | Only with `ONE_CELL_FOR_ALL` off: blue uses the red points turned 180°. |

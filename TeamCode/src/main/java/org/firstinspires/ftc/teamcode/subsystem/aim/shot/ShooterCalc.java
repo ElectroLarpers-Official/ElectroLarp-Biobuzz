@@ -94,8 +94,10 @@ public class ShooterCalc {
     // usually above the real 58.4 in window centre and grows with range. SOTM still works: the table is read at
     // the virtual release point the lead solve ends at.
 
-    /** Use the shot-map table for score height, entry angle and flight time. Off = old 65 in / -50 deg. */
-    public static boolean USE_AIM_TABLE = true;
+    /** Use the shot-map table for score height, entry angle and flight time. Off = old 65 in / -50 deg.
+     *  OFF (2026-10-25): the hand-tuned points (TunedShotTable) replace the map. The map is not loaded or read
+     *  while this is off; the code and data are kept for later. */
+    public static boolean USE_AIM_TABLE = false;
 
     private static final HiveAimTable.Shot tableShot = new HiveAimTable.Shot();
     private static boolean tableShotOk = false;
@@ -207,11 +209,22 @@ public class ShooterCalc {
     // ---- Hood compensation (RevAmped's SimpleShooterMath) --------------------
     // Two independent hood offsets: (1) in-burst sag comp, (2) latched velocity comp.
 
-    /** Fraction of ball exit speed the later balls in a burst lose to flywheel sag.
-     *  MEASURE THIS: log flywheel TPS through a burst and map the drop at ball 2's exit
-     *  back to ball speed. 0.03 is a starting estimate. */
-    public static double burstSpeedSag = 0.03; // TODO(new robot): old-robot value
+    /** Burst comp: while feeding, re-aim the hood for the slower ball the sagging flywheel throws.
+     *  The hood moves toward the launch angle that needs the least speed: steeper on flat shots, flatter on
+     *  lob shots (the line between them is about 60-67 deg, depending on range). */
     public static boolean burstCompEnabled = false;
+    /** true: the sag is measured, from the flywheel's real speed vs its target each loop.
+     *  false: a fixed burstSpeedSag is assumed for every ball after the first. */
+    public static boolean burstCompUseMeasured = true;
+    /** Only with burstCompUseMeasured off: fraction of exit speed the later balls lose.
+     *  A 300 RPM drop at ~3700 RPM is about 0.08. */
+    public static double burstSpeedSag = 0.08;
+    /** Sag smaller than this is ignored (no hood change), fraction of the target speed. */
+    public static double burstCompDeadband = 0.01;
+    /** Largest sag the comp will correct for, fraction (beyond this it's a stall, not a sag). */
+    public static double burstCompMaxSag = 0.20;
+    /** Written by Robot each loop: the flywheel's measured speed, motor ticks/s. */
+    public static double flywheelTps = 0.0;
     /** Delay from feed start to applying the comp. 30 ms lands after ball 1 exits and
      *  leaves the hood servo time to move before ball 2. */
     public static double burstCompDelayMs = 30.0; // TODO(new robot): old-robot value
@@ -219,6 +232,8 @@ public class ShooterCalc {
     public static boolean burstCompActive = false;
     /** Hood change the burst comp applied last loop, degrees. Telemetry. */
     public static double lastBurstHoodDeltaDeg = 0.0;
+    /** Measured flywheel sag last loop while feeding, fraction of target (0.08 = 8% under). Telemetry. */
+    public static double lastBurstSag = 0.0;
 
     /** Velocity comp, LATCHED: direction is decided when speed first crosses the threshold
      *  and held until it drops back under. Offsets stay 0 until moving shots show a
@@ -239,7 +254,7 @@ public class ShooterCalc {
         hiveSideLatched = false;
         tableShotOk = false;
         lastCell = null;
-        HiveAimTable.load();
+        if (USE_AIM_TABLE) HiveAimTable.load();   // shot map off: don't unpack it
         TunedShotTable.load();
         filteredAlongTrackAccel = 0.0;
         revAmpedActive = false;
@@ -367,8 +382,14 @@ public class ShooterCalc {
         return Math.toRadians(hiveEntryDeg + hiveEntryTrimDeg);
     }
 
+    /** Reused result of solveStatic (no allocation per loop). Read it before the next solveStatic call. */
+    private static final double[] staticOut = new double[2];
+
+    /** (range, score height, entry angle) -> {launch angle rad, exit speed in/s}. The returned array is reused:
+     *  read it before calling again. */
     public static double[] solveStatic(double range, double height, double entry) {
-        if (range <= 1e-6) return new double[]{hoodMaxRad(), 0.0};
+        double[] out = staticOut;
+        if (range <= 1e-6) { out[0] = hoodMaxRad(); out[1] = 0.0; return out; }
 
         double hood = Math.atan(2.0 * height / range - Math.tan(entry));
         if (isNaN(hood)) hood = hoodMaxRad();
@@ -378,11 +399,35 @@ public class ShooterCalc {
         if (denom <= 0.0) {
             hood = hoodMaxRad();
             denom = 2.0 * Math.pow(Math.cos(hood), 2) * (range * Math.tan(hood) - height);
-            if (denom <= 0.0) return new double[]{hood, 0.0};
+            if (denom <= 0.0) { out[0] = hood; out[1] = 0.0; return out; }
         }
         double speed = Math.sqrt(G_IN * range * range / denom);
         if (isNaN(speed) || Double.isInfinite(speed)) speed = 0.0;
-        return new double[]{hood, speed};
+        out[0] = hood; out[1] = speed;
+        return out;
+    }
+
+    /**
+     * Launch angle (rad) that puts a ball of exit speed {@code v} (in/s) through the same score point
+     * ({@code range} in, {@code height} in above the release) as the planned shot, the one nearest
+     * {@code planned} (the planned launch angle). Same no-drag model solveStatic uses, so for a tuned point it
+     * is exact at the tuned speed.
+     *
+     * <p>Two angles reach the point when the ball is fast enough: the flat one and the lob. Taking the nearest
+     * one moves the hood toward the least-speed angle: steeper for flat shots, flatter for lobs. Too slow for
+     * either: the least-speed angle itself (closest the ball can get), never a wild value.
+     */
+    static double hoodForSpeed(double range, double height, double v, double planned) {
+        double minSpeedAngle = Math.atan((height + Math.hypot(height, range)) / range);
+        if (v <= 0.0 || range <= 1e-6) return minSpeedAngle;
+        // range*tan(th) - g r^2 (1 + tan^2) / (2 v^2) = height  ->  a T^2 - r T + (a + h) = 0, T = tan(th)
+        double a = G_IN * range * range / (2.0 * v * v);
+        double disc = range * range - 4.0 * a * (a + height);
+        if (disc < 0.0) return minSpeedAngle;
+        double sq = Math.sqrt(disc);
+        double flat = Math.atan((range - sq) / (2.0 * a));
+        double lob = Math.atan((range + sq) / (2.0 * a));
+        return (planned <= minSpeedAngle) ? flat : lob;
     }
 
     public static double normalizeDegrees(double degrees) {
@@ -404,12 +449,20 @@ public class ShooterCalc {
             hiveAimFar = false;
         }
         // Alliance picks the HIVE (red -> red HIVE, blue -> blue HIVE); field side picks the cell.
-        Pose aim = ShooterConstants.hiveAimPoint(red, hiveAimFar);
+        // The Pose is cached per cell and only rebuilt when the aim point changes (e.g. edited in Panels).
+        int i = (red ? 0 : 2) + (hiveAimFar ? 1 : 0);
+        double ax = ShooterConstants.hiveAimX(red, hiveAimFar), ay = ShooterConstants.hiveAimY(red, hiveAimFar);
+        Pose aim = goalCache[i];
+        if (aim == null || aim.x() != ax || aim.y() != ay) {
+            aim = new Pose(ax, ay);
+            goalCache[i] = aim;
+        }
         lastCell = HiveAimTable.Cell.of(red, hiveAimFar);
-        lastGoalX = aim.x();
-        lastGoalY = aim.y();
+        lastGoalX = ax;
+        lastGoalY = ay;
         return aim;
     }
+    private static final Pose[] goalCache = new Pose[4];
 
     public static boolean hiveAimFar() { return hiveAimFar; }
 
@@ -422,7 +475,11 @@ public class ShooterCalc {
         return dragTimeFactor * (range / horizontal);
     }
 
-    public static Double[] solve(
+    /** Reused result of solve: {motor ticks/s, hood servo position, turret heading deg}. Read it before the next
+     *  solve call. */
+    private static final double[] solveOut = new double[3];
+
+    public static double[] solve(
             double robotHeading, Vector2D robotToGoalVector, Vector2D robotVel,
             Vector2D robotAccel, double robotAngularVelocity) {
 
@@ -548,9 +605,11 @@ public class ShooterCalc {
         double virtualX = projectedRange;
         double virtualY = 0.0;
         int iterations = 0;
-        boolean converged = false;
+        // No lead (SOTM off or too slow): the virtual release point is the projected one, which the lookup above
+        // already used, so there is nothing to iterate.
+        boolean converged = !sotmActive;
 
-        for (int i = 0; i < maxIterations; i++) {
+        for (int i = 0; i < maxIterations && sotmActive; i++) {
             iterations = i + 1;
             virtualX = projectedRange - leadGain * parallelComponent * tf;
             virtualY = -leadGain * perpendicularComponent * tf;
@@ -572,13 +631,14 @@ public class ShooterCalc {
         lastConverged = converged;
         lastFlightTime = tf;
 
-        // Shot map at the final virtual release point -> score height / entry angle for the solver.
-        queryAimTable(virtualRange, goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX));
+        // The last lookup (above, or the loop's last pass) was already at the final virtual release point, so its
+        // score height / entry angle are the ones the solver needs: no extra lookup.
         lastAimHeight = targetHeight(virtualRange);
         lastEntryDeg = Math.toDegrees(entryAngle(virtualRange));
         double[] sol = solveStatic(virtualRange, lastAimHeight, Math.toRadians(lastEntryDeg));
         double hoodAngle = sol[0];
         double launchSpeed = sol[1];
+        double solvedHoodRad = hoodAngle;
         double ballSpeedMps = launchSpeed / 39.37;
 
         double virtualBearing = goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX);
@@ -599,26 +659,22 @@ public class ShooterCalc {
         requiredRPM = tps * 60.0 / MOTOR_TICKS_PER_REV;
 
         lastBurstHoodDeltaDeg = 0.0;
-        if (burstCompEnabled && burstCompActive && burstSpeedSag > 0.0 && launchSpeed > 0.0) {
-            double r = virtualRange;
-            double h = targetHeight(virtualRange);
-            double v = launchSpeed * (1.0 - burstSpeedSag);
-            double a = G_IN * r * r / (2.0 * v * v);
-            double disc = r * r - 4.0 * a * (a + h);
-            double compHood = Double.NaN;
-            if (disc >= 0.0) {
-                double tLow = Math.atan((r - Math.sqrt(disc)) / (2.0 * a));
-                double tHigh = Math.atan((r + Math.sqrt(disc)) / (2.0 * a));
-                compHood = (Math.abs(tLow - hoodAngle) <= Math.abs(tHigh - hoodAngle)) ? tLow : tHigh;
-            } else if (v * v - 2.0 * G_IN * h > 0.0) {
-                compHood = Math.atan(v / Math.sqrt(v * v - 2.0 * G_IN * h));
+        if (burstCompEnabled && burstCompActive && launchSpeed > 0.0) {
+            double sag;
+            if (burstCompUseMeasured) {
+                sag = tps > 0.0 ? 1.0 - flywheelTps / tps : 0.0;   // measured: how far under target it is now
+            } else {
+                sag = burstSpeedSag;
             }
-            if (!isNaN(compHood)) {
-                compHood = clamp(compHood, hoodMinRad(), hoodMaxRad());
-                lastBurstHoodDeltaDeg = Math.toDegrees(compHood - hoodAngle);
-                hoodAngle = compHood;
+            if (sag > burstCompDeadband) {
+                sag = Math.min(sag, burstCompMaxSag);
+                double comp = hoodForSpeed(virtualRange, lastAimHeight, launchSpeed * (1.0 - sag), hoodAngle);
+                comp = clamp(comp, hoodMinRad(), hoodMaxRad());
+                lastBurstHoodDeltaDeg = Math.toDegrees(comp - hoodAngle);
+                hoodAngle = comp;
             }
         }
+        lastBurstSag = burstCompActive ? (tps > 0.0 ? 1.0 - flywheelTps / tps : 0.0) : 0.0;
 
         double hoodDegrees = Math.toDegrees(hoodAngle);
         // Hood launch angle (deg) -> servo position (two-point calibration, see hoodServoPosition).
@@ -643,7 +699,7 @@ public class ShooterCalc {
 
         lastSolveOk = launchSpeed > 0.0 && !isNaN(tf) && tf > 0.0;
         lastLaunchSpeed = launchSpeed;
-        lastLaunchHoodRad = sol[0];
+        lastLaunchHoodRad = solvedHoodRad;
         lastProjectedBearing = goalTheta + projectedBearingShift;
         lastRange = x;
         lastProjectedRange = projectedRange;
@@ -651,6 +707,9 @@ public class ShooterCalc {
         lastHeadingAngle = headingAngle;
         lastSotmActive = sotmActive;
 
-        return new Double[]{tps, hoodTime, headingAngle};
+        solveOut[0] = tps;
+        solveOut[1] = hoodTime;
+        solveOut[2] = headingAngle;
+        return solveOut;
     }
 }

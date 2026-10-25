@@ -40,6 +40,17 @@ public class ShooterConstants {
         return far ? new Pose(HIVE_BLUE_TOP_X, HIVE_BLUE_TOP_Y) : new Pose(HIVE_BLUE_BOTTOM_X, HIVE_BLUE_BOTTOM_Y);
     }
 
+    /** x of hiveAimPoint(red, far), without building a Pose (ShooterCalc.goal runs every loop). */
+    public static double hiveAimX(boolean red, boolean far) {
+        if (USE_MAP_AIM_POINTS) return red ? (far ? MAP_RED_TOP_X : MAP_RED_BOTTOM_X) : (far ? MAP_BLUE_TOP_X : MAP_BLUE_BOTTOM_X);
+        return red ? (far ? HIVE_RED_TOP_X : HIVE_RED_BOTTOM_X) : (far ? HIVE_BLUE_TOP_X : HIVE_BLUE_BOTTOM_X);
+    }
+    /** y of hiveAimPoint(red, far). */
+    public static double hiveAimY(boolean red, boolean far) {
+        if (USE_MAP_AIM_POINTS) return red ? (far ? MAP_RED_TOP_Y : MAP_RED_BOTTOM_Y) : (far ? MAP_BLUE_TOP_Y : MAP_BLUE_BOTTOM_Y);
+        return red ? (far ? HIVE_RED_TOP_Y : HIVE_RED_BOTTOM_Y) : (far ? HIVE_BLUE_TOP_Y : HIVE_BLUE_BOTTOM_Y);
+    }
+
     /** Aim at the alliance's own HIVE (red -> red HIVE, blue -> blue HIVE), at the cell on the robot's side
      *  of the field: robot y below the split -> audience cell, above -> far cell. Only the up-cell can be scored,
      *  and it can only be entered from its own side, so drive to the side whose

@@ -20,9 +20,11 @@ public final class Turret {
     private final List<String> missing = new ArrayList<>();
     private double LAST_POSITION = -1;
     public static double SERVO_THRESHOLD = 0.0002; // TODO(new robot): old-robot value
-    // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot.
-    public static double TURRET_FORWARD_OFFSET = 0; // aim from the robot pose itself (CAD has the axis 1.571 in behind centre; not applied)
-    public static double TURRET_STRAFE_OFFSET = 0; // TODO(new robot): old-robot value
+    // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot: the
+    // turret bearing is centred on the robot's centre of rotation (middle of the four wheel axles) to within 0.01 mm,
+    // and the Pinpoint pod offsets make that point the pose point, so both are 0. Only valid with those pod offsets.
+    public static double TURRET_FORWARD_OFFSET = 0;
+    public static double TURRET_STRAFE_OFFSET = 0;
     /** Servo position with the turret straight ahead. */
     public static final double CENTER = 0.5;
     // turretServo1 direction, true = REVERSE. Changes in Panels apply live, on the next position write. Change it with
@@ -57,6 +59,7 @@ public final class Turret {
     }
 
     public static Pose getTurretPose(Pose robotPose) {
+        if (TURRET_FORWARD_OFFSET == 0 && TURRET_STRAFE_OFFSET == 0) return robotPose; // pivot on the pose point
         double heading = robotPose.heading();
         double cos = Math.cos(heading);
         double sin = Math.sin(heading);

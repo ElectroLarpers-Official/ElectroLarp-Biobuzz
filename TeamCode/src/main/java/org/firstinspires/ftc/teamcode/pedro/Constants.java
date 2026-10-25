@@ -45,12 +45,13 @@ public class Constants {
     public static PinpointConfig localizerConfig = new PinpointConfig(
             c -> {
                 c.name.set(HardwareNames.PINPOINT);
-                // Pod offsets from the new robot's CAD (Oct 2026), inches from the frame centre
-                // (midway between the backplate and the front of the side panels; intake end is front).
+                // Pod offsets from the new robot's CAD (Oct 2026), inches from the centre of rotation, which is
+                // the pose point Pedro tracks. That is the middle of the four wheel axles, and the turret axis
+                // sits on it (see Turret.TURRET_FORWARD_OFFSET). Intake end is front.
                 // xPodOffset: forward pod's sideways offset, left +. It is 3.87 in left of centre.
-                // yPodOffset: strafe pod's forward offset, forward +. It is 6.80 in behind centre.
+                // yPodOffset: strafe pod's forward offset, forward +. It is 5.47 in behind centre.
                 c.xPodOffset.set(3.87);
-                c.yPodOffset.set(-6.80);
+                c.yPodOffset.set(-5.47);
                 c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
                 c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.REVERSED);
             }

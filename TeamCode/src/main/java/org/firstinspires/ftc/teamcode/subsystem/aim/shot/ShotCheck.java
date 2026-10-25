@@ -13,15 +13,12 @@ public final class ShotCheck {
     public enum Result {
         OK("ok"),
         NO_SOLUTION("no trajectory reaches the aim point"),
-        PAST_FLYWHEEL_FIT("too far: past the flywheel speed fit"),
         FLYWHEEL_LIMIT("too far: flywheel can't spin that fast"),
         TURRET_LIMIT("turret can't rotate that far"),
         TOO_CLOSE("too close: ball still rising at the opening"),
         BEHIND_WINDOW("behind the cell opening"),
-        TOO_EDGE_ON("too far to the side of the cell opening"),
         WINDOW_TOO_NARROW("opening looks narrower than the ball from here"),
         BLOCKED_OTHER_HIVE("other alliance's HIVE is in the way"),
-        BLOCKED_FRAME("HIVE frame is in the way"),
         NOT_ON_MAP("shot map: no scoring shot from here"),
         UNDER_HIVE("under the HIVE: holding fixed RPM / hood, no shot"),
         TOO_TIGHT("shot map: shot too tight (speed window not over the minimum)"),
@@ -49,14 +46,9 @@ public final class ShotCheck {
      *  the tolerances don't model (hood servo error, ball variation, pose error). */
     public static double APERTURE_MARGIN = 0.5; // TODO: tune
 
-    // ---- CELL opening (manual 9.6.2 + the solver's HIVE model) ------------------
+    // ---- CELL opening (manual 9.6.2) ---------------------------------------------
     public static double WINDOW_WIDTH = 20.0;   // across the field (x)
     public static double WINDOW_HEIGHT = 14.0;  // along the tilted opening
-    /** The opening's outward normal points this far above horizontal, degrees. */
-    public static double WINDOW_NORMAL_ELEVATION_DEG = 30.0;
-    /** Most edge-on the ball may arrive, degrees from the opening's normal. The flat-opening
-     *  model gets optimistic near 90, where the cell's side walls start to matter. */
-    public static double MAX_INCIDENCE_DEG = 70.0;
 
     // ---- Obstacles (Pedro inches) --------------------------------------------
     // TODO: field geometry below is from Competition Manual V1 9.6, Team Update 01 and the Pedro visualizer
@@ -69,14 +61,8 @@ public final class ShotCheck {
     public static double HIVE_BOTTOM = 30.6;
     /** Up-cell apex (manual figure 9-10, as used by the solver's HIVE model). */
     public static double HIVE_TOP = 65.6;
-    /** Frame: two triangular end plates at x = 72 +/- 24.73 (49.46 wide), base 38.95 deep,
-     *  apex at the pivot axis, 43.95 in up (manual 9.6.1). */
-    public static double FRAME_X_MIN = 47.27, FRAME_X_MAX = 96.73;
-    public static double FRAME_CENTER_Y = 72.0;
-    public static double FRAME_HALF_DEPTH = 19.475;
-    public static double FRAME_APEX_HEIGHT = 43.95;
 
-    /** Samples along the flight for the obstacle check. */
+    /** Samples along the flight for the other-HIVE check (fallback check only). */
     public static int FLIGHT_SAMPLES = 40;
 
     // ---- Outputs -----------------------------------------------------------
@@ -85,8 +71,6 @@ public final class ShotCheck {
     public static double lastTurretToleranceDeg = 0.0;
     /** Flywheel speed error the opening leaves room for, ticks/s. */
     public static double lastFlywheelToleranceTps = 0.0;
-    /** Angle between the ball's path and the opening's normal, degrees. Telemetry. */
-    public static double lastIncidenceDeg = 0.0;
 
     private ShotCheck() {}
 
@@ -107,20 +91,29 @@ public final class ShotCheck {
     public static void blockUnderHive() {
         lastTurretToleranceDeg = 0.0;
         lastFlywheelToleranceTps = 0.0;
-        lastIncidenceDeg = 0.0;
         lastResult = Result.UNDER_HIVE;
     }
 
     public static boolean check(Alliance alliance, Pose goal) {
         lastTurretToleranceDeg = 0.0;
         lastFlywheelToleranceTps = 0.0;
-        lastIncidenceDeg = 0.0;
         lastResult = evaluate(alliance, goal, !TurretCalc.outOfRange());
         return allowed();
     }
 
     private static Result evaluate(Alliance alliance, Pose goal, boolean turretInRange) {
         if (ShooterCalc.aimTableInUse()) return evaluateTable(turretInRange);
+        return evaluateGeometry(alliance, goal, turretInRange);
+    }
+
+    /**
+     * Fallback check, for a shot from the plain physics solver (fixed hiveAimHeight / hiveEntryDeg). Only runs
+     * when this loop's shot came from neither a tuned point nor the shot map: tuned points switched off
+     * (USE_TUNED_POINTS false), or a cell with no tuned points at all. It asks only what that solver can answer:
+     * can the flywheel and turret do it, is the ball falling and coming from the cell's own side at the window,
+     * does the other alliance's HIVE block it, and how much aim / speed error the window leaves room for.
+     */
+    private static Result evaluateGeometry(Alliance alliance, Pose goal, boolean turretInRange) {
         double v = ShooterCalc.lastLaunchSpeed;
         double hood = ShooterCalc.lastLaunchHoodRad;
         double tf = ShooterCalc.lastFlightTime;
@@ -128,74 +121,61 @@ public final class ShotCheck {
         double virtualRange = ShooterCalc.lastVirtualRange;
 
         if (!ShooterCalc.lastSolveOk || v <= 0 || tf <= 0) return Result.NO_SOLUTION;
-        if (v / 39.37 > ShooterCalc.maxFitBallSpeedMps()) return Result.PAST_FLYWHEEL_FIT;
         if (ShooterCalc.requiredTPS > MAX_FLYWHEEL_TPS) return Result.FLYWHEEL_LIMIT;
-
         if (!turretInRange) return Result.TURRET_LIMIT;
 
-        double bearing = ShooterCalc.lastProjectedBearing;
-        double cb = Math.cos(bearing), sb = Math.sin(bearing);
-        double launchX = goal.x() - range * cb;
-        double launchY = goal.y() - range * sb;
-        double z0 = ShooterCalc.launchHeight;
+        double g = ShooterCalc.gravity();
         double vz0 = v * Math.sin(hood);
         double vh = range / tf;
-        double vzEnd = vz0 - ShooterCalc.gravity() * tf;
-        double speedEnd = Math.hypot(vh, vzEnd);
-        double dx = vh * cb / speedEnd, dy = vh * sb / speedEnd, dz = vzEnd / speedEnd;
-        double descent = Math.atan2(-vzEnd, vh);
-
+        double vzEnd = vz0 - g * tf;
         if (vzEnd >= 0) return Result.TOO_CLOSE;
 
+        // The cell opens toward its own side of the field (+y for the far cell, -y for the audience cell):
+        // the ball has to be travelling toward the HIVE from that side.
+        double bearing = ShooterCalc.lastProjectedBearing;
         double side = ShooterCalc.hiveAimFar() ? 1.0 : -1.0;
-        double elev = Math.toRadians(WINDOW_NORMAL_ELEVATION_DEG);
-        double ny = side * Math.cos(elev), nz = Math.sin(elev);
-        double wy = -side * Math.sin(elev), wz = Math.cos(elev);
+        if (Math.sin(bearing) * side >= 0) return Result.BEHIND_WINDOW;
 
-        double cosIncidence = -(dy * ny + dz * nz);
-        lastIncidenceDeg = Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, cosIncidence))));
-        if (cosIncidence <= 0 || dy * side >= 0) return Result.BEHIND_WINDOW;
-        if (lastIncidenceDeg > MAX_INCIDENCE_DEG) return Result.TOO_EDGE_ON;
+        double lateralRoom = lateralRoom(bearing);
+        if (lateralRoom <= 0) return Result.WINDOW_TOO_NARROW;
 
-        double du = dx;
-        double dw = dy * wy + dz * wz;
-        double seenWidth = WINDOW_WIDTH * Math.sqrt(Math.max(0, 1 - du * du));
-        double seenHeight = WINDOW_HEIGHT * Math.sqrt(Math.max(0, 1 - dw * dw));
-        double lateralRoom = (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
-        double verticalRoom = (seenHeight - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
-        if (lateralRoom <= 0 || verticalRoom <= 0) return Result.WINDOW_TOO_NARROW;
-
+        // Other alliance's HIVE: sample the arc (straight line on the floor, parabola in height).
         boolean red = alliance == Alliance.RED;
         double otherXMin = red ? BLUE_HIVE_X_MIN : RED_HIVE_X_MIN;
         double otherXMax = red ? BLUE_HIVE_X_MAX : RED_HIVE_X_MAX;
         double r = BALL_DIAMETER / 2.0;
-        double prevX = launchX;
+        double launchX = goal.x() - range * Math.cos(bearing);
+        double launchY = goal.y() - range * Math.sin(bearing);
         for (int i = 1; i <= FLIGHT_SAMPLES; i++) {
-            double t = tf * i / FLIGHT_SAMPLES;
-            double f = t / tf;
+            double f = (double) i / FLIGHT_SAMPLES;
+            double t = tf * f;
             double px = launchX + (goal.x() - launchX) * f;
             double py = launchY + (goal.y() - launchY) * f;
-            double pz = z0 + vz0 * t - 0.5 * ShooterCalc.gravity() * t * t;
-
+            double pz = ShooterCalc.launchHeight + vz0 * t - 0.5 * g * t * t;
             if (px > otherXMin - r && px < otherXMax + r
                     && py > HIVE_Y_MIN - r && py < HIVE_Y_MAX + r
                     && pz > HIVE_BOTTOM - r && pz < HIVE_TOP + r) {
                 return Result.BLOCKED_OTHER_HIVE;
             }
-            if (crossesFramePlate(prevX, px, FRAME_X_MIN, py, pz, r)
-                    || crossesFramePlate(prevX, px, FRAME_X_MAX, py, pz, r)) {
-                return Result.BLOCKED_FRAME;
-            }
-            prevX = px;
         }
 
+        // Tolerances: turret from the window's seen width; flywheel from how far a speed error moves the ball
+        // up / down at the window vs. the window's height.
         lastTurretToleranceDeg = Math.toDegrees(Math.atan2(lateralRoom, Math.max(virtualRange, 1.0)));
+        double verticalRoom = (WINDOW_HEIGHT - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
         double cosHood = Math.cos(hood);
-        double dzPerDv = ShooterCalc.gravity() * virtualRange * virtualRange / (v * v * v * cosHood * cosHood);
-        double allowedDz = verticalRoom / Math.max(Math.cos(descent), 0.05);
-        double allowedDvMps = (allowedDz / dzPerDv) / 39.37;
-        lastFlywheelToleranceTps = allowedDvMps * Math.abs(ShooterCalc.tpsPerBallSpeed());
+        double dzPerDv = g * virtualRange * virtualRange / (v * v * v * cosHood * cosHood);
+        double descent = Math.atan2(-vzEnd, vh);
+        double allowedDz = Math.max(verticalRoom, 0.0) / Math.max(Math.cos(descent), 0.05);
+        lastFlywheelToleranceTps = (allowedDz / dzPerDv) / 39.37 * Math.abs(ShooterCalc.tpsPerBallSpeed());
         return Result.OK;
+    }
+
+    /** Room the ball has on each side inside the window, inches. The window spans x and faces +/- y, so it looks
+     *  narrower from the side. */
+    private static double lateralRoom(double bearing) {
+        double seenWidth = WINDOW_WIDTH * Math.max(Math.abs(Math.sin(bearing)), 0.3);
+        return (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
     }
 
     /**
@@ -222,10 +202,7 @@ public final class ShotCheck {
             if (shot.dependsOnOtherHive && !ALLOW_OTHER_HIVE_DEPENDENT) return Result.BLOCKED_OTHER_HIVE;
         }
 
-        // Lateral room: the window looks narrower from the side (it spans x, faces +/- y).
-        double bearing = ShooterCalc.lastProjectedBearing;
-        double seenWidth = WINDOW_WIDTH * Math.max(Math.abs(Math.sin(bearing)), 0.3);
-        double lateralRoom = (seenWidth - BALL_DIAMETER) / 2.0 - APERTURE_MARGIN;
+        double lateralRoom = lateralRoom(ShooterCalc.lastProjectedBearing);
         if (lateralRoom <= 0) {
             if (!tuned) return Result.WINDOW_TOO_NARROW;
             lateralRoom = APERTURE_MARGIN;   // proven on the field: keep a small turret tolerance
@@ -234,13 +211,5 @@ public final class ShotCheck {
         lastFlywheelToleranceTps = TABLE_SPEED_WINDOW_USE * shot.halfWindowMps
                 * Math.abs(ShooterCalc.tpsPerBallSpeed());
         return Result.OK;
-    }
-
-    private static boolean crossesFramePlate(double x0, double x1, double plateX, double y, double z, double r) {
-        if ((x0 - plateX) * (x1 - plateX) > 0) return false;
-        double dyFromCenter = Math.abs(y - FRAME_CENTER_Y);
-        if (dyFromCenter >= FRAME_HALF_DEPTH + r) return false;
-        double plateTop = FRAME_APEX_HEIGHT * Math.max(0.0, 1.0 - dyFromCenter / FRAME_HALF_DEPTH);
-        return z - r < plateTop;
     }
 }

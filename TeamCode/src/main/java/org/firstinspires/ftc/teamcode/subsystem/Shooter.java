@@ -47,10 +47,12 @@ public final class Shooter {
     public static double DEADBAND_RPM = 15;
     public static double BANG_POWER = 1.0;
 
-    /** Only write motor power when it changes by more than this (Meta: 0.005). */
+    /** Only write motor power when it changes by more than this (Meta: 0.005). While shooting every change is
+     *  written, so the wheel recovers between balls as fast as possible. */
     public static double WRITE_THRESHOLD = 0.005;
-    /** Battery voltage read interval, ms. Each read is its own hub transaction. */
-    public static double VOLTAGE_PERIOD_MS = 100;
+    /** Battery voltage read interval, ms. Each read is its own hub transaction (about 1-3 ms), and the voltage only
+     *  feeds the feedforward compensation, which doesn't need to follow every sag. */
+    public static double VOLTAGE_PERIOD_MS = 1000;
 
     /** "At speed" band for atTarget(), ticks/s. ShotCheck uses its own (shot-map) tolerance for READY. */
     public static double VELOCITY_TOLERANCE = 100; // TODO: tune
@@ -110,7 +112,8 @@ public final class Shooter {
     }
 
     private void writePower(double p) {
-        boolean changed = Double.isNaN(lastWrittenPower) || Math.abs(p - lastWrittenPower) > WRITE_THRESHOLD;
+        double threshold = shooting ? 0.0 : WRITE_THRESHOLD;
+        boolean changed = Double.isNaN(lastWrittenPower) || Math.abs(p - lastWrittenPower) > threshold;
         boolean mustStop = p == 0 && lastWrittenPower != 0; // never leave a small leftover power on
         if (changed || mustStop) {
             motor1.setPower(p);

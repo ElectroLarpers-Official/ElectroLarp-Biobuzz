@@ -57,12 +57,17 @@ public final class Robot {
 
     // ---- Pose reset (driver 1 X) ---------------------------------------------------------------------------------
     /** Where the robot is when driver 1 presses X, Pedro inches / degrees: the red alliance corner with the robot
-     *  squared against both walls. SET THESE for the robot: x / y = distance from each wall to the pose point (half
-     *  the robot's width / length for a centred pose point), heading = which way the robot faces there. Blue uses
+     *  squared against both walls. SET THESE for the robot: x / y = distance from each wall to the pose point,
+     *  heading = which way the robot faces there. The pose point is the centre of rotation, not the middle of the
+     *  frame. From CAD it is 6.92 in from the backplate, 9.57 in from the front of the side panels, 6.86 in from
+     *  each side panel and 7.56 in from the outside of the flower pivots. Blue uses
      *  the same spot turned 180 degrees about the field centre (144 - x, 144 - y, heading + 180). */
     public static double RESET_X = 9, RESET_Y = 9, RESET_HEADING_DEG = 90;
 
     public enum ManualShot { CLOSE, MID, FAR }
+
+    /** Shared zero vector for the solver's acceleration input (Vector2D is immutable), so it isn't allocated every loop. */
+    private static final Vector2D ZERO = Vector2D.zero();
     public final Alliance alliance;
     public final PulseFollower follower;
     public final Intake intake;
@@ -120,7 +125,7 @@ public final class Robot {
         Pose currPose = follower.pose();
         Velocity vel = follower.velocity();
         Vector2D velocity = vel.toVector2D();
-        Vector2D accel = Vector2D.zero();
+        Vector2D accel = ZERO;
         double angularVelocity = vel.omega;
 
         // Manual fallback: the pose isn't trusted, so no solver, no under-HIVE box, no shot check.
@@ -158,8 +163,10 @@ public final class Robot {
 
         double shootMs = (shootStartNanos == 0) ? 0.0 : (System.nanoTime() - shootStartNanos) / 1e6;
         ShooterCalc.burstCompActive = shootStartNanos != 0 && shootMs >= ShooterCalc.burstCompDelayMs;
+        // Measured flywheel speed for the burst comp, live trim taken off so it compares with the solver's target.
+        ShooterCalc.flywheelTps = shooter.velocity() - LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0;
 
-        Double[] result = ShooterCalc.solve(
+        double[] result = ShooterCalc.solve(
                 currPose.heading(), robotToGoal, velocity, accel, angularVelocity);
 
         double tps = result[0];

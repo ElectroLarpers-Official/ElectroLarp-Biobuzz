@@ -40,8 +40,10 @@ import java.util.Locale;
 public final class TunedShotTable {
     /** Use tuned points in HIVE mode. Off = shot map only (the old behaviour). */
     public static boolean USE_TUNED_POINTS = true;
-    /** Where no tuned point is close enough: true = use the shot map there, false = no shot there. */
-    public static boolean MAP_FALLBACK = true;
+    /** Where no tuned point is close enough: true = use the shot map there (needs ShooterCalc.USE_AIM_TABLE),
+     *  false = no shot there (the flywheel and hood still follow the nearest tuned point, and driver 2's shot
+     *  override can still shoot). Off with the shot map off (2026-10-25). */
+    public static boolean MAP_FALLBACK = false;
     /** A spot counts as tuned when a point of that cell is within this distance, inches. */
     public static double MAX_POINT_DIST_IN = 18.0;
     /** Points blended at a spot (the nearest ones within MAX_POINT_DIST_IN). */
@@ -174,12 +176,16 @@ public final class TunedShotTable {
 
     /** A point (x, y) for {@code cell} in the frame of the cell its points are stored for: flipped across x = 72
      *  when the alliance differs, across y = 72 when the side (audience / far) differs. Its own inverse. */
-    private static double[] toStored(HiveAimTable.Cell cell, double x, double y) {
-        HiveAimTable.Cell sc = storedCell(cell);
-        if (isRed(sc) != isRed(cell)) x = FIELD_SIZE_IN - x;
-        if (isFar(sc) != isFar(cell)) y = FIELD_SIZE_IN - y;
-        return new double[]{x, y};
+    private static double storedX(HiveAimTable.Cell cell, double x) {
+        return isRed(storedCell(cell)) != isRed(cell) ? FIELD_SIZE_IN - x : x;
     }
+    private static double storedY(HiveAimTable.Cell cell, double y) {
+        return isFar(storedCell(cell)) != isFar(cell) ? FIELD_SIZE_IN - y : y;
+    }
+
+    /** Nearest-points buffers for lookup (runs several times a loop: reused, not reallocated). */
+    private static Point[] best = new Point[4];
+    private static double[] bestD = new double[4];
 
     /**
      * Tuned shot for a release point (Pedro inches) at a cell. Returns false when the cell has no points at all.
@@ -188,14 +194,16 @@ public final class TunedShotTable {
     public static synchronized boolean lookup(HiveAimTable.Cell cell, double x, double y, Shot out) {
         ensureLoaded();
         HiveAimTable.Cell sc = storedCell(cell);
-        double[] q = toStored(cell, x, y);
-        x = q[0]; y = q[1];
+        double sx = storedX(cell, x), sy = storedY(cell, y);
+        x = sx; y = sy;
 
         int k = Math.max(1, BLEND_POINTS);
-        Point[] best = new Point[k];
-        double[] bestD = new double[k];
+        if (best.length < k) { best = new Point[k]; bestD = new double[k]; }   // only when BLEND_POINTS is raised
+        Point[] best = TunedShotTable.best;
+        double[] bestD = TunedShotTable.bestD;
         int found = 0;
-        for (Point p : active) {
+        for (int n = 0, size = active.size(); n < size; n++) {
+            Point p = active.get(n);
             if (p.cell != sc) continue;
             double d = Math.hypot(p.x - x, p.y - y);
             // insertion into the k nearest
@@ -238,8 +246,8 @@ public final class TunedShotTable {
     public static synchronized Point save(HiveAimTable.Cell cell, double x, double y, double rpm, double hood) throws IOException {
         ensureLoaded();
         HiveAimTable.Cell sc = storedCell(cell);
-        double[] s = toStored(cell, x, y);
-        x = s[0]; y = s[1];
+        double sx = storedX(cell, x), sy = storedY(cell, y);
+        x = sx; y = sy;
         Point p = new Point(sc, x, y, rpm - RPM_TRIM, hood - HOOD_TRIM, true);
         for (int i = filePoints.size() - 1; i >= 0; i--) {
             Point o = filePoints.get(i);
@@ -255,8 +263,8 @@ public final class TunedShotTable {
     public static synchronized Point nearest(HiveAimTable.Cell cell, double x, double y) {
         ensureLoaded();
         HiveAimTable.Cell sc = storedCell(cell);
-        double[] q = toStored(cell, x, y);
-        x = q[0]; y = q[1];
+        double sx = storedX(cell, x), sy = storedY(cell, y);
+        x = sx; y = sy;
         Point best = null;
         double bestD = Double.POSITIVE_INFINITY;
         for (Point p : active) {
@@ -269,8 +277,7 @@ public final class TunedShotTable {
 
     /** Distance from a release point to a stored point, in the cell's frame. */
     public static double distance(HiveAimTable.Cell cell, double x, double y, Point p) {
-        double[] q = toStored(cell, x, y);
-        return Math.hypot(p.x - q[0], p.y - q[1]);
+        return Math.hypot(p.x - storedX(cell, x), p.y - storedY(cell, y));
     }
 
     /** Removes a file point. Code points can't be removed here (edit TunedShotPoints). */

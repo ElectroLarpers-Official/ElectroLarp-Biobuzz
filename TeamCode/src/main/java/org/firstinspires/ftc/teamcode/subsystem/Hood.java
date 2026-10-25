@@ -16,8 +16,12 @@ public final class Hood {
     /** Servo travel limits. 0.747 = 80 deg launch (33:200 gearing, 300 deg servo); a little margin above it. */
     public static double HOOD_MIN_POS = 0.0;
     public static double HOOD_MAX_POS = 0.75;
+    /** Only send a new hood position when it moved more than this (servo units; 0.0005 is about one 1 us pulse
+     *  step). Skips a hub write on most loops. */
+    public static double WRITE_THRESHOLD = 0.0005;
     private final Servo hood;
     private double hoodPos;
+    private double lastWritten = Double.NaN;
 
     public Hood(HardwareMap hw) {
         hood = hw.get(Servo.class, HardwareNames.HOOD);
@@ -34,7 +38,10 @@ public final class Hood {
 
     public void setPosition(double position) {
         hoodPos = Math.max(HOOD_MIN_POS, Math.min(HOOD_MAX_POS, position));
-        hood.setPosition(hoodPos);
+        if (Double.isNaN(lastWritten) || Math.abs(hoodPos - lastWritten) > WRITE_THRESHOLD) {
+            hood.setPosition(hoodPos);
+            lastWritten = hoodPos;
+        }
     }
     public double position() { return hoodPos; }
 }
