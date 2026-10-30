@@ -20,7 +20,7 @@ public final class TunedShotPoints {
     private static final TunedShotTable.Point[] POINTS = {
             // Tuned 2026-10-22 (ShotPointTuner, 13.5 -> 11.65 V). Three points from that session are commented out at
             // the end of this list (with the reason); re-tune those spots before using them.
-            p(RED_AUD, 51.7, 37.6, 3476, 0.572),
+            /*p(RED_AUD, 51.7, 37.6, 3476, 0.572),
             p(RED_AUD, 81.6, 23.7, 3682, 0.500),
             p(RED_AUD, 78.7, 9.9, 3726, 0.330),
             p(RED_AUD, 54.8, 17.1, 3719, 0.435),
@@ -41,7 +41,7 @@ public final class TunedShotPoints {
             // wall), so the pose had drifted 10-17 in when these were saved. The RPM / hood may be right, but they're
             // stored at the wrong spot. Check the pose against the wall, then re-tune that corner.
             // p(RED_AUD, 114.6, -0.9, 4242, 0.132),
-            // p(RED_AUD, 127.3, -8.2, 4342, 0.127),
+            // p(RED_AUD, 127.3, -8.2, 4342, 0.127),*/
     };
 
     static List<TunedShotTable.Point> points() { return Arrays.asList(POINTS); }

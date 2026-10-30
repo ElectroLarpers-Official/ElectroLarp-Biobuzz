@@ -16,8 +16,20 @@ public class TurretCalc {
     public static double MIN_ANGLE = -300.0;
     public static double MAX_ANGLE = 300.0;
 
+    /** Turret speed limit for the command, deg/s: normally / on a big swing (more than 90 deg to go). */
     public static double maxSlewNormalDegPerSec = 400; // TODO(new robot): old-robot value
     public static double maxSlewWrapDegPerSec = 540; // TODO(new robot): old-robot value
+    /** Turret acceleration limit for the command, deg/s^2. The command speeds up at this rate and slows down early
+     *  enough to stop ON the target instead of arriving at full speed and stopping dead, which is what makes the
+     *  turret overshoot and wobble after a snap. 0 = no limit (old behaviour: full speed from the first loop).
+     *  5000 (simulated through the real solver): braking-SOTM aim jumps of 25-55 deg are within 2 deg 120-180 ms
+     *  after the brake starts (no limit: 90-135 ms), well before the robot stops; a 1500 deg/s^2 robot spin is
+     *  followed within 0.4 deg. Lower it if the turret still wobbles after snaps, raise it if braking shots are late. */
+    public static double maxAccelDegPerSec2 = 5000;
+    /** Smoothing of the measured target speed (0..1, higher = less smoothing). The command follows a smoothly
+     *  moving target (the robot turning, driving past the HIVE) at the target's own speed, so the acceleration
+     *  limit doesn't make it lag. */
+    public static double targetRateFilter = 0.5;
 
     /** Per-alliance aim trim in DEGREES, added to the commanded angle (+ = counter-clockwise). Driver 2 changes the
      *  current alliance's one live with RB / LB in TeleOp. The old robot's 15 / 10 were removed: start at 0. */
@@ -53,6 +65,11 @@ public class TurretCalc {
     }
 
     private static double slewedTurretAngle = Double.NaN;
+    /** Command speed, deg/s (acceleration-limited). */
+    private static double slewVelocity = 0.0;
+    /** Measured target speed, deg/s, and the target last loop. */
+    private static double targetRate = 0.0;
+    private static double lastSlewTarget = Double.NaN;
     private static double lastChosenTurretAngle = Double.NaN;
     private static boolean wrapping = false;
     private static final ElapsedTime slewTimer = new ElapsedTime();
@@ -62,6 +79,9 @@ public class TurretCalc {
 
     public static void reset() {
         slewedTurretAngle = Double.NaN;
+        slewVelocity = 0.0;
+        targetRate = 0.0;
+        lastSlewTarget = Double.NaN;
         lastChosenTurretAngle = Double.NaN;
         wrapping = false;
         slewTimer.reset();
@@ -139,16 +159,58 @@ public class TurretCalc {
         return best;
     }
 
+    /**
+     * Moves the command toward {@code target} within the speed and acceleration limits.
+     *
+     * <p>The command's wanted speed is the target's own speed plus a catch-up speed of sqrt(2 * accel * gap), the
+     * fastest it can go and still stop on the target. Its speed changes by at most accel * dt per loop. So:
+     * a jump (the braking model engaging, a new cell) is a smooth speed-up, cruise and slow-down onto the new aim;
+     * a smoothly moving target is followed at its own speed with no lag. A target that moves faster than the
+     * turret could follow in one loop counts as a jump: its speed isn't fed forward, or the command would overshoot.
+     */
     private static double slewTurret(double target) {
         double elapsedSec = slewTimer.seconds();
         slewTimer.reset();
         if (elapsedSec <= 0 || elapsedSec > 0.5) elapsedSec = 0.02;
 
-        if (Double.isNaN(slewedTurretAngle)) slewedTurretAngle = target;
+        if (Double.isNaN(slewedTurretAngle)) {
+            slewedTurretAngle = target;
+            slewVelocity = 0.0;
+            targetRate = 0.0;
+            lastSlewTarget = target;
+            return slewedTurretAngle;
+        }
 
-        double rate = wrapping ? maxSlewWrapDegPerSec : maxSlewNormalDegPerSec;
-        double maxDelta = rate * elapsedSec;
-        slewedTurretAngle += Range.clip(target - slewedTurretAngle, -maxDelta, maxDelta);
+        double maxSpeed = wrapping ? maxSlewWrapDegPerSec : maxSlewNormalDegPerSec;
+
+        // Target speed: only smooth motion counts; a jump bigger than the turret could make in one loop doesn't.
+        double moved = Double.isNaN(lastSlewTarget) ? 0.0 : target - lastSlewTarget;
+        lastSlewTarget = target;
+        if (Math.abs(moved) > maxSpeed * elapsedSec) targetRate = 0.0;
+        else targetRate += targetRateFilter * (moved / elapsedSec - targetRate);
+
+        if (maxAccelDegPerSec2 <= 0) {   // speed limit only (old behaviour)
+            double maxDelta = maxSpeed * elapsedSec;
+            double step = Range.clip(target - slewedTurretAngle, -maxDelta, maxDelta);
+            slewedTurretAngle += step;
+            slewVelocity = step / elapsedSec;
+            return slewedTurretAngle;
+        }
+
+        double accel = maxAccelDegPerSec2;
+        double gap = target - slewedTurretAngle;
+        double wanted = targetRate + Math.signum(gap) * Math.sqrt(2.0 * accel * Math.abs(gap));
+        wanted = Range.clip(wanted, -maxSpeed, maxSpeed);
+        slewVelocity += Range.clip(wanted - slewVelocity, -accel * elapsedSec, accel * elapsedSec);
+
+        double step = slewVelocity * elapsedSec;
+        if (Math.signum(step) == Math.signum(gap) && Math.abs(step) >= Math.abs(gap)) {
+            // Reaches the target this loop: land on it and carry on at the target's speed.
+            slewedTurretAngle = target;
+            slewVelocity = Range.clip(targetRate, -maxSpeed, maxSpeed);
+        } else {
+            slewedTurretAngle += step;
+        }
         return slewedTurretAngle;
     }
 }

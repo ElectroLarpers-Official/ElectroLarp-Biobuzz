@@ -96,6 +96,9 @@ Only with the shot map **off** (`USE_AIM_TABLE = false`): `hiveAimHeight` (65 in
 | Aim lags behind while the robot spins in place | `yawFeedforwardGain` (0.145) | Raise. Aim *leads* (swings past) while spinning → lower. |
 | Turret too slow to track | `maxSlewNormalDegPerSec` (400) | Raise. Turret overshoots/jerks → lower. |
 | Wrap-around sweep too slow | `maxSlewWrapDegPerSec` (540) | Raise. Jerky wrap → lower. |
+| Turret wobbles / overshoots after a snap | `maxAccelDegPerSec2` (5000) | Lower (3000–4000). The command speeds up and slows down at this rate, so it stops on the target instead of arriving at full speed. Good test: drive slowly across y = 72 so the aim jumps between cells. 0 = no limit (old behaviour). |
+| Braking (SOTM) shots fire before the turret gets there | `maxAccelDegPerSec2` | Raise (6000+), or lower it only as far as the wobble needs. |
+| Command jittery while tracking | `targetRateFilter` (0.5) | Lower (more smoothing of the target-speed feedforward). Lags a turning target → raise. |
 | Turret sits at a different point during a wrap | `wrapServoOffset` / `servoOffset` (0 / 0) | Servo units (0–1). All 4 servos share one wire, so this shifts the whole turret. Leave at 0 unless you need it. |
 
 ### 7. Shooting while moving — `ShooterCalc`

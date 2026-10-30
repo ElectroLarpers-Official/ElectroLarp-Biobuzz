@@ -14,10 +14,10 @@ public class ShooterConstants {
     // +-2 in. TOP = higher y, BOTTOM = lower y. The field is 180-degree symmetric (not a
     // left/right mirror): RED_TOP <-> BLUE_BOTTOM and RED_BOTTOM <-> BLUE_TOP, so
     // x + x' = 144 and y + y' = 144.
-    public static double HIVE_RED_TOP_X = 58.9, HIVE_RED_TOP_Y = 88.2;
-    public static double HIVE_RED_BOTTOM_X = 58.9, HIVE_RED_BOTTOM_Y = 60.9;
-    public static double HIVE_BLUE_TOP_X = 85.1, HIVE_BLUE_TOP_Y = 83.1;
-    public static double HIVE_BLUE_BOTTOM_X = 85.1, HIVE_BLUE_BOTTOM_Y = 55.8;
+    public static double HIVE_RED_TOP_X = 60, HIVE_RED_TOP_Y = 82;
+    public static double HIVE_RED_BOTTOM_X = 60, HIVE_RED_BOTTOM_Y = 62;
+    public static double HIVE_BLUE_TOP_X = 84, HIVE_BLUE_TOP_Y = 82;
+    public static double HIVE_BLUE_BOTTOM_X = 84, HIVE_BLUE_BOTTOM_Y = 62;
 
     /** Toggle: aim at the window centres from the field CAD (the points the shot map was simulated against)
      *  instead of the measured points above. Keep this on while USE_AIM_TABLE is on: the table's launch angles
