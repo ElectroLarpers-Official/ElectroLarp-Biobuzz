@@ -4,7 +4,7 @@ import static com.pedropathing.api.Paths.curve;
 import static com.pedropathing.api.Paths.line;
 
 import com.pedropathing.api.PoseFactory;
-import com.pedropathing.ivy.Command;
+import org.electrolightsftc.pulse.lumen.Command;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.interpolator.Interpolator;
@@ -38,13 +38,13 @@ public final class ClosePaths {
 
     public static Path goNearFlower(Alliance a, Command openFlower) {
         Poses waypoints = new Poses(a);
-        return withCallbacks(
-                curve(waypoints.pollenEndingPose, waypoints.cpFlower, waypoints.endPointFlower)
+        return follower().pathBuilder()
+                .addPath(curve(waypoints.pollenEndingPose, waypoints.cpFlower, waypoints.endPointFlower)
                         .heading(Interpolator.piecewise()
                                 .until(0.1687, Interpolator.linear(waypoints.point2Segment1Start, waypoints.point2Segment1End))
-                                .until(1, Interpolator.tangent)),
-                poseCallback(waypoints.flowerTrigger, openFlower, 1.0)
-        );
+                                .until(1, Interpolator.tangent)))
+                .addPoseCallback(waypoints.flowerTrigger, openFlower, 1.0)
+                .build();
     }
 
     public static Path goInFlower(Alliance a) {
