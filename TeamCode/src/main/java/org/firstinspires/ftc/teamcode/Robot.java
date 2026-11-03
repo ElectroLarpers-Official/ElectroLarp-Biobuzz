@@ -7,14 +7,25 @@ import static com.pedropathing.ivy.groups.Groups.sequential;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
+import com.pedropathing.algorithm.ForesightConfig;
+import com.pedropathing.api.Paths;
+import com.pedropathing.config.Modifier;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
 import com.pedropathing.math.Vector2D;
+import com.pedropathing.paths.CompoundPath;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathSegment;
+import com.pedropathing.paths.Piecewise;
+import com.pedropathing.paths.curves.Curve;
+import com.pedropathing.paths.curves.Line;
+import com.pedropathing.paths.curves.bezier.BezierCurve;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
+import org.electrolightsftc.pulse.electropathing.paths.PathModifiers;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.Flower;
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
@@ -28,6 +39,8 @@ import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShotCheck;
 import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import com.pedropathing.math.Velocity;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -38,6 +51,8 @@ public final class Robot {
     /** Drive all 4 turret servos (turretServo1-4 on their own ports, directions in Turret). Off = only
      *  turretServo1, e.g. with the Y-split or to run on one servo. Read when the OpMode is initialised. */
     public static boolean TURRET_ALL_SERVOS = true; // TODO delete (quad turret)
+    public static double RESUME_MIN_REMAINING_IN = 0.5;
+    public static double RESUME_JOIN_DISTANCE_IN = 3.0;
 
     // ---- Driver 2 live trims: added to every shot (tuned points, shot map, manual presets) ----------------------
     /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
@@ -86,6 +101,9 @@ public final class Robot {
     private boolean manual = false;
     private ManualShot manualShot = ManualShot.MID;
     private double manualTurretDeg = 0;
+    private Path pausedPath = null;
+    private int pausedIndex = 0;
+    private double pausedT = 0;
 
 
     public Robot(HardwareMap hardwareMap, Alliance alliance) {
@@ -221,6 +239,114 @@ public final class Robot {
         follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, follower.pose().heading(), forwardOffsetRad));
     }
 
+    public boolean isPaused() {
+        return pausedPath != null;
+    }
+
+    public boolean pauseFollowing(boolean hold) {
+        if (!follower.following()) return false;
+        Path path = follower.currentPath();
+        if (path == null) return false;
+        pausedPath = path;
+        pausedIndex = follower.pathIndex();
+        pausedT = follower.parametricCompletion();
+        Pose holdPose = hold ? follower.pose() : null;
+        follower.breakFollowing();
+        if (hold) follower.hold(holdPose);
+        return true;
+    }
+
+    public boolean resumeFollowing() {
+        if (pausedPath == null) return false;
+        Path original = pausedPath;
+        int pathIndex = pausedIndex;
+        double guess = pausedT;
+        pausedPath = null;
+
+        List<PathSegment> segments = original.getSegments();
+        List<List<Modifier>> modifiers = new ArrayList<>();
+        collectModifiers(original, new ArrayList<>(), modifiers);
+        int index = Math.max(0, Math.min(pathIndex, segments.size() - 1));
+
+        PathSegment current = segments.get(index);
+        Pose pose = follower.pose();
+        double t = Math.max(0.0, Math.min(1.0, current.curve.closestParameter(pose.toVector2D(), guess)));
+
+        List<Path> legs = new ArrayList<>();
+        if (current.curve.remainingDistance(t) > RESUME_MIN_REMAINING_IN) {
+            Curve tail = tailOf(current.curve, t);
+            if (tail != null) {
+                if (pose.toVector2D().distance(tail.startPoint()) > RESUME_JOIN_DISTANCE_IN) {
+                    ForesightConfig config = follower.foresightConfig();
+                    double fromHeading = pose.heading();
+                    double toHeading = current.heading(t);
+                    double turn = Math.atan2(Math.sin(toHeading - fromHeading), Math.cos(toHeading - fromHeading));
+                    legs.add(Paths.path(new Line(pose.toVector2D(), tail.startPoint()))
+                            .heading((c, s) -> fromHeading + turn * s)
+                            .with(modifiers.get(index))
+                            .with(config.brakeAtEnd.at(false), config.pathSkip.at(true)));
+                }
+                final double startT = t;
+                legs.add(Paths.path(tail)
+                        .heading((c, s) -> current.heading(Math.min(1.0, startT + s * (1.0 - startT))))
+                        .with(modifiers.get(index)));
+            }
+        }
+        for (int i = index + 1; i < segments.size(); i++) {
+            PathSegment segment = segments.get(i);
+            legs.add(Paths.path(segment.curve)
+                    .heading((c, s) -> segment.heading(s))
+                    .with(modifiers.get(i)));
+        }
+
+        if (legs.isEmpty()) {
+            follower.hold(segments.get(segments.size() - 1).endPose());
+            return true;
+        }
+
+        Path resumed = legs.size() == 1 ? legs.get(0) : Paths.path(legs.toArray(new Path[0]));
+        if (PathModifiers.isCoasting(original)) PathModifiers.markCoasting(resumed);
+        follower.follow(resumed);
+        return true;
+    }
+
+    public void clearPause() {
+        pausedPath = null;
+    }
+
+    private static void collectModifiers(Path path, List<Modifier> inherited, List<List<Modifier>> out) {
+        List<Modifier> all = new ArrayList<>(inherited);
+        all.addAll(path.modifiers);
+        if (path instanceof CompoundPath) {
+            for (Piecewise.Segment<Path> child : ((CompoundPath) path).segments()) {
+                collectModifiers(child.value(), all, out);
+            }
+        } else {
+            out.add(all);
+        }
+    }
+
+    private static Curve tailOf(Curve curve, double t) {
+        if (curve instanceof BezierCurve) {
+            List<Vector2D> level = new ArrayList<>(((BezierCurve) curve).getControlPoints());
+            List<Vector2D> right = new ArrayList<>();
+            while (true) {
+                right.add(level.get(level.size() - 1));
+                if (level.size() == 1) break;
+                List<Vector2D> next = new ArrayList<>();
+                for (int i = 0; i < level.size() - 1; i++) {
+                    next.add(level.get(i).times(1.0 - t).plus(level.get(i + 1).times(t)));
+                }
+                level = next;
+            }
+            Collections.reverse(right);
+            return new BezierCurve(right);
+        }
+        Vector2D start = curve.get(t);
+        Vector2D end = curve.endPoint();
+        return start.distance(end) < 1e-3 ? null : new Line(start, end);
+    }
+
     /** Open latch, transfer on. Stays on until stopShooting() (Tele right trigger hold). */
     public void startShooting() {
         shootStartNanos = System.nanoTime();
@@ -256,6 +382,7 @@ public final class Robot {
     }
 
     public void stop() {
+        pausedPath = null;
         shootStartNanos = 0;
         intake.off();
         latch.close();
