@@ -71,15 +71,15 @@ public class Close extends CommandOpMode {
     private Command routine() {
         return sequential(
                 waitMs(500),
-                shootCycle(),
-                sequential(robot.intake::on),
+                //shootCycle(),
+                //sequential(robot.intake::on),
                 follow(robot.follower, ClosePaths.intakeLoading(a), false),
-                shootCycle(),
-                sequential(robot.intake::on),
+               // shootCycle(),
+                //sequential(robot.intake::on),
                 follow(robot.follower, ClosePaths.goNearFlower(a, instant(() -> robot.flower.toggleFlower(true))), false),
                 follow(robot.follower, ClosePaths.goInFlower(a), false),
-                shootCycle(),
-                sequential(robot.intake::off),
+                //shootCycle(),
+                //sequential(robot.intake::off),
                 follow(robot.follower, ClosePaths.moveback(a), false)
         );
     }
