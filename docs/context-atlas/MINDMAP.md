@@ -103,6 +103,7 @@ mindmap
       com.pedropathing.ivy pedro 1.1.1
       com.pedropathing telemetry 1.0.0
       org.electrolightsftc pulse-electropathing 2.1.1
+      org.electrolightsftc pulse-lumen 2.1.0
       dev.frozenmilk.sinister Sloth 0.3.2
       com.bylazar.sloth fullpanels 0.3.2+1.0.13
     Workflow and configuration

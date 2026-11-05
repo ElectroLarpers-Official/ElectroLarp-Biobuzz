@@ -1,6 +1,7 @@
 """Generate local architecture docs from tracked files; no uploads or build execution."""
 from pathlib import Path
 from collections import Counter, defaultdict
+from datetime import date
 import hashlib
 import html
 import json
@@ -10,7 +11,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs' / 'context-atlas'
 BASE = 'TeamCode/src/main/java/org/firstinspires/ftc/teamcode/'
-STAMP = '2026-11-01'
+STAMP = date.today().isoformat()
 ROLES = {
     'Robot': 'Owns hardware and follower; updates aiming and flywheel; coordinates shooting, manual fallback and pose reset.',
     'HardwareNames': 'Central robot configuration device names.',
@@ -90,7 +91,7 @@ def role(path):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    paths = [p for p in git('ls-files').splitlines() if safe_path(p) and (ROOT / p).is_file()]
+    paths = [p for p in git('ls-files', '--cached', '--others', '--exclude-standard').splitlines() if safe_path(p) and not p.startswith('docs/context-atlas/') and (ROOT / p).is_file()]
     java = []
     for path in paths:
         if not path.endswith('.java'):

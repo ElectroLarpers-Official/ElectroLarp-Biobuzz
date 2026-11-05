@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "context-atlas": {
+      "command": "python",
+      "args": ["-I", "scripts/atlas_mcp.py"]
+    }
+  }
+}
