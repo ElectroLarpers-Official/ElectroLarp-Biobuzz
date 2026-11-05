@@ -52,9 +52,9 @@ public final class ClosePaths {
         return curve(waypoints.endPointFlower, waypoints.point3Control1, waypoints.point3).constant(waypoints.point3);
     }
 
-    public static Path moveback(Alliance a) {
+    public static Path park(Alliance a) {
         Poses waypoints = new Poses(a);
-        return line(waypoints.point3, waypoints.point4).constant(waypoints.point4);
+        return curve(waypoints.point3, waypoints.parkCP,waypoints.point4).constant(waypoints.parkCP.heading());
     }
 
     /*public static Path path1(Alliance a) {
@@ -147,6 +147,8 @@ public final class ClosePaths {
         final Pose point3Control1;
         final Pose point4;
 
+        final Pose parkCP;
+
         Poses(Alliance a) {
             PoseFactory poseFactory = poses(a);
 
@@ -159,7 +161,8 @@ public final class ClosePaths {
             point2Segment1End = poseFactory.of(34.5437, 104.0597, 90);
             point3 = poseFactory.of(47.1346, 119.6412, 90);
             point3Control1 = poseFactory.of(49.8421, 104.1041, 0);
-            point4 = poseFactory.of(46.639, 113.4862, 90);
+            point4 = poseFactory.of(7.917, 122.961, 90);
+            parkCP = poseFactory.of(48.119,104.606,90);
 
 
 
