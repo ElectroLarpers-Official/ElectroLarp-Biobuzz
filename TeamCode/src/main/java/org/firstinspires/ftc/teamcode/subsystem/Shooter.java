@@ -50,6 +50,9 @@ public final class Shooter {
     /** Only write motor power when it changes by more than this (Meta: 0.005). While shooting every change is
      *  written, so the wheel recovers between balls as fast as possible. */
     public static double WRITE_THRESHOLD = 0.005;
+    /** A change under WRITE_THRESHOLD is still written once the last write is this old, ms. Keeps the loop-time
+     *  saving while stopping the threshold from leaving a permanent deadband in the PIDF loop. */
+    public static double WRITE_MAX_AGE_MS = 20;
     /** Battery voltage read interval, ms. Each read is its own hub transaction (about 1-3 ms), and the voltage only
      *  feeds the feedforward compensation, which doesn't need to follow every sag. */
     public static double VOLTAGE_PERIOD_MS = 1000;
@@ -63,6 +66,7 @@ public final class Shooter {
     private final List<LynxModule> hubs;
     private final PIDController pid = new PIDController(kP, kI, kD, kF, true);
     private final ElapsedTime voltageTimer = new ElapsedTime();
+    private final ElapsedTime writeTimer = new ElapsedTime();
 
     private double targetVelocity = 0;   // ticks/s
     private boolean shooting = false;
@@ -112,13 +116,16 @@ public final class Shooter {
     }
 
     private void writePower(double p) {
+        if (p == lastWrittenPower) return; // nothing to send
         double threshold = shooting ? 0.0 : WRITE_THRESHOLD;
-        boolean changed = Double.isNaN(lastWrittenPower) || Math.abs(p - lastWrittenPower) > threshold;
-        boolean mustStop = p == 0 && lastWrittenPower != 0; // never leave a small leftover power on
-        if (changed || mustStop) {
+        boolean bigChange = Double.isNaN(lastWrittenPower) || Math.abs(p - lastWrittenPower) > threshold;
+        boolean endpoint = p == 0 || Math.abs(p) >= 1;                // stop and full power are always exact
+        boolean stale = writeTimer.milliseconds() >= WRITE_MAX_AGE_MS; // small drift can't wait forever
+        if (bigChange || endpoint || stale) {
             motor1.setPower(p);
             motor2.setPower(p);
             lastWrittenPower = p;
+            writeTimer.reset();
         }
     }
 
