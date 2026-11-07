@@ -37,10 +37,10 @@ public final class Shooter {
     public static double TICKS_PER_REV = 28;
 
     // PIDF, tuned in FlywheelPIDFTest. kF = 1 is full power at 5200 motor RPM (hardcoded in PIDController).
-    public static double kP = 0.0006;
+    public static double kP = 0.001;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 1.1;
+    public static double kF = 1;
 
     // Meta's behaviour while balls go through the wheel.
     public static boolean BANG_BANG_WHILE_SHOOTING = false;
@@ -60,6 +60,16 @@ public final class Shooter {
     /** "At speed" band for atTarget(), ticks/s. ShotCheck uses its own (shot-map) tolerance for READY. */
     public static double VELOCITY_TOLERANCE = 100; // TODO: tune
 
+    /** Spin-up ramp: when the flywheel starts from a stop, its motor power may rise by at most this much per
+     *  second (0 -> full power in 1 / this, seconds), so the start doesn't sag the battery. Only the initial
+     *  spin-up: once the wheel is near target (or the ramp reaches full power) the PIDF runs unlimited, so recovery
+     *  between balls is unaffected. 0 = off. */
+    public static double SPINUP_RAMP_PER_SEC = 1.5;
+    /** The ramp only starts if the wheel is slower than this (motor RPM) when it's switched on. */
+    public static double SPINUP_START_RPM = 500;
+    /** The ramp ends once the wheel reaches this fraction of the target speed. */
+    public static double SPINUP_DONE_FRACTION = 0.9;
+
     public enum Mode { OFF, PIDF, BANG_BANG }
 
     private final DcMotorEx motor1, motor2;
@@ -73,6 +83,9 @@ public final class Shooter {
     private Mode mode = Mode.OFF;
     private double rpm = 0, power = 0, voltage = 12.0;
     private double lastWrittenPower = Double.NaN;
+    private boolean spinningUp = false;
+    private double rampCap = 0;
+    private final ElapsedTime rampTimer = new ElapsedTime();
 
     public Shooter(HardwareMap hw) {
         // Plain DcMotorEx, not CachedMotor: CachedMotor skips power changes under 0.01, Meta used 0.005.
@@ -99,6 +112,13 @@ public final class Shooter {
         else next = Mode.PIDF;
         // Fresh integral / derivative history whenever PIDF takes over.
         if (next == Mode.PIDF && mode != Mode.PIDF) pid.reset();
+        // Starting from a stop: begin the spin-up ramp.
+        if (mode == Mode.OFF && next != Mode.OFF && rpm < SPINUP_START_RPM && SPINUP_RAMP_PER_SEC > 0) {
+            spinningUp = true;
+            rampCap = 0;
+            rampTimer.reset();
+        }
+        if (next == Mode.OFF) spinningUp = false;
         mode = next;
 
         switch (mode) {
@@ -111,6 +131,13 @@ public final class Shooter {
                 break;
             default:
                 power = 0;
+        }
+        if (spinningUp) {
+            double dt = Math.min(rampTimer.seconds(), 0.1);
+            rampTimer.reset();
+            rampCap += SPINUP_RAMP_PER_SEC * dt;
+            if (power > rampCap) power = rampCap;
+            if (rampCap >= 1.0 || rpm >= SPINUP_DONE_FRACTION * targetRpm || SPINUP_RAMP_PER_SEC <= 0) spinningUp = false;
         }
         writePower(power);
     }

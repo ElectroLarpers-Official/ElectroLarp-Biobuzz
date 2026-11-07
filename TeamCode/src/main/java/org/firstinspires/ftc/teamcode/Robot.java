@@ -57,6 +57,9 @@ public final class Robot {
     // ---- Driver 2 live trims: added to every shot (tuned points, shot map, manual presets) ----------------------
     /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
     public static double LIVE_RPM_TRIM = 0;
+    /** Driver 2 X toggles a fixed flywheel speed: this motor RPM (+ LIVE_RPM_TRIM) instead of the solver's, in auto
+     *  aim and in manual mode. The turret keeps aiming as normal. */
+    public static double FIXED_RPM = 3731;
     /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
 
@@ -155,9 +158,10 @@ public final class Robot {
                 case FAR: rpm = MANUAL_FAR_RPM; hoodPos = MANUAL_FAR_HOOD; break;
                 default: rpm = MANUAL_MID_RPM; hoodPos = MANUAL_MID_HOOD; break;
             }
+            if (fixedRpm) rpm = FIXED_RPM;
             shooter.setTargetRpm(rpm + LIVE_RPM_TRIM);
             hood.setPosition(hoodPos + LIVE_HOOD_TRIM);
-            turret.setPositionAll(TurretCalc.solve(manualTurretDeg, 0.0, alliance)); // TODO delete: -> setPosition
+            turret.setPositionAll(TurretCalc.solve(turretForward ? 0.0 : manualTurretDeg, 0.0, alliance)); // TODO delete: -> setPosition
             return;
         }
 
@@ -173,7 +177,8 @@ public final class Robot {
             hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
             double bearingDeg = Math.toDegrees(robotToGoal.theta() - currPose.heading());
             // TODO delete: -> setPosition
-            turret.setPositionAll(TurretCalc.solve(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity, alliance));
+            turret.setPositionAll(turretForward ? TurretCalc.solve(0.0, 0.0, alliance)
+                    : TurretCalc.solve(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity, alliance));
             ShotCheck.blockUnderHive();
             return;
         }
@@ -189,14 +194,24 @@ public final class Robot {
 
         double tps = result[0];
         if (tps > 0) tps = Math.max(0, tps + LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0);
+        if (fixedRpm) tps = (FIXED_RPM + LIVE_RPM_TRIM) * Shooter.TICKS_PER_REV / 60.0;
         shooter.setTargetVelocity(tps);
         hood.setPosition(result[1] + LIVE_HOOD_TRIM);
-        turret.setPositionAll(TurretCalc.solve(result[2], angularVelocity, alliance)); // TODO delete: -> setPosition
+        turret.setPositionAll(turretForward ? TurretCalc.solve(0.0, 0.0, alliance) // driver 2: straight ahead
+                : TurretCalc.solve(result[2], angularVelocity, alliance)); // TODO delete: -> setPosition
         ShotCheck.check(alliance, goal);
     }
 
     // ---- Manual fallback ---------------------------------------------------------------------------------------
     public boolean isManual() { return manual; }
+    private boolean fixedRpm = false;
+    /** Driver 2's fixed-RPM toggle (FIXED_RPM). */
+    public boolean isFixedRpm() { return fixedRpm; }
+    public void setFixedRpm(boolean on) { fixedRpm = on; }
+    private boolean turretForward = false;
+    /** Driver 2's turret-forward toggle: turret held straight ahead (0 deg + the alliance turret trim). */
+    public boolean isTurretForward() { return turretForward; }
+    public void setTurretForward(boolean on) { turretForward = on; }
     /** Turn manual mode on / off. Turning it on starts with the turret straight ahead. */
     public void setManual(boolean on) {
         if (on && !manual) manualTurretDeg = 0;

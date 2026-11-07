@@ -18,6 +18,13 @@ public final class TunedShotPoints {
     private TunedShotPoints() {}
 
     private static final TunedShotTable.Point[] POINTS = {
+            p(RED_AUD,74.91,31.89,3731.9,0.5900),
+            p(RED_AUD,66.79,19.70,4581.9,0.5451),
+            p(RED_AUD,67.55,7.61,4781.5,0.5651),
+            p(RED_AUD,117.24,24.75,5256.9,0.5451),
+            p(RED_AUD,81.59,25.47,4506.9,0.5451),
+            p(RED_AUD,40.46,19.07,4531.9,0.5451),
+            p(RED_AUD,48.32,12.44,4733.2,0.5451),
             // Tuned 2026-10-22 (ShotPointTuner, 13.5 -> 11.65 V). Three points from that session are commented out at
             // the end of this list (with the reason); re-tune those spots before using them.
             /*p(RED_AUD, 51.7, 37.6, 3476, 0.572),

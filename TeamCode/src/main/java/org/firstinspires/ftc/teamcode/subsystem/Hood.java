@@ -19,13 +19,15 @@ public final class Hood {
     /** Only send a new hood position when it moved more than this (servo units; 0.0005 is about one 1 us pulse
      *  step). Skips a hub write on most loops. */
     public static double WRITE_THRESHOLD = 0.0005;
+    /** Null when HardwareNames.HOOD isn't in the robot config (the undershooter has no hood). */
     private final Servo hood;
     private double hoodPos;
     private double lastWritten = Double.NaN;
 
     public Hood(HardwareMap hw) {
-        hood = hw.get(Servo.class, HardwareNames.HOOD);
+        hood = hw.tryGet(Servo.class, HardwareNames.HOOD);
         // goBILDA servos cover 300 deg over 500-2500 us; the SDK default (600-2400 us) would give only 270 deg.
+        if (hood == null) return;
         if (hood instanceof ServoImplEx) ((ServoImplEx) hood).setPwmRange(new PwmControl.PwmRange(500, 2500));
         hood.setDirection(Servo.Direction.REVERSE);
         setLaunchAngle(START_LAUNCH_DEG);
@@ -38,6 +40,8 @@ public final class Hood {
 
     public void setPosition(double position) {
         hoodPos = Math.max(HOOD_MIN_POS, Math.min(HOOD_MAX_POS, position));
+        // Fixed launch angle (no adjustable hood) or no hood servo configured: never move it.
+        if (hood == null || ShooterCalc.FIXED_LAUNCH) return;
         if (Double.isNaN(lastWritten) || Math.abs(hoodPos - lastWritten) > WRITE_THRESHOLD) {
             hood.setPosition(hoodPos);
             lastWritten = hoodPos;

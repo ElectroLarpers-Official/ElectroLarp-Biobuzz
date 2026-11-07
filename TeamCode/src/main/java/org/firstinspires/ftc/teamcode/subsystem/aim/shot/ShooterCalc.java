@@ -181,7 +181,8 @@ public class ShooterCalc {
 
     /** Tuned RPM / hood -> the table shot (launch angle, exit speed, flight time) the solver reproduces them from. */
     private static void fillFromTuned(double range, boolean valid) {
-        double launchDeg = clamp(launchDegForHoodPosition(tunedShot.hood), LAUNCH_MIN_DEG, LAUNCH_MAX_DEG);
+        double launchDeg = FIXED_LAUNCH ? FIXED_LAUNCH_DEG
+                : clamp(launchDegForHoodPosition(tunedShot.hood), LAUNCH_MIN_DEG, LAUNCH_MAX_DEG);
         double mps = ballSpeedForMotorRpm(tunedShot.rpm);
         double th = Math.toRadians(launchDeg);
         // Flight time to the window centre from the launch angle and range alone (no exit speed needed):
@@ -327,8 +328,14 @@ public class ShooterCalc {
     /** Launch angle range the hood can reach, degrees above horizontal (team, 2026-10-17). */
     public static double LAUNCH_MIN_DEG = 43.01765;
     public static double LAUNCH_MAX_DEG = 80.0;
-    private static double hoodMinRad() { return Math.toRadians(LAUNCH_MIN_DEG); }
-    private static double hoodMaxRad() { return Math.toRadians(LAUNCH_MAX_DEG); }
+    /** Fixed launch angle (no adjustable hood: the LM1 undershooter). On: every shot, tuned point and the burst
+     *  comp use FIXED_LAUNCH_DEG, the solver only picks RPM, and the hood servo is never written. Off: the
+     *  adjustable hood (LAUNCH_MIN_DEG..LAUNCH_MAX_DEG) as before. */
+    public static boolean FIXED_LAUNCH = true;
+    /** The undershooter's launch angle, degrees above horizontal. */
+    public static double FIXED_LAUNCH_DEG = 70;
+    private static double hoodMinRad() { return Math.toRadians(FIXED_LAUNCH ? FIXED_LAUNCH_DEG : LAUNCH_MIN_DEG); }
+    private static double hoodMaxRad() { return Math.toRadians(FIXED_LAUNCH ? FIXED_LAUNCH_DEG : LAUNCH_MAX_DEG); }
 
     /** Hood drive: 33T gear on the servo -> 200T on the hood, goBILDA servo with 300 deg over position 0..1
      *  (Hood sets the 500-2500 us PWM range for that). Servo position 0 = the flattest launch angle,
@@ -346,6 +353,7 @@ public class ShooterCalc {
     }
     /** Inverse of hoodServoPosition: hood servo position -> launch angle, degrees. */
     public static double launchDegForHoodPosition(double position) {
+        if (FIXED_LAUNCH) return FIXED_LAUNCH_DEG;   // no hood: every shot (and tuned point) is at the fixed angle
         double servoDeg = (position - HOOD_SERVO_POS_AT_LAUNCH_MIN) * HOOD_SERVO_RANGE_DEG;
         return LAUNCH_MIN_DEG + servoDeg * (HOOD_SERVO_TEETH / HOOD_GEAR_TEETH);
     }
