@@ -26,8 +26,8 @@ public class Tele extends CommandOpMode {
      * Rotates the field-centric frame so "stick forward" points away from the driver.
      * TODO: verify on the field which way each alliance's driver faces in Pedro coordinates.
      */
-    public static double BLUE_FORWARD_OFFSET_DEG = 0;
-    public static double RED_FORWARD_OFFSET_DEG = 180;
+    public static double BLUE_FORWARD_OFFSET_DEG = 180;
+    public static double RED_FORWARD_OFFSET_DEG = 0;
 
     /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
@@ -125,7 +125,7 @@ public class Tele extends CommandOpMode {
 
     /**
      * Driver 1: LT hold = intake; RT hold = shoot while the shot can go in; B hold = slow reverse (clear a jam; the bumpers are broken);
-     * A = one shoot cycle; DPAD DOWN = flower open / close toggle; X = pose reset (robot squared in the reset corner, Robot.RESET_X / Y / HEADING_DEG).
+     * A = latch closed; Y = latch open; DPAD DOWN = flower open / close toggle; X = pose reset (robot squared in the reset corner, Robot.RESET_X / Y / HEADING_DEG).
      * Rumbles while trying to shoot a shot that can't go in.
      */
     private void driver1() {
@@ -151,9 +151,10 @@ public class Tele extends CommandOpMode {
 
         if (gp1.dpad_down.isRisingEdge()) robot.flower.toggle();
 
-        if (gp1.a.isRisingEdge() && canShoot && !Scheduler.isScheduled(shootCycle)) schedule(shootCycle);
+        if (gp1.a.isRisingEdge()) robot.manualLatch(false);   // A: latch closed
+        if (gp1.y.isRisingEdge()) robot.manualLatch(true);    // Y: latch open
 
-        boolean tryingToShoot = gp1.right_trigger_button.isTrue() || gp1.a.isTrue();
+        boolean tryingToShoot = gp1.right_trigger_button.isTrue();
         if (tryingToShoot && !canShoot && !gamepad1.isRumbling()) gamepad1.rumble(CANT_SHOOT_RUMBLE_MS);
     }
 

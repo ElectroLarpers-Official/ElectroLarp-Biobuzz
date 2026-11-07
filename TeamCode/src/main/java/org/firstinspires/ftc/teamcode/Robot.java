@@ -48,6 +48,15 @@ import java.util.List;
 public final class Robot {
     /** How long shootCycle() keeps the latch open and the transfer running, ms. */
     public static double SHOOT_DELAY_MS = 250; // TODO: tune
+
+    // ---- Latch unjam: at the end of a shot, slow-reverse the intake with the latch still OPEN, then close it ----
+    // A ball stuck under the flywheel can stall the latch servo (Axon overload protection kills it). Reopening
+    // resets the servo and the slow reverse pulls the ball back so the second close is clear.
+    public static boolean LATCH_UNJAM = true;
+    /** ms the intake slow-reverses with the latch open, before the latch closes. */
+    public static double UNJAM_REVERSE_MS = 250;
+    /** Intake / transfer power while reversing (negative = out, slow). */
+    public static double UNJAM_REVERSE_POWER = -0.2;
     /** Drive all 4 turret servos (turretServo1-4 on their own ports, directions in Turret). Off = only
      *  turretServo1, e.g. with the Y-split or to run on one servo. Read when the OpMode is initialised. */
     public static boolean TURRET_ALL_SERVOS = true; // TODO delete (quad turret)
@@ -59,7 +68,7 @@ public final class Robot {
     public static double LIVE_RPM_TRIM = 0;
     /** Driver 2 X toggles a fixed flywheel speed: this motor RPM (+ LIVE_RPM_TRIM) instead of the solver's, in auto
      *  aim and in manual mode. The turret keeps aiming as normal. */
-    public static double FIXED_RPM = 3731;
+    public static double FIXED_RPM = 4200;
     /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
 
@@ -98,6 +107,9 @@ public final class Robot {
 
     private final List<LynxModule> hubs;
     private long shootStartNanos = 0;
+    private enum Unjam { IDLE, REVERSE }
+    private Unjam unjam = Unjam.IDLE;
+    private long unjamStartNanos = 0;
     private boolean underHive = false;
     private long lastLoopNanos = 0;
     private double loopMs = 0;
@@ -136,10 +148,26 @@ public final class Robot {
         follower.update();
         updateAiming();
         shooter.update();
+        updateUnjam();
 
         long now = System.nanoTime();
         if (lastLoopNanos != 0) loopMs = (now - lastLoopNanos) / 1e6;
         lastLoopNanos = now;
+    }
+
+    /** Driver 1 A / Y: take the latch by hand and cancel any unjam in progress. */
+    public void manualLatch(boolean open) {
+        if (unjam == Unjam.REVERSE) intake.off();
+        unjam = Unjam.IDLE;
+        if (open) latch.open(); else latch.close();
+    }
+
+    private void updateUnjam() {
+        if (unjam == Unjam.IDLE) return;
+        if ((System.nanoTime() - unjamStartNanos) / 1e6 < UNJAM_REVERSE_MS) return;
+        intake.off();
+        latch.close();
+        unjam = Unjam.IDLE;
     }
 
     private void updateAiming() {
@@ -365,6 +393,7 @@ public final class Robot {
     /** Open latch, transfer on. Stays on until stopShooting() (Tele right trigger hold). */
     public void startShooting() {
         shootStartNanos = System.nanoTime();
+        unjam = Unjam.IDLE;
         latch.open();
         intake.on();
         shooter.setShooting(true);
@@ -373,9 +402,16 @@ public final class Robot {
     /** Transfer off, close latch. */
     public void stopShooting() {
         shootStartNanos = 0;
-        intake.off();
-        latch.close();
         shooter.setShooting(false);
+        if (LATCH_UNJAM) {
+            // Latch stays open while the intake backs the ball out; updateUnjam() closes it after UNJAM_REVERSE_MS.
+            intake.setRawPower(UNJAM_REVERSE_POWER);
+            unjam = Unjam.REVERSE;
+            unjamStartNanos = System.nanoTime();
+        } else {
+            intake.off();
+            latch.close();
+        }
     }
 
     /** True between startShooting() and stopShooting(). */
@@ -399,6 +435,7 @@ public final class Robot {
     public void stop() {
         pausedPath = null;
         shootStartNanos = 0;
+        unjam = Unjam.IDLE;
         intake.off();
         latch.close();
         shooter.setShooting(false);
