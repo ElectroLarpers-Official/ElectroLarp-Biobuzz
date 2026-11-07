@@ -14,13 +14,11 @@ mindmap
         Far
       auto.blue
         blueClose
-        blueFar
       auto.paths
         ClosePaths
         FarPaths
       auto.red
         redClose
-        redFar
       pedro
         Constants
         NoDrivetrain
@@ -59,8 +57,10 @@ mindmap
         teleBlue
         teleRed
       test
+        FlowerTest
         FlywheelPIDFTest
         HoodServoPositionTuning
+        LatchPositionTuning
         ShotPointTuner
         TurretCenter
         TurretTest

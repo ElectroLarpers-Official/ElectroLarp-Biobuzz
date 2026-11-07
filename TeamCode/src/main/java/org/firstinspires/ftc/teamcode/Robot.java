@@ -377,8 +377,8 @@ public final class Robot {
         );
     }
 
-    public void flower(boolean status) {
-        flower.toggleFlower(status);
+    public void flower(boolean down) {
+        flower.setDown(down);
     }
 
     public void stop() {
