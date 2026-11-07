@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.util.OpModeStorage;
 
 @Configurable
 public class OneTip extends CommandOpMode {
-    public static double FIXED_RPM = 3700;
+    public static double FIXED_RPM = 4000;
 
     Alliance a;
     Robot robot;
