@@ -1,13 +1,29 @@
 {
   "project": "ElectroLarp-Biobuzz",
   "generated_date": "2026-11-07",
-  "git_head": "a6364db9d1eba0b3648f887a86a2bf9cefd9b191",
+  "git_head": "80c229f68b75f81880abd97d4c2b948a900f97ce",
   "scope": "Tracked non-sensitive repository paths; Java symbols and imports. No secrets, binary contents or generated build directories.",
   "limitations": "Regex-based declarations and dependency candidates; not a compiler-resolved call graph. Commented-out declarations excluded. No runtime validation.",
   "inventory": [
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "bytes": 2513
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/blue/blue1tip.java",
+      "bytes": 329
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
+      "bytes": 1700
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/red/red1tip.java",
+      "bytes": 325
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java",
-      "bytes": 2346
+      "bytes": 2176
     },
     {
       "path": ".gitattributes",
@@ -427,7 +443,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
-      "bytes": 3152
+      "bytes": 3209
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
@@ -439,7 +455,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
-      "bytes": 7451
+      "bytes": 7446
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java",
@@ -507,7 +523,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java",
-      "bytes": 1003
+      "bytes": 804
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Hood.java",
@@ -775,6 +791,221 @@
   ],
   "java_files": [
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "package": "org.firstinspires.ftc.teamcode.auto",
+      "types": [
+        {
+          "name": "OneTip",
+          "kind": "class",
+          "line": 19
+        }
+      ],
+      "methods": [
+        {
+          "name": "OneTip",
+          "signature": "public OneTip(Alliance a)",
+          "visibility": "public",
+          "line": 27
+        },
+        {
+          "name": "initialize",
+          "signature": "public void initialize()",
+          "visibility": "public",
+          "line": 32
+        },
+        {
+          "name": "initializeLoop",
+          "signature": "public void initializeLoop()",
+          "visibility": "public",
+          "line": 40
+        },
+        {
+          "name": "onStart",
+          "signature": "public void onStart()",
+          "visibility": "public",
+          "line": 47
+        },
+        {
+          "name": "holdRpm",
+          "signature": "private void holdRpm()",
+          "visibility": "private",
+          "line": 53
+        },
+        {
+          "name": "execute",
+          "signature": "public void execute()",
+          "visibility": "public",
+          "line": 58
+        },
+        {
+          "name": "end",
+          "signature": "public void end()",
+          "visibility": "public",
+          "line": 63
+        },
+        {
+          "name": "routine",
+          "signature": "private Command routine()",
+          "visibility": "private",
+          "line": 71
+        },
+        {
+          "name": "shootCycle",
+          "signature": "private Command shootCycle()",
+          "visibility": "private",
+          "line": 80
+        }
+      ],
+      "imports": [
+        "org.electrolightsftc.pulse.lumen.commands.Commands.infinite",
+        "org.electrolightsftc.pulse.lumen.commands.Commands.waitMs",
+        "org.electrolightsftc.pulse.lumen.groups.Groups.sequential",
+        "org.electrolightsftc.pulse.electropathing.PulseCommands.follow",
+        "com.bylazar.configurables.annotations.Configurable",
+        "org.electrolightsftc.pulse.lumen.Command",
+        "org.electrolightsftc.pulse.lumen.Scheduler",
+        "org.firstinspires.ftc.teamcode.Robot",
+        "org.firstinspires.ftc.teamcode.auto.paths.OneTipPaths",
+        "org.firstinspires.ftc.teamcode.util.Alliance",
+        "org.firstinspires.ftc.teamcode.util.CommandOpMode",
+        "org.firstinspires.ftc.teamcode.util.OpModeStorage"
+      ],
+      "role": "Project support file.",
+      "lines": 84,
+      "sha256": "c7b7871afa35f8a8ac4b2969a007ccbc86643061fd04ef2f91c44c51f29b67c7",
+      "internal_dependencies": [
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java"
+      ]
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/blue/blue1tip.java",
+      "package": "org.firstinspires.ftc.teamcode.auto.blue",
+      "types": [
+        {
+          "name": "blue1tip",
+          "kind": "class",
+          "line": 9
+        }
+      ],
+      "methods": [
+        {
+          "name": "blue1tip",
+          "signature": "public blue1tip()",
+          "visibility": "public",
+          "line": 10
+        }
+      ],
+      "imports": [
+        "com.qualcomm.robotcore.eventloop.opmode.Autonomous",
+        "org.firstinspires.ftc.teamcode.auto.OneTip",
+        "org.firstinspires.ftc.teamcode.util.Alliance"
+      ],
+      "role": "Alliance-specific autonomous registration wrapper.",
+      "lines": 13,
+      "sha256": "3c54b2ceff69dff045b1cf6ce5474cafc88b0cedd0bc13a179c489845e628080",
+      "internal_dependencies": [
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
+      ]
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
+      "package": "org.firstinspires.ftc.teamcode.auto.paths",
+      "types": [
+        {
+          "name": "OneTipPaths",
+          "kind": "class",
+          "line": 11
+        },
+        {
+          "name": "Poses",
+          "kind": "class",
+          "line": 36
+        }
+      ],
+      "methods": [
+        {
+          "name": "OneTipPaths",
+          "signature": "private OneTipPaths()",
+          "visibility": "private",
+          "line": 12
+        },
+        {
+          "name": "poses",
+          "signature": "public static PoseFactory poses(Alliance a)",
+          "visibility": "public",
+          "line": 16
+        },
+        {
+          "name": "startPose",
+          "signature": "public static Pose startPose(Alliance a)",
+          "visibility": "public",
+          "line": 21
+        },
+        {
+          "name": "path1",
+          "signature": "public static Path path1(Alliance a)",
+          "visibility": "public",
+          "line": 25
+        },
+        {
+          "name": "path2",
+          "signature": "public static Path path2(Alliance a)",
+          "visibility": "public",
+          "line": 30
+        }
+      ],
+      "imports": [
+        "com.pedropathing.api.Paths.curve",
+        "com.pedropathing.api.Paths.line",
+        "com.pedropathing.api.PoseFactory",
+        "com.pedropathing.math.Pose",
+        "com.pedropathing.paths.Path",
+        "org.firstinspires.ftc.teamcode.util.Alliance"
+      ],
+      "role": "Project support file.",
+      "lines": 53,
+      "sha256": "627a60d2bde5070c18f30f315d9b78b5766256828d96109e6a2a2fcb1a556c5c",
+      "internal_dependencies": [
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
+      ]
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/red/red1tip.java",
+      "package": "org.firstinspires.ftc.teamcode.auto.red",
+      "types": [
+        {
+          "name": "red1tip",
+          "kind": "class",
+          "line": 9
+        }
+      ],
+      "methods": [
+        {
+          "name": "red1tip",
+          "signature": "public red1tip()",
+          "visibility": "public",
+          "line": 10
+        }
+      ],
+      "imports": [
+        "com.qualcomm.robotcore.eventloop.opmode.Autonomous",
+        "org.firstinspires.ftc.teamcode.auto.OneTip",
+        "org.firstinspires.ftc.teamcode.util.Alliance"
+      ],
+      "role": "Alliance-specific autonomous registration wrapper.",
+      "lines": 13,
+      "sha256": "efbcff506bde42a9d86e375b9ab891c664a3735412b8451a4f3bd8f01e428670",
+      "internal_dependencies": [
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
+      ]
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java",
       "package": "org.firstinspires.ftc.teamcode.test",
       "types": [
@@ -813,7 +1044,7 @@
           "name": "show",
           "signature": "private void show()",
           "visibility": "private",
-          "line": 58
+          "line": 57
         }
       ],
       "imports": [
@@ -828,8 +1059,8 @@
         "org.firstinspires.ftc.teamcode.util.input.GamepadEx"
       ],
       "role": "Project support file.",
-      "lines": 66,
-      "sha256": "15a49cf26c842c518242bff0c7dc41ec38c1e3d3aa6348a270c66c912831cc4d",
+      "lines": 65,
+      "sha256": "23a1e29836820edefb4e2dae9699145829b9e4641815c1b0a151d2d7e611a28b",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java",
@@ -4681,7 +4912,7 @@
           "name": "shootCycle",
           "signature": "private Command shootCycle()",
           "visibility": "private",
-          "line": 91
+          "line": 92
         }
       ],
       "imports": [
@@ -4702,8 +4933,8 @@
         "org.firstinspires.ftc.teamcode.util.OpModeStorage"
       ],
       "role": "Near-side autonomous sequence: shooting, pollen loading, flower approach and retreat.",
-      "lines": 96,
-      "sha256": "440862a50082eebec0665e13bffc0c75063a6cabbc07e67b7719baa462e3432d",
+      "lines": 97,
+      "sha256": "80e67e7ff8bc6bba48782c583633040c68eeb5a6f01c5b5cab8839d1b17b0fa9",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
@@ -4889,7 +5120,7 @@
       ],
       "role": "Near-side paths, heading interpolation, mirrored poses and flower pose callback.",
       "lines": 180,
-      "sha256": "74cf19d27fb8a4c46f7ed3282602878c43d044933d536a178fbc540240e9c7e1",
+      "sha256": "7bab805bacf02e12c018997f419baab8123d25f90fd20535f02938197c37c2cd",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
       ]
@@ -6341,25 +6572,25 @@
           "name": "setDown",
           "signature": "public void setDown(boolean state)",
           "visibility": "public",
-          "line": 20
+          "line": 19
         },
         {
           "name": "toggle",
           "signature": "public void toggle()",
           "visibility": "public",
-          "line": 26
+          "line": 24
         },
         {
           "name": "isDown",
           "signature": "public boolean isDown()",
           "visibility": "public",
-          "line": 28
+          "line": 26
         },
         {
           "name": "isConnected",
           "signature": "public boolean isConnected()",
           "visibility": "public",
-          "line": 30
+          "line": 28
         }
       ],
       "imports": [
@@ -6368,8 +6599,8 @@
         "org.firstinspires.ftc.teamcode.HardwareNames"
       ],
       "role": "Optional flower mechanism servo.",
-      "lines": 31,
-      "sha256": "b46f732a235b36d4ff8ebb61ec7bd95374bb9de4a7765cc8f7c6c370b390eda6",
+      "lines": 29,
+      "sha256": "236b76aed3c69bcd42ea990a6ece0eae293a6a1aedca3a7bc1557620b93d0ab0",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java"
       ]
@@ -9629,6 +9860,56 @@
     }
   ],
   "edges": [
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/blue/blue1tip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/blue/blue1tip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/red/red1tip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/red/red1tip.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+      "kind": "import-or-same-package-reference"
+    },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
