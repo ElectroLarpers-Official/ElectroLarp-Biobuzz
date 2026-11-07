@@ -98,6 +98,8 @@ public class ShooterCalc {
      *  OFF (2026-10-25): the hand-tuned points (TunedShotTable) replace the map. The map is not loaded or read
      *  while this is off; the code and data are kept for later. */
     public static boolean USE_AIM_TABLE = false;
+    /** No tuned point within range: true = run the physics math, false = hold the nearest tuned point's RPM. */
+    public static boolean PHYSICS_FALLBACK = true;
 
     private static final HiveAimTable.Shot tableShot = new HiveAimTable.Shot();
     private static boolean tableShotOk = false;
@@ -151,6 +153,9 @@ public class ShooterCalc {
 
         if (haveTuned && tunedShot.valid) {
             fillFromTuned(range, true);
+        } else if (useTuned && PHYSICS_FALLBACK) {
+            // No tuned point close enough: fall through to the physics solve (fixed score height / entry).
+            return;
         } else if (useTuned && !TunedShotTable.MAP_FALLBACK) {
             // No tuned point close enough and no map fallback: no shot. Keep the flywheel and hood near a real
             // shot (nearest tuned point, else the map) so they're ready once the robot gets to a tuned spot.
