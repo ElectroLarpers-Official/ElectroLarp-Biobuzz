@@ -72,7 +72,7 @@ public class OneTip extends CommandOpMode {
         return sequential(
                 waitMs(2000),
                 follow(robot.follower, OneTipPaths.path1(a), false),
-                shootCycle(),
+                //shootCycle(),
                 follow(robot.follower, OneTipPaths.path2(a), false)
         );
     }
