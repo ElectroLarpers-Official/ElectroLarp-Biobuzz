@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.tele;
 
 import static com.pedropathing.ivy.commands.Commands.infinite;
+import static com.pedropathing.ivy.commands.Commands.instant;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
@@ -74,6 +75,7 @@ public class Tele extends CommandOpMode {
         gp1.right_trigger_button(FloatSupplier::isPress);
         gp2.left_trigger_button(FloatSupplier::isPress);
 
+
         tele = new TeleTelemetry(telemetry, robot, a);
         schedule(infinite(() -> {
             robot.update();
@@ -122,7 +124,7 @@ public class Tele extends CommandOpMode {
 
     /**
      * Driver 1: LT hold = intake; RT hold = shoot while the shot can go in; LB hold = slow reverse (clear a jam);
-     * A = one shoot cycle; X = pose reset (robot squared in the reset corner, Robot.RESET_X / Y / HEADING_DEG).
+     * A = one shoot cycle; DPAD DOWN = flower open / close toggle; X = pose reset (robot squared in the reset corner, Robot.RESET_X / Y / HEADING_DEG).
      * Rumbles while trying to shoot a shot that can't go in.
      */
     private void driver1() {
@@ -145,6 +147,8 @@ public class Tele extends CommandOpMode {
 
         if (gp1.left_bumper.isRisingEdge()) robot.intake.slowReverse();
         if (gp1.left_bumper.isFallingEdge()) robot.intake.off();
+
+        if (gp1.dpad_down.isRisingEdge()) robot.flower.toggle();
 
         if (gp1.a.isRisingEdge() && canShoot && !Scheduler.isScheduled(shootCycle)) schedule(shootCycle);
 

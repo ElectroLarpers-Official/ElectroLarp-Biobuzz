@@ -13,8 +13,8 @@ public class TurretCalc {
      *  the servos can reach: +/- SERVO_RANGE_DEG/2 * 1.731 = +/- 307.3 deg with 355 deg Axon MAXes centred at 0.5.
      *  +/- 300 leaves about 7 deg of margin before the servos hit their end. Lower these if the wiring can't
      *  take that much twist. */
-    public static double MIN_ANGLE = -300.0;
-    public static double MAX_ANGLE = 300.0;
+    public static double MIN_ANGLE = -190;
+    public static double MAX_ANGLE = 190;
 
     /** Turret speed limit for the command, deg/s: normally / on a big swing (more than 90 deg to go). */
     public static double maxSlewNormalDegPerSec = 400; // TODO(new robot): old-robot value
@@ -25,7 +25,7 @@ public class TurretCalc {
      *  5000 (simulated through the real solver): braking-SOTM aim jumps of 25-55 deg are within 2 deg 120-180 ms
      *  after the brake starts (no limit: 90-135 ms), well before the robot stops; a 1500 deg/s^2 robot spin is
      *  followed within 0.4 deg. Lower it if the turret still wobbles after snaps, raise it if braking shots are late. */
-    public static double maxAccelDegPerSec2 = 5000;
+    public static double maxAccelDegPerSec2 = 1500;
     /** Smoothing of the measured target speed (0..1, higher = less smoothing). The command follows a smoothly
      *  moving target (the robot turning, driving past the HIVE) at the target's own speed, so the acceleration
      *  limit doesn't make it lag. */
