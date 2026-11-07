@@ -33,14 +33,14 @@ public class TurretCalc {
 
     /** Per-alliance aim trim in DEGREES, added to the commanded angle (+ = counter-clockwise). Driver 2 changes the
      *  current alliance's one live with RB / LB in TeleOp. The old robot's 15 / 10 were removed: start at 0. */
-    public static double turretOffset = 0;  // RED
-    public static double turretOffset2 = 0; // BLUE
+    public static double turretOffset = 20;  // RED
+    public static double turretOffset2 = 20; // BLUE
 
     /** Servo-position trims in servo units (0..1), added to the servo signal. */
     public static double servoOffset = 0.0; // TODO: tune
     public static double wrapServoOffset = 0.0; // TODO: tune
 
-    public static double yawFeedforwardGain = 0.145; // TODO(new robot): old-robot value
+    public static double yawFeedforwardGain = 0; // TODO(new robot): old-robot value
 
     // ---- Servo -> turret gearing (BIOBUZZ) -------------------------------------
     // 4 Axon MAXes, positional, all at the same position (four ports; turretServo2 reversed, see Turret). Each pair drives a 15T through 48T gears (48:15 speed-up); each 15T shares

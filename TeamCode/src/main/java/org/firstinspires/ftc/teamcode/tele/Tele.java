@@ -32,10 +32,10 @@ public class Tele extends CommandOpMode {
     /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
     /** Start from where the last auto / TeleOp ended instead of START_X/Y. Turn on once autos are running. */
-    public static boolean USE_SAVED_POSE = false;
+    public static boolean USE_SAVED_POSE = true;
 
     /** Only shoot when ShotCheck says the shot can go in. Turn off to test shooting from anywhere. */
-    public static boolean REQUIRE_SHOT_ALLOWED = true;
+    public static boolean REQUIRE_SHOT_ALLOWED = false;
     /** Rumble length while trying to shoot a shot that can't go in, ms. */
     public static int CANT_SHOOT_RUMBLE_MS = 250;
 
@@ -74,6 +74,7 @@ public class Tele extends CommandOpMode {
         gp1.left_trigger_button(FloatSupplier::isPress);
         gp1.right_trigger_button(FloatSupplier::isPress);
         gp2.left_trigger_button(FloatSupplier::isPress);
+        gp2.right_trigger_button(FloatSupplier::isPress);
 
 
         tele = new TeleTelemetry(telemetry, robot, a);
@@ -123,7 +124,7 @@ public class Tele extends CommandOpMode {
     // ---- Controls --------------------------------------------------------------------------------------------
 
     /**
-     * Driver 1: LT hold = intake; RT hold = shoot while the shot can go in; LB hold = slow reverse (clear a jam);
+     * Driver 1: LT hold = intake; RT hold = shoot while the shot can go in; B hold = slow reverse (clear a jam; the bumpers are broken);
      * A = one shoot cycle; DPAD DOWN = flower open / close toggle; X = pose reset (robot squared in the reset corner, Robot.RESET_X / Y / HEADING_DEG).
      * Rumbles while trying to shoot a shot that can't go in.
      */
@@ -145,8 +146,8 @@ public class Tele extends CommandOpMode {
             robot.stopShooting();
         }
 
-        if (gp1.left_bumper.isRisingEdge()) robot.intake.slowReverse();
-        if (gp1.left_bumper.isFallingEdge()) robot.intake.off();
+        if (gp1.b.isRisingEdge()) robot.intake.slowReverse();
+        if (gp1.b.isFallingEdge()) robot.intake.off();
 
         if (gp1.dpad_down.isRisingEdge()) robot.flower.toggle();
 
@@ -157,24 +158,33 @@ public class Tele extends CommandOpMode {
     }
 
     /**
-     * Driver 2: LT hold = shot-check override; d-pad up / down = RPM trim; d-pad right / left = hood trim
-     * (steeper / flatter); RB / LB = turret offset for this alliance (+ = counter-clockwise); BACK = all trims to 0;
-     * START = manual mode on / off. In manual mode: right stick X turns the turret, A / B / Y = close / mid / far preset.
+     * Driver 2: LT hold = shot-check override; d-pad up / down = RPM trim; d-pad left / right = turret
+     * offset for this alliance (left = counter-clockwise; the bumpers are broken, and the hood is fixed so there's no
+     * hood trim); BACK = all trims to 0;
+     * LEFT STICK CLICK = turret straight forward on / off; X = fixed flywheel RPM on / off (Robot.FIXED_RPM, turret still aims); START = manual mode on / off. In manual mode: right stick X turns the turret, A / B / Y = close / mid / far preset.
      */
     private void driver2(double dt) {
         if (gp2.dpad_up.isRisingEdge()) Robot.LIVE_RPM_TRIM += RPM_TRIM_STEP;
         if (gp2.dpad_down.isRisingEdge()) Robot.LIVE_RPM_TRIM -= RPM_TRIM_STEP;
-        if (gp2.dpad_right.isRisingEdge()) Robot.LIVE_HOOD_TRIM += HOOD_TRIM_STEP;
-        if (gp2.dpad_left.isRisingEdge()) Robot.LIVE_HOOD_TRIM -= HOOD_TRIM_STEP;
-        if (gp2.right_bumper.isRisingEdge()) setTurretOffset(turretOffset() + TURRET_TRIM_STEP_DEG);
-        if (gp2.left_bumper.isRisingEdge()) setTurretOffset(turretOffset() - TURRET_TRIM_STEP_DEG);
+        if (gp2.dpad_left.isRisingEdge()) setTurretOffset(turretOffset() + TURRET_TRIM_STEP_DEG);
+        if (gp2.dpad_right.isRisingEdge()) setTurretOffset(turretOffset() - TURRET_TRIM_STEP_DEG);
         if (gp2.back.isRisingEdge()) {
             Robot.LIVE_RPM_TRIM = 0;
             Robot.LIVE_HOOD_TRIM = 0;
             setTurretOffset(0);
             gamepad2.rumble(200);
         }
-        if (gp2.start.isRisingEdge()) {
+        boolean forwardToggle = gp2.left_stick_button.isRisingEdge()
+                || (!robot.isManual() && gp2.a.isRisingEdge());   // A = easy turret forward / tracking toggle
+        if (forwardToggle) {
+            robot.setTurretForward(!robot.isTurretForward());
+            gamepad2.rumble(robot.isTurretForward() ? 500 : 200);
+        }
+        if (gp2.x.isRisingEdge()) {
+            robot.setFixedRpm(!robot.isFixedRpm());
+            gamepad2.rumble(robot.isFixedRpm() ? 500 : 200);
+        }
+        if (gp2.right_trigger_button.isRisingEdge()) {   // RT: manual <-> normal (START does nothing)
             robot.setManual(!robot.isManual());
             gamepad2.rumble(robot.isManual() ? 500 : 200);
         }

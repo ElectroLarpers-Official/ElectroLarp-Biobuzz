@@ -48,7 +48,9 @@ public class TeleTelemetry {
                 ? String.format("MANUAL %s, turret %.0f deg", robot.manualShot(), robot.manualTurretDeg())
                 : "auto";
         return String.format("%s%s | trims %+.0f RPM, hood %+.3f, turret %+.0f deg", mode,
-                shotOverride ? " | SHOT CHECK OVERRIDE" : "",
+                (robot.isTurretForward() ? " | TURRET FORWARD" : "")
+                        + (robot.isFixedRpm() ? String.format(" | FIXED %.0f RPM", Robot.FIXED_RPM) : "")
+                        + (shotOverride ? " | SHOT CHECK OVERRIDE" : ""),
                 Robot.LIVE_RPM_TRIM, Robot.LIVE_HOOD_TRIM, turretOffset);
     }
 
