@@ -10,14 +10,18 @@ mindmap
         HardwareNames
         Robot
       auto
+        OneTip
         Close
         Far
       auto.blue
+        blue1tip
         blueClose
       auto.paths
+        OneTipPaths
         ClosePaths
         FarPaths
       auto.red
+        red1tip
         redClose
       pedro
         Constants

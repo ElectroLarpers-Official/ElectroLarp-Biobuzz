@@ -1,12 +1,12 @@
 # ElectroLarp-Biobuzz project index
 
-Generated 2026-11-07, source HEAD `a6364db9d1eba0b3648f887a86a2bf9cefd9b191`. Source files were inspected directly.
+Generated 2026-11-07, source HEAD `80c229f68b75f81880abd97d4c2b948a900f97ce`. Source files were inspected directly.
 
 ## Coverage
 
-- 187 tracked non-sensitive paths inventoried.
-- 59 TeamCode Java files, 70 SDK/vendor Java files.
-- 789 method/constructor declarations; 145 candidate internal dependency edges.
+- 191 tracked non-sensitive paths inventoried.
+- 63 TeamCode Java files, 70 SDK/vendor Java files.
+- 805 method/constructor declarations; 155 candidate internal dependency edges.
 - [Interactive mind map](mindmap.html), [Mermaid mind map](MINDMAP.md), [machine-readable inventory and symbols](index.json).
 - [Regeneration script](../../scripts/generate_context_index.py): run `python scripts/generate_context_index.py` from this checkout. It writes local documents only; Atlas refresh is a separate explicit operation.
 
@@ -88,11 +88,71 @@ Atlas stores generated summaries and symbol outlines, not complete raw source fi
 
 ## TeamCode file and symbol catalog
 
+### auto/OneTip.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java); 84 lines; SHA-256 `c7b7871afa35f8a8ac4b2969a007ccbc86643061fd04ef2f91c44c51f29b67c7`.
+
+Types: `OneTip` (class, line 19)
+
+- L27: `public OneTip(Alliance a)`
+- L32: `public void initialize()`
+- L40: `public void initializeLoop()`
+- L47: `public void onStart()`
+- L53: `private void holdRpm()`
+- L58: `public void execute()`
+- L63: `public void end()`
+- L71: `private Command routine()`
+- L80: `private Command shootCycle()`
+
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`
+
+### auto/blue/blue1tip.java
+
+Alliance-specific autonomous registration wrapper.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/blue/blue1tip.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/blue/blue1tip.java); 13 lines; SHA-256 `3c54b2ceff69dff045b1cf6ce5474cafc88b0cedd0bc13a179c489845e628080`.
+
+Types: `blue1tip` (class, line 9)
+
+- L10: `public blue1tip()`
+
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
+
+### auto/paths/OneTipPaths.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java); 53 lines; SHA-256 `627a60d2bde5070c18f30f315d9b78b5766256828d96109e6a2a2fcb1a556c5c`.
+
+Types: `OneTipPaths` (class, line 11), `Poses` (class, line 36)
+
+- L12: `private OneTipPaths()`
+- L16: `public static PoseFactory poses(Alliance a)`
+- L21: `public static Pose startPose(Alliance a)`
+- L25: `public static Path path1(Alliance a)`
+- L30: `public static Path path2(Alliance a)`
+
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
+
+### auto/red/red1tip.java
+
+Alliance-specific autonomous registration wrapper.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/red/red1tip.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/red/red1tip.java); 13 lines; SHA-256 `efbcff506bde42a9d86e375b9ab891c664a3735412b8451a4f3bd8f01e428670`.
+
+Types: `red1tip` (class, line 9)
+
+- L10: `public red1tip()`
+
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
+
 ### test/FlowerTest.java
 
 Project support file.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java); 66 lines; SHA-256 `15a49cf26c842c518242bff0c7dc41ec38c1e3d3aa6348a270c66c912831cc4d`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlowerTest.java); 65 lines; SHA-256 `23a1e29836820edefb4e2dae9699145829b9e4641815c1b0a151d2d7e611a28b`.
 
 Types: `FlowerTest` (class, line 17)
 
@@ -100,7 +160,7 @@ Types: `FlowerTest` (class, line 17)
 - L35: `public void initializeLoop()`
 - L41: `public void execute()`
 - L51: `private void moveTo(double target)`
-- L58: `private void show()`
+- L57: `private void show()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/GamepadEx.java`
 
@@ -159,7 +219,7 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Near-side autonomous sequence: shooting, pollen loading, flower approach and retreat.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java); 96 lines; SHA-256 `440862a50082eebec0665e13bffc0c75063a6cabbc07e67b7719baa462e3432d`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java); 97 lines; SHA-256 `80e67e7ff8bc6bba48782c583633040c68eeb5a6f01c5b5cab8839d1b17b0fa9`.
 
 Types: `Close` (class, line 23)
 
@@ -170,7 +230,7 @@ Types: `Close` (class, line 23)
 - L57: `public void execute()`
 - L63: `public void end()`
 - L71: `private Command routine()`
-- L91: `private Command shootCycle()`
+- L92: `private Command shootCycle()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`
 
@@ -207,7 +267,7 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Near-side paths, heading interpolation, mirrored poses and flower pose callback.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java); 180 lines; SHA-256 `74cf19d27fb8a4c46f7ed3282602878c43d044933d536a178fbc540240e9c7e1`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java); 180 lines; SHA-256 `7bab805bacf02e12c018997f419baab8123d25f90fd20535f02938197c37c2cd`.
 
 Types: `ClosePaths` (class, line 18), `Poses` (class, line 141)
 
@@ -504,15 +564,15 @@ Internal dependency candidates: none detected
 
 Optional flower mechanism servo.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java); 31 lines; SHA-256 `b46f732a235b36d4ff8ebb61ec7bd95374bb9de4a7765cc8f7c6c370b390eda6`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java); 29 lines; SHA-256 `236b76aed3c69bcd42ea990a6ece0eae293a6a1aedca3a7bc1557620b93d0ab0`.
 
 Types: `Flower` (class, line 8)
 
 - L15: `public Flower(HardwareMap hw)`
-- L20: `public void setDown(boolean state)`
-- L26: `public void toggle()`
-- L28: `public boolean isDown()`
-- L30: `public boolean isConnected()`
+- L19: `public void setDown(boolean state)`
+- L24: `public void toggle()`
+- L26: `public boolean isDown()`
+- L28: `public boolean isConnected()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`
 
