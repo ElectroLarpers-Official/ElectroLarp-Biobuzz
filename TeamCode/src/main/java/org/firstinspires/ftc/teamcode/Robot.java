@@ -68,7 +68,7 @@ public final class Robot {
     public static double LIVE_RPM_TRIM = 0;
     /** Driver 2 X toggles a fixed flywheel speed: this motor RPM (+ LIVE_RPM_TRIM) instead of the solver's, in auto
      *  aim and in manual mode. The turret keeps aiming as normal. */
-    public static double FIXED_RPM = 4200;
+    public static double FIXED_RPM = 4325;
     /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
 
