@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.HardwareNames;
 @Configurable
 public final class Latch {
     public static double OPEN_POS = 0.161; // TODO(new robot): old-robot value
-    public static double CLOSED_POS = 0.211; // TODO(new robot): old-robot value
+    public static double CLOSED_POS = 0.22; // TODO(new robot): old-robot value
 
     private final Servo latch; // null if stopperServo isn't in the config (not plugged in yet): everything is a no-op
     private boolean open;
