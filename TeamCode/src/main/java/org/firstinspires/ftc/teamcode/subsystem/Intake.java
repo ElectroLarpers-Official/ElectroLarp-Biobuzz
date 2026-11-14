@@ -26,7 +26,6 @@ public final class Intake {
         ON,
         REVERSE,
         SLOW_REVERSE,
-        UNJAM,  // Robot's latch unjam: slow reverse at Robot.UNJAM_REVERSE_POWER
         OFF
     }
 
@@ -63,12 +62,6 @@ public final class Intake {
     public void slowReverse() {
         setPower(SLOW_REVERSE_POWER);
         state = IntakeState.SLOW_REVERSE;
-    }
-
-    /** Any power (Robot's latch unjam). */
-    public void setRawPower(double power) {
-        setPower(power);
-        state = IntakeState.UNJAM;
     }
 
     public void off() {

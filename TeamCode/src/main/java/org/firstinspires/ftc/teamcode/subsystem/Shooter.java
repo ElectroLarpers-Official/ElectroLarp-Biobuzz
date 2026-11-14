@@ -30,6 +30,7 @@ public final class Shooter {
     /** Fixed flywheel target for party mode, ticks/s. Party mode is reserved for driver 2 controls, which are not added yet. */
     public static double PARTY_MODE_VELOCITY = 1800; // TODO: confirm real value
 
+
     public static boolean MOTORS_REVERSED = true;
     /** Flip if the RPM reads negative while the wheel spins the right way. */
     public static boolean ENCODER_REVERSED = false;
@@ -57,7 +58,7 @@ public final class Shooter {
      *  feeds the feedforward compensation, which doesn't need to follow every sag. */
     public static double VOLTAGE_PERIOD_MS = 1000;
 
-    /** "At speed" band for atTarget(), ticks/s. ShotCheck uses its own (shot-map) tolerance for READY. */
+    /** "At speed" band for atTarget(), ticks/s. */
     public static double VELOCITY_TOLERANCE = 100; // TODO: tune
 
     /** Spin-up ramp: when the flywheel starts from a stop, its motor power may rise by at most this much per

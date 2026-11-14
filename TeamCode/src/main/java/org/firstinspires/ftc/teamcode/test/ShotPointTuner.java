@@ -12,9 +12,8 @@ import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterConstants;
 import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
-import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShotCheck;
 import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
-import org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable;
+import org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveCell;
 import org.firstinspires.ftc.teamcode.subsystem.aim.table.TunedShotTable;
 import org.firstinspires.ftc.teamcode.tele.Tele;
 import org.firstinspires.ftc.teamcode.util.TeleTelemetry;
@@ -33,8 +32,8 @@ import java.util.Locale;
  * (TeleOp loads the file at init).
  *
  * <p>Pose: Pinpoint, starting from Tele.START_X / START_Y / START_HEADING_DEG. The turret aims at the cell on the
- * robot's side of the field (if plugged in). RPM / hood start at what TeleOp would shoot here (tuned points, else
- * the shot map) and follow it as you drive, until you touch the d-pad or bumpers. Shooting is never blocked here.
+ * robot's side of the field (if plugged in). RPM / hood start at what TeleOp would shoot here (the blended tuned
+ * points) and follow it as you drive, until you touch the d-pad or bumpers.
  *
  * <p>Gamepad 1 - init: right bumper = alliance. Running:
  * <ul>
@@ -70,7 +69,7 @@ public class ShotPointTuner extends CommandOpMode {
     boolean follow = true;
     double tuneRpm = 0, tuneHood = 0;
     double predRpm = 0, predHood = 0;
-    HiveAimTable.Cell cell = null;
+    HiveCell cell = null;
     Pose releasePoint = new Pose(0, 0, 0);
     String message = "";
     List<String> printed = null;
@@ -84,7 +83,7 @@ public class ShotPointTuner extends CommandOpMode {
         gp1.right_trigger_button(FloatSupplier::isPress);
         panels = PanelsTelemetry.INSTANCE.getTelemetry();
         alliance = RED_ALLIANCE ? Alliance.RED : Alliance.BLUE;
-        robot = new Robot(hardwareMap, alliance);   // also loads the shot map and the tuned points
+        robot = new Robot(hardwareMap, alliance);   // also loads the tuned points
         robot.follower.setPose(new Pose(Tele.START_X, Tele.START_Y, Math.toRadians(Tele.START_HEADING_DEG)));
         robot.follower.update();
         hubs = hardwareMap.getAll(LynxModule.class);
@@ -135,14 +134,13 @@ public class ShotPointTuner extends CommandOpMode {
         Pose turretPose = Turret.getTurretPose(pose);
         Pose goal = ShooterCalc.goal(alliance, pose.y());
         Vector2D turretToGoal = Turret.getTurretToGoalVector(turretPose, goal);
-        double[] result = ShooterCalc.solve(pose.heading(), turretToGoal, Vector2D.zero(), Vector2D.zero(), 0.0);
-        ShotCheck.check(alliance, goal);
+        double[] result = ShooterCalc.solve(pose.heading(), turretToGoal, Vector2D.zero(), 0.0);
         robot.turret.setPositionAll(TurretCalc.solve(result[2], 0.0, alliance)); // TODO delete: -> setPosition
 
-        cell = HiveAimTable.Cell.of(alliance == Alliance.RED, ShooterCalc.hiveAimFar());
+        cell = HiveCell.of(alliance == Alliance.RED, ShooterCalc.hiveAimFar());
         releasePoint = turretPose;
         predRpm = ShooterCalc.requiredRPM;
-        predHood = result[1];
+        if (!Double.isNaN(result[1])) predHood = result[1];
         if (follow) {
             tuneRpm = predRpm;
             tuneHood = predHood;
@@ -251,7 +249,6 @@ public class ShotPointTuner extends CommandOpMode {
                 ShooterCalc.launchDegForHoodPosition(robot.hood.position()));
         telemetry.addData("Mode", follow ? "FOLLOW prediction" : "MANUAL (START = follow)");
         telemetry.addData("Prediction", "%.0f RPM, hood %.3f, from %s", predRpm, predHood, TeleTelemetry.shotSourceText());
-        telemetry.addData("TeleOp would", ShotCheck.allowed() ? "shoot here" : "not shoot: " + ShotCheck.status());
         telemetry.addData("Nearest point", near == null ? "none for this cell"
                 : String.format(Locale.US, "%.1f in: %.0f RPM, hood %.3f (%s)", nearD, near.rpm, near.hood,
                 near.fromFile ? "file" : "code"));
