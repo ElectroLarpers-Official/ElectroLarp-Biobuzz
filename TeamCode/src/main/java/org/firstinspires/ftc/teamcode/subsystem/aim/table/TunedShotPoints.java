@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem.aim.table;
 
-import static org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable.Cell.RED_AUD;
-import static org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveAimTable.Cell.RED_FAR;
+import static org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveCell.RED_AUD;
+import static org.firstinspires.ftc.teamcode.subsystem.aim.table.HiveCell.RED_FAR;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +53,7 @@ public final class TunedShotPoints {
 
     static List<TunedShotTable.Point> points() { return Arrays.asList(POINTS); }
 
-    private static TunedShotTable.Point p(HiveAimTable.Cell cell, double x, double y, double rpm, double hood) {
+    private static TunedShotTable.Point p(HiveCell cell, double x, double y, double rpm, double hood) {
         return new TunedShotTable.Point(cell, x, y, rpm, hood, false);
     }
 }

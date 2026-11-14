@@ -19,9 +19,8 @@ public class ShooterConstants {
     public static double HIVE_BLUE_TOP_X = 84, HIVE_BLUE_TOP_Y = 82;
     public static double HIVE_BLUE_BOTTOM_X = 84, HIVE_BLUE_BOTTOM_Y = 62;
 
-    /** Toggle: aim at the window centres from the field CAD (the points the shot map was simulated against)
-     *  instead of the measured points above. Keep this on while USE_AIM_TABLE is on: the table's launch angles
-     *  and speeds assume the turret points at these. */
+    /** Toggle: aim at the window centres from the field CAD instead of the measured points above. The tuned
+     *  points were tuned with this on, so their RPM / hood assume the turret points at these. */
     public static boolean USE_MAP_AIM_POINTS = true;
     /** Window centres from the field CAD (shooter_analysis/NOTES.md), Pedro inches. TOP = far cell (high y),
      *  BOTTOM = audience cell (low y). Window centre height is 58.4 in. */
@@ -63,9 +62,8 @@ public class ShooterConstants {
     public static double HIVE_SIDE_HYSTERESIS = 3.0; // TODO(new robot): old-robot value
 
     // ---- Under the HIVE ------------------------------------------------------------
-    /** Box covering both HIVEs and their frame, Pedro inches (manual 9.6 / ShotCheck obstacle values). While the
-     *  robot pose is inside it the solver is skipped: flywheel and hood hold the constants below, the turret keeps
-     *  pointing at the cell, and shooting is blocked. The shot map has no shots in here anyway. */
+    /** Box covering both HIVEs and their frame, Pedro inches (manual 9.6). While the robot pose is inside it the
+     *  solver is skipped: flywheel and hood hold the constants below and the turret keeps pointing at the cell. */
     public static boolean UNDER_HIVE_HOLD = true;
     public static double UNDER_HIVE_X_MIN = 47.27, UNDER_HIVE_X_MAX = 96.73;
     public static double UNDER_HIVE_Y_MIN = 46.7, UNDER_HIVE_Y_MAX = 97.3;

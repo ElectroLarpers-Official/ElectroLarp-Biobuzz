@@ -19,7 +19,6 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterConstants;
 import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
-import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShotCheck;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
@@ -34,7 +33,7 @@ import java.util.List;
  * <p>Gamepad 1: A = intake on/off, B = shoot (intake on + flywheel in bang-bang), Y = shooter on/off,
  * X = auto speed on/off.
  * Auto speed ON: the robot is assumed to sit at ROBOT_X / ROBOT_Y / ROBOT_HEADING_DEG (Pedro inches); target RPM
- * and hood come from the same solver + shot map TeleOp uses. Dpad moves that pose by POSE_STEP (up = +y,
+ * and hood come from the same solver TeleOp uses. Dpad moves that pose by POSE_STEP (up = +y,
  * right = +x), right bumper switches alliance.
  * Auto speed OFF: dpad up / down = target RPM +/- RPM_STEP, hood stays put.
  */
@@ -154,9 +153,6 @@ public class FlywheelPIDFTest extends CommandOpMode {
                     ROBOT_HEADING_DEG, RED_ALLIANCE ? "RED" : "BLUE"));
             panels.addData("Aiming at", ShooterCalc.hiveAimFar() ? "far cell" : "audience cell");
             panels.addData("Range to window (in)", ShooterCalc.lastRange);
-            panels.addData("Map launch / exit speed", String.format("%.1f deg / %.2f m/s", ShooterCalc.lastTableLaunchDeg,
-                    ShooterCalc.lastTableSpeedMps));
-            panels.addData("Shot", ShotCheck.status());
             panels.addData("Hood servo pos", hood != null ? String.format("%.3f", hood.position()) : "no servo");
         }
         panels.update(telemetry); // pushes to Panels and the Driver Station
@@ -172,12 +168,10 @@ public class FlywheelPIDFTest extends CommandOpMode {
         if (ShooterConstants.underHive(robotPose.x(), robotPose.y())) {   // same hold as TeleOp
             TARGET_RPM = ShooterConstants.UNDER_HIVE_RPM;
             if (hood != null && AUTO_HOOD) hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
-            ShotCheck.blockUnderHive();
             return;
         }
-        double[] result = ShooterCalc.solve(robotPose.heading(), turretToGoal, Vector2D.zero(), Vector2D.zero(), 0.0);
-        ShotCheck.check(alliance, goal);
+        double[] result = ShooterCalc.solve(robotPose.heading(), turretToGoal, Vector2D.zero(), 0.0);
         TARGET_RPM = ShooterCalc.requiredRPM;   // motor RPM (20T motor -> 40T flywheel)
-        if (hood != null && AUTO_HOOD) hood.setPosition(result[1]);
+        if (hood != null && AUTO_HOOD && !Double.isNaN(result[1])) hood.setPosition(result[1]);
     }
 }

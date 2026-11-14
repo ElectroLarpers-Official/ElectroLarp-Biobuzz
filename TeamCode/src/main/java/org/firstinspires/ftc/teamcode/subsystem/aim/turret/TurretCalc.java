@@ -89,7 +89,7 @@ public class TurretCalc {
         aimErrorDeg = 0.0;
     }
 
-    /** Turret command -> servo position, and records outOfRange() / aimErrorDeg() for ShotCheck. */
+    /** Turret command -> servo position, and records outOfRange() / aimErrorDeg() (turret test telemetry). */
     public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance) {
         double servoPosition = servoPosition(commandedAngleDeg, robotAngularVelocityRadPerSec, alliance);
 
