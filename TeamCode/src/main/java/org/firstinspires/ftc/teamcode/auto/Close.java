@@ -21,9 +21,13 @@ import org.firstinspires.ftc.teamcode.util.OpModeStorage;
 
 @Configurable
 public class Close extends CommandOpMode {
+    public static double RPM_1 = 2000;
+    public static double RPM_2 = 2000;
+    public static boolean autoRPM = false;
     Alliance a;
     Robot robot;
     boolean started = false;
+    private boolean secondRpm = false;
     private Command autoRoutine;
 
     public Close(Alliance a) {this.a = a;
@@ -36,13 +40,16 @@ public class Close extends CommandOpMode {
         robot = new Robot(hardwareMap, a);
         robot.follower.setPose(ClosePaths.startPose(a));
         robot.follower.update();
+        robot.flower(false);
     }
 
     @Override
     public void initializeLoop() {
+        autoRPM = true;
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
         telemetry.update();
+        robot.flower.update();
     }
 
     @Override
@@ -50,17 +57,24 @@ public class Close extends CommandOpMode {
 
         started = true;
         autoRoutine = routine();
-        Scheduler.schedule(infinite(robot::update), autoRoutine);
+        Scheduler.schedule(autoRoutine);
     }
 
     @Override
     public void execute() {
-        Scheduler.execute();
+        onUpdate();
+    }
+
+    private void onUpdate() {
+        robot.update();
+        robot.shooter.setTargetRpm(secondRpm ? RPM_2 : RPM_1);
+        robot.shooter.update();
     }
 
 
     @Override
     public void end() {
+        autoRPM = false;
         if (autoRoutine != null) Scheduler.cancel(autoRoutine);
         Scheduler.reset();
         if (robot == null) return;
@@ -70,20 +84,26 @@ public class Close extends CommandOpMode {
 
     private Command routine() {
         return sequential(
-                waitMs(1000),
+                instant(()->robot.flower(false)),
+                waitMs(3000),
                 shootCycle(),
+                waitMs(500),
                 instant(()->robot.latch.close()),
                 sequential(robot.intake::on),
                 follow(robot.follower, ClosePaths.intakeLoading(a), false),
-               shootCycle(),
+                waitMs(1000),
+                instant(() -> secondRpm = true),
+               //shootCycle(),
                 instant(()->robot.latch.close()),
                 sequential(robot.intake::on),
                 instant(()->robot.flower.setDown(true)),
                 follow(robot.follower, ClosePaths.goNearFlower(a, instant(() -> robot.flower.setDown(true))), false),
-                shootCycle(),
                 sequential(robot.intake::on),
-                follow(robot.follower, ClosePaths.goInFlower(a), false,0.5),
+                follow(robot.follower, ClosePaths.goInFlower(a), false,0.7),
+                shootCycle(),
+                waitMs(2000),
                 sequential(robot.intake::off),
+                shootCycle(),
                 instant(() -> robot.flower.setDown(false)),
                 follow(robot.follower, ClosePaths.park(a), false)
         );

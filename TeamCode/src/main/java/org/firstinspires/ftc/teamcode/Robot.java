@@ -27,6 +27,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
+import org.firstinspires.ftc.teamcode.auto.Close;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.Flower;
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
@@ -54,14 +55,14 @@ public final class Robot {
 
     // ---- Driver 2 live trims: added to every shot (tuned points and manual mode) -------------------------------
     /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
-    public static double LIVE_RPM_TRIM = 0;
+    public static double LIVE_RPM_TRIM = 1000000;
     /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
 
     // ---- Manual fallback (driver 2 X): for when the pose can't be trusted ----------------------------------
     // The turret points where driver 2 puts it (straight ahead to start), the flywheel runs MANUAL_RPM
     // (+ LIVE_RPM_TRIM) and the hood sits at MANUAL_HOOD (+ LIVE_HOOD_TRIM).
-    public static double MANUAL_RPM = 4325, MANUAL_HOOD = 0.435;
+    public static double MANUAL_RPM = 6000, MANUAL_HOOD = 0.435;
     /** Turret speed under driver 2's right stick in manual mode, deg/s at full stick. */
     public static double MANUAL_TURRET_RATE_DEG_S = 120;
 
@@ -123,6 +124,7 @@ public final class Robot {
         follower.update();
         updateAiming();
         shooter.update();
+        flower.update();
 
         long now = System.nanoTime();
         if (lastLoopNanos != 0) loopMs = (now - lastLoopNanos) / 1e6;
@@ -143,7 +145,9 @@ public final class Robot {
         // Manual fallback: the pose isn't trusted, so no solver and no under-HIVE box.
         if (manual) {
             underHive = false;
-            shooter.setTargetRpm(MANUAL_RPM + LIVE_RPM_TRIM);
+            if(!Close.autoRPM) {
+                shooter.setTargetRpm(MANUAL_RPM + LIVE_RPM_TRIM);
+            }
             hood.setPosition(MANUAL_HOOD + LIVE_HOOD_TRIM);
             turret.setPositionAll(TurretCalc.solve(turretForward ? 0.0 : manualTurretDeg, 0.0, alliance)); // TODO delete: -> setPosition
             return;
@@ -157,7 +161,9 @@ public final class Robot {
         // turret pointed at the cell so it's ready on the way out.
         if (ShooterConstants.underHive(currPose.x(), currPose.y())) {
             underHive = true;
-            shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
+            if(!Close.autoRPM) {
+                shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
+            }
             hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
             double bearingDeg = Math.toDegrees(robotToGoal.theta() - currPose.heading());
             // TODO delete: -> setPosition
@@ -170,13 +176,17 @@ public final class Robot {
         double shootMs = (shootStartNanos == 0) ? 0.0 : (System.nanoTime() - shootStartNanos) / 1e6;
         ShooterCalc.burstCompActive = shootStartNanos != 0 && shootMs >= ShooterCalc.burstCompDelayMs;
         // Measured flywheel speed for the burst comp, live trim taken off so it compares with the solver's target.
-        ShooterCalc.flywheelTps = shooter.velocity() - LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0;
+        if(!Close.autoRPM) {
+            ShooterCalc.flywheelTps = shooter.velocity() - LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0;
+        }
 
         double[] result = ShooterCalc.solve(currPose.heading(), robotToGoal, velocity, angularVelocity);
 
         double tps = result[0];
         if (tps > 0) tps = Math.max(0, tps + LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0);
-        shooter.setTargetVelocity(tps);
+        if(!Close.autoRPM) {
+            shooter.setTargetVelocity(tps);
+        }
         if (!Double.isNaN(result[1])) hood.setPosition(result[1] + LIVE_HOOD_TRIM);   // NaN: no tuned points
         turret.setPositionAll(turretForward ? TurretCalc.solve(0.0, 0.0, alliance) // driver 2: straight ahead
                 : TurretCalc.solve(result[2], angularVelocity, alliance)); // TODO delete: -> setPosition
@@ -369,6 +379,7 @@ public final class Robot {
         latch.close();
         shooter.setShooting(false);
         shooter.stop();
+        flower.stop();
     }
 
     public double loopMs() {
