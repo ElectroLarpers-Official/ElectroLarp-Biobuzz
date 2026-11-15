@@ -31,7 +31,7 @@ public class Tele extends CommandOpMode {
 
     /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
-    /** Start from where the last auto / TeleOp ended instead of START_X/Y. Turn on once autos are running. */
+    /** Start from where the last auto ended (only if an auto ran since the app started), else START_X/Y/HEADING. */
     public static boolean USE_SAVED_POSE = true;
 
     /** Driver 2 trim steps: motor RPM, hood servo position, turret degrees. */
@@ -58,6 +58,7 @@ public class Tele extends CommandOpMode {
 
     @Override
     public void initialize() {
+       // setTurretOffset(turretOffset()-3);
         // Robot builds the Pulse follower and attaches it to PulseRuntime itself (one follower, one Pinpoint setup).
         robot = new Robot(hardwareMap, a);
         robot.follower.setPose(startPose());
@@ -112,7 +113,8 @@ public class Tele extends CommandOpMode {
     @Override
     public void end() {
         if (robot == null) return;
-        OpModeStorage.endPose = robot.follower.pose();
+        // Don't save the pose here: only an auto that actually ran saves one (Close / Far / OneTip). Saving it from
+        // TeleOp made every later TeleOp start from wherever the previous TeleOp happened to stop.
         robot.stop();
     }
 
@@ -207,6 +209,7 @@ public class Tele extends CommandOpMode {
         if (!Constants.drivetrainConnected) s.append("drive motors ");
         for (String name : robot.turret.missing()) s.append(name).append(' ');
         if (!robot.latch.isConnected()) s.append("latch ");
+        if (!robot.flower.isConnected()) s.append("flower ");
         return s.length() == 0 ? "none" : s.toString().trim();
     }
 }

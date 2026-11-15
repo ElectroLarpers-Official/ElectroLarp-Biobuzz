@@ -134,6 +134,8 @@ public final class Turret {
         return (turret != null ? 1 : 0) + (turret2 != null ? 1 : 0) + (turret3 != null ? 1 : 0) + (turret4 != null ? 1 : 0);
     }
 
+    public static double turretFighting = 0.007;
+
     /** Writes turretServo1 and turretServo2-4 (from Turret(hw, true)) with the same position. With Turret(hw) or
      *  Turret(hw, false) this is the same as setPosition. */
     public void setPositionAll(double pos) {
@@ -142,8 +144,8 @@ public final class Turret {
         changed |= applyDirection(turret3, 2, REVERSE_SERVO_3);
         changed |= applyDirection(turret4, 3, REVERSE_SERVO_4);
         if (changed || LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
-            if (turret != null) turret.setPosition(pos);
-            if (turret2 != null) turret2.setPosition(pos);
+            if (turret != null) turret.setPosition(pos+turretFighting);
+            if (turret2 != null) turret2.setPosition(pos-turretFighting);
             if (turret3 != null) turret3.setPosition(pos);
             if (turret4 != null) turret4.setPosition(pos);
             LAST_POSITION = pos;

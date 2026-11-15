@@ -10,16 +10,16 @@ mindmap
         HardwareNames
         Robot
       auto
-        OneTip
         Close
         Far
+        OneTip
       auto.blue
         blue1tip
         blueClose
       auto.paths
-        OneTipPaths
         ClosePaths
         FarPaths
+        OneTipPaths
       auto.red
         red1tip
         redClose
@@ -48,10 +48,8 @@ mindmap
         Braking
         ShooterCalc
         ShooterConstants
-        ShotCheck
       subsystem.aim.table
-        HiveAimTable
-        HiveAimTableData
+        HiveCell
         TunedShotPoints
         TunedShotTable
       subsystem.aim.turret

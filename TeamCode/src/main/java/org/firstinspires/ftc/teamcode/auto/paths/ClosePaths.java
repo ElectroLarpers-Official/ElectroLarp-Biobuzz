@@ -70,7 +70,7 @@ public final class ClosePaths {
     }
 
     public static Path path2(Alliance a) {
-        Poses waypoints = new Poses(a);
+        Poses   waypoints = new Poses(a);
         return line(waypoints.path1, waypoints.point2)
                 .heading(Interpolator.piecewise()
                         .until(0.3865, Interpolator.linear(waypoints.point2Start, waypoints.point2Mid))
@@ -159,17 +159,17 @@ public final class ClosePaths {
             PoseFactory poseFactory = poses(a);
 
             start = poseFactory.of(37.668, 7.794, 180);
-            pollenEndingPose = poseFactory.of(8, 8.3998, -160); // "path1" in the visualizer
+            pollenEndingPose = poseFactory.of(9, 8.3998, -160); // "path1" in the visualizer
             path1Control1 = poseFactory.of(25.4753, 11.0007, 0);
             path1Segment1Heading = poseFactory.of(9.8632, 8.3998, 180);
-            path1Segment2Heading = poseFactory.of(9.8632, 8.3998, 200);
-            endPointFlower = poseFactory.of(34.5437, 104.0597, 78.9604);
+            path1Segment2Heading = poseFactory.of(9.8632, 8.3998, 192);
+            endPointFlower = poseFactory.of(31.5437, 104.0597, 78.9604);
             cpFlower = poseFactory.of(26.6689, 63.5582, 0);
             flowerTrigger = poseFactory.of(32.633, 94.595, 78);
             point2Segment1Start = poseFactory.of(34.5437, 104.0597, 180);
             point2Segment1End = poseFactory.of(34.5437, 104.0597, 90);
-            point3 = poseFactory.of(47.1346, 119.6412, 90);
-            point3Control1 = poseFactory.of(49.8421, 104.1041, 0);
+            point3 = poseFactory.of(44, 127.5, 90);
+            point3Control1 = poseFactory.of(46, 104.1041, 0);
             point4 = poseFactory.of(7.917, 122.961, 90);
             parkCP = poseFactory.of(48.119,104.606,90);
 
