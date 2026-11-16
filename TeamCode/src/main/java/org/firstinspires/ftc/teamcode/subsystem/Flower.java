@@ -1,48 +1,33 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.HardwareNames;
 
 @Configurable
 public class Flower {
-    public static double DOWN_POWER = 1.0;
-    public static double UP_POWER = -1.0;
-    public static double RUN_MS = 500;
+    public static double DOWN_POS = 0.75;
+    public static double UP_POS = 0.16;
 
-    private final CRServo flower;
+    private final ServoImplEx flower;
     private boolean down = false;
-    private long stopAtNanos = 0;
 
     public Flower(HardwareMap hw) {
-        CRServo found = hw.tryGet(CRServoImplEx.class, HardwareNames.FLOWER_SERVO);
-        if (found == null) found = hw.tryGet(CRServo.class, HardwareNames.FLOWER_SERVO);
-        flower = found;
-        if (flower instanceof CRServoImplEx) ((CRServoImplEx) flower).setPwmEnable();
+        flower = hw.tryGet(ServoImplEx.class, HardwareNames.FLOWER_SERVO);
     }
 
     public void setDown(boolean state) {
-        if (flower == null) return;
         down = state;
-        flower.setPower(state ? DOWN_POWER : UP_POWER);
-        stopAtNanos = System.nanoTime() + (long) (RUN_MS * 1e6);
+        if (flower != null) flower.setPosition(state ? DOWN_POS : UP_POS);
     }
 
-    public void update() {
-        if (flower == null || stopAtNanos == 0) return;
-        if (System.nanoTime() >= stopAtNanos) {
-            flower.setPower(0);
-            stopAtNanos = 0;
-        }
-    }
+    /** No-op for the positional servo (Robot / Close call it every loop). */
+    public void update() {}
 
-    public void stop() {
-        if (flower != null) flower.setPower(0);
-        stopAtNanos = 0;
-    }
+    /** No-op for the positional servo (Robot calls it on stop). */
+    public void stop() {}
 
     public void toggle() { setDown(!down); }
 

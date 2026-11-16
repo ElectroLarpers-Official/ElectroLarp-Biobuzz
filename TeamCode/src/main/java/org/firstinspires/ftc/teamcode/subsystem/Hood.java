@@ -40,7 +40,8 @@ public final class Hood {
 
     public void setPosition(double position) {
         hoodPos = Math.max(HOOD_MIN_POS, Math.min(HOOD_MAX_POS, position));
-        if (hood == null) return;   // no hood servo configured
+        // Fixed launch angle (no adjustable hood) or no hood servo configured: never move it.
+        if (hood == null || ShooterCalc.FIXED_LAUNCH) return;
         if (Double.isNaN(lastWritten) || Math.abs(hoodPos - lastWritten) > WRITE_THRESHOLD) {
             hood.setPosition(hoodPos);
             lastWritten = hoodPos;
