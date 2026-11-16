@@ -214,6 +214,12 @@ public class ShooterCalc {
     /** Launch angle range the hood can reach, degrees above horizontal (team, 2026-10-17). */
     public static double LAUNCH_MIN_DEG = 43.01765;
     public static double LAUNCH_MAX_DEG = 80.0;
+    /** Fixed launch angle (no adjustable hood: the undershooter). On: every shot is at FIXED_LAUNCH_DEG (flight time
+     *  for the lead), the tuned points' hood values are ignored, the burst comp is off, and the hood servo is never
+     *  written. Off: the adjustable hood (LAUNCH_MIN_DEG..LAUNCH_MAX_DEG). */
+    public static boolean FIXED_LAUNCH = true;
+    /** The undershooter's launch angle, degrees above horizontal. */
+    public static double FIXED_LAUNCH_DEG = 70;
 
     /** Hood drive: 33T gear on the servo -> 200T on the hood, goBILDA servo with 300 deg over position 0..1
      *  (Hood sets the 500-2500 us PWM range for that). Servo position 0 = the flattest launch angle,
@@ -231,6 +237,7 @@ public class ShooterCalc {
     }
     /** Inverse of hoodServoPosition: hood servo position -> launch angle, degrees. */
     public static double launchDegForHoodPosition(double position) {
+        if (FIXED_LAUNCH) return FIXED_LAUNCH_DEG;   // no hood: every shot (and tuned point) is at the fixed angle
         double servoDeg = (position - HOOD_SERVO_POS_AT_LAUNCH_MIN) * HOOD_SERVO_RANGE_DEG;
         return LAUNCH_MIN_DEG + servoDeg * (HOOD_SERVO_TEETH / HOOD_GEAR_TEETH);
     }
@@ -427,7 +434,7 @@ public class ShooterCalc {
         // Burst comp: while feeding, steer the hood so the slower (sagged) ball still goes through the point the
         // tuned shot goes through at this range.
         lastBurstHoodDeltaDeg = 0.0;
-        if (burstCompEnabled && burstCompActive && shotOk && tps > 0.0) {
+        if (burstCompEnabled && !FIXED_LAUNCH && burstCompActive && shotOk && tps > 0.0) {
             double sag = burstCompUseMeasured ? 1.0 - flywheelTps / tps : burstSpeedSag;
             if (sag > burstCompDeadband) {
                 sag = Math.min(sag, burstCompMaxSag);
