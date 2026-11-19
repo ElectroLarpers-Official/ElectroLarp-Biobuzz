@@ -49,7 +49,7 @@ import java.util.Locale;
  */
 @Configurable
 @TeleOp(group = "Shooter Test")
-public class ShotPointTuner extends CommandOpMode {
+public class    ShotPointTuner extends CommandOpMode {
     public static double RPM_STEP = 25;
     public static double RPM_BIG_STEP = 100;
     public static double HOOD_STEP = 0.005;
