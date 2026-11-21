@@ -26,8 +26,8 @@ public class Tele extends CommandOpMode {
      * Rotates the field-centric frame so "stick forward" points away from the driver.
      * TODO: verify on the field which way each alliance's driver faces in Pedro coordinates.
      */
-    public static double BLUE_FORWARD_OFFSET_DEG = 0;
-    public static double RED_FORWARD_OFFSET_DEG = 180;
+    public static double BLUE_FORWARD_OFFSET_DEG = 180;
+    public static double RED_FORWARD_OFFSET_DEG = 0;
 
     /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
