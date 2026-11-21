@@ -55,7 +55,7 @@ public final class Robot {
 
     // ---- Driver 2 live trims: added to every shot (tuned points and manual mode) -------------------------------
     /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
-    public static double LIVE_RPM_TRIM = 1000000;
+    public static double LIVE_RPM_TRIM = 0;
     /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
 

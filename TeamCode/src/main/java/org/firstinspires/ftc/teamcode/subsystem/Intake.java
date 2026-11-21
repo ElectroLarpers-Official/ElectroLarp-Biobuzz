@@ -18,7 +18,7 @@ public final class Intake {
     public static boolean REVERSED = true;            // FlywheelPIDFTest ran the intake at -1
     public static boolean TRANSFER_REVERSED = false;  // and the transfer at +1
 
-    public static double ON_POWER = 0.9;
+    public static double ON_POWER = 1;
     public static double REVERSE_POWER = -1.0;
     public static double SLOW_REVERSE_POWER = -0.5; // used to clear a jam
 

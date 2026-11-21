@@ -41,10 +41,10 @@ public final class Shooter {
     public static double kP = 0.001;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 1;
+    public static double kF = 0.98;
 
     // Meta's behaviour while balls go through the wheel.
-    public static boolean BANG_BANG_WHILE_SHOOTING = false;
+    public static boolean BANG_BANG_WHILE_SHOOTING = true;
     public static double DEADBAND_RPM = 15;
     public static double BANG_POWER = 1.0;
 

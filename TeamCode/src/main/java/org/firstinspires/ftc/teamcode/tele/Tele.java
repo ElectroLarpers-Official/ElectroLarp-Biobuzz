@@ -26,12 +26,12 @@ public class Tele extends CommandOpMode {
      * Rotates the field-centric frame so "stick forward" points away from the driver.
      * TODO: verify on the field which way each alliance's driver faces in Pedro coordinates.
      */
-    public static double BLUE_FORWARD_OFFSET_DEG = 180;
-    public static double RED_FORWARD_OFFSET_DEG = 0;
+    public static double BLUE_FORWARD_OFFSET_DEG = 0;
+    public static double RED_FORWARD_OFFSET_DEG = 180;
 
     /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
-    /** Start from where the last auto ended (only if an auto ran since the app started), else START_X/Y/HEADING. */
+    /** Start from where the last auto ended (used once, by the first TeleOp after that auto), else START_X/Y/HEADING. */
     public static boolean USE_SAVED_POSE = true;
 
     /** Driver 2 trim steps: motor RPM, hood servo position, turret degrees. */
@@ -61,7 +61,10 @@ public class Tele extends CommandOpMode {
        // setTurretOffset(turretOffset()-3);
         // Robot builds the Pulse follower and attaches it to PulseRuntime itself (one follower, one Pinpoint setup).
         robot = new Robot(hardwareMap, a);
+        poseFromAuto = usingSavedPose();
         robot.follower.setPose(startPose());
+        // Use the auto's end pose once, then clear it so a later TeleOp run doesn't reuse a stale pose.
+        OpModeStorage.endPose = null;
         robot.follower.update();
         shootCycle = robot.shootCycle();
 
@@ -91,7 +94,7 @@ public class Tele extends CommandOpMode {
         gp1.update();
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
-        telemetry.addData("Pose source", usingSavedPose() ? "auto / last run" : "START_X/Y");
+        telemetry.addData("Pose source", poseFromAuto ? "last auto" : "START_X/Y");
         telemetry.addData("Not connected (skipped)", notConnected());
         telemetry.addLine("Ready");
         telemetry.update();
@@ -197,6 +200,8 @@ public class Tele extends CommandOpMode {
     private void setTurretOffset(double deg) {
         if (a == Alliance.RED) TurretCalc.turretOffset = deg; else TurretCalc.turretOffset2 = deg;
     }
+
+    private boolean poseFromAuto;
 
     private boolean usingSavedPose() { return USE_SAVED_POSE && OpModeStorage.endPose != null; }
 
