@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.HardwareNames;
 
 @Configurable
 public final class Latch {
-    public static double OPEN_POS = 0.9;
-    public static double CLOSED_POS = 0.83;
+    public static double OPEN_POS = 0.92;
+    public static double CLOSED_POS = 0.81;
 
     private final Servo latch; // null if stopperServo isn't in the config (not plugged in yet): everything is a no-op
     private boolean open;

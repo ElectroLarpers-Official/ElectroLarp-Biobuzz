@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.auto;
 import static org.electrolightsftc.pulse.lumen.commands.Commands.infinite;
 import static org.electrolightsftc.pulse.lumen.commands.Commands.instant;
 import static org.electrolightsftc.pulse.lumen.commands.Commands.waitMs;
+import static org.electrolightsftc.pulse.lumen.commands.Commands.waitUntil;
 import static org.electrolightsftc.pulse.lumen.groups.Groups.sequential;
 import static org.electrolightsftc.pulse.electropathing.PulseCommands.follow;
 import org.electrolightsftc.pulse.electropathing.*;
@@ -21,9 +22,14 @@ import org.firstinspires.ftc.teamcode.util.OpModeStorage;
 
 @Configurable
 public class Close extends CommandOpMode {
-    public static double RPM_1 = 2000;
-    public static double RPM_2 = 2000;
+    public static double RPM_1 = 4450;
+    public static double RPM_2 = 4420;
+    public static double FEED_DURATION_MS = 400;
     public static boolean autoRPM = false;
+
+    private static final double INITIAL_TURRET_OFFSET_DEG = 4;
+    private static final double POST_INTAKE_TURRET_ANGLE_DEG = -173; // Clockwise from forward.
+    private static final double LATCH_OPEN_DELAY_MS = 320;
     Alliance a;
     Robot robot;
     boolean started = false;
@@ -38,6 +44,7 @@ public class Close extends CommandOpMode {
     public void initialize() {
         Scheduler.reset();
         robot = new Robot(hardwareMap, a);
+        robot.setTurretOffsetOverride(INITIAL_TURRET_OFFSET_DEG);
         robot.follower.setPose(ClosePaths.startPose(a));
         robot.follower.update();
         robot.flower(false);
@@ -63,6 +70,15 @@ public class Close extends CommandOpMode {
     @Override
     public void execute() {
         onUpdate();
+        Scheduler.execute();
+        telemetry.addData("Pose x", robot.follower.pose().x());
+        telemetry.addData("Pose y", robot.follower.pose().y());
+        telemetry.addData("Heading deg", Math.toDegrees(robot.follower.pose().heading()));
+        telemetry.addData("Following", robot.follower.following());
+        telemetry.addData("Busy", robot.follower.isBusy());
+        telemetry.addData("Vel x", robot.follower.velocity().vx);
+        telemetry.addData("Vel y", robot.follower.velocity().vy);
+        telemetry.update();
     }
 
     private void onUpdate() {
@@ -83,6 +99,7 @@ public class Close extends CommandOpMode {
     }
 
     private Command routine() {
+        Command flowerShot = shootCycle2();
         return sequential(
                 instant(()->robot.flower(false)),
                 waitMs(3000),
@@ -91,6 +108,7 @@ public class Close extends CommandOpMode {
                 instant(()->robot.latch.close()),
                 sequential(robot.intake::on),
                 follow(robot.follower, ClosePaths.intakeLoading(a), false),
+                instant(() -> robot.setFixedTurretAngle(POST_INTAKE_TURRET_ANGLE_DEG)),
                 waitMs(1000),
                 instant(() -> secondRpm = true),
                //shootCycle(),
@@ -98,20 +116,36 @@ public class Close extends CommandOpMode {
                 sequential(robot.intake::on),
                 instant(()->robot.flower.setDown(true)),
                 follow(robot.follower, ClosePaths.goNearFlower(a, instant(() -> robot.flower.setDown(true))), false),
+                //shootCycle(),
                 sequential(robot.intake::on),
-                follow(robot.follower, ClosePaths.goInFlower(a), false,0.7),
-                shootCycle(),
+                follow(robot.follower, ClosePaths.goInFlower(a, shootCycle2()), false, 0.7),
+
+                sequential(robot.intake::on),
                 waitMs(2000),
-                sequential(robot.intake::off),
+                sequential(robot.intake::on),
                 shootCycle(),
+
+                follow(robot.follower, ClosePaths.park(a), false),
                 instant(() -> robot.flower.setDown(false)),
-                follow(robot.follower, ClosePaths.park(a), false)
+                sequential(robot.intake::off)
         );
     }
 
     private Command shootCycle() {
-        return sequential(sequential(robot::startShooting), waitMs(Robot.SHOOT_DELAY_MS),
-                sequential(robot::stopShooting));
+        return sequential(
+                instant(() -> {
+                    robot.intake.off();
+                    robot.latch.open();
+                }),
+                waitMs(LATCH_OPEN_DELAY_MS),
+                instant(robot::startShooting),
+                waitMs(FEED_DURATION_MS),
+                instant(robot::stopShooting)
+        );
+    }
+
+    private Command shootCycle2() {
+        return sequential(waitMs(200), shootCycle());
     }
 
 }

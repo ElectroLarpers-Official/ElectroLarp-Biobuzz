@@ -92,6 +92,8 @@ public final class Robot {
     private double loopMs = 0;
     private boolean manual = false;
     private double manualTurretDeg = 0;
+    private Double turretOffsetOverrideDeg;
+    private Double fixedTurretAngleDeg;
     private Path pausedPath = null;
     private int pausedIndex = 0;
     private double pausedT = 0;
@@ -136,6 +138,24 @@ public final class Robot {
         if (open) latch.open(); else latch.close();
     }
 
+    public void setTurretOffsetOverride(double offsetDeg) {
+        turretOffsetOverrideDeg = offsetDeg;
+    }
+
+    /** Holds a robot-relative turret angle in degrees, with counterclockwise positive. */
+    public void setFixedTurretAngle(double angleDeg) {
+        fixedTurretAngleDeg = angleDeg;
+    }
+
+    private double solveTurret(double angleDeg, double angularVelocity) {
+        if (fixedTurretAngleDeg != null) {
+            return TurretCalc.solveWithoutWrap(fixedTurretAngleDeg, 0.0, 0.0);
+        }
+        return turretOffsetOverrideDeg == null
+                ? TurretCalc.solve(angleDeg, angularVelocity, alliance)
+                : TurretCalc.solve(angleDeg, angularVelocity, turretOffsetOverrideDeg);
+    }
+
     private void updateAiming() {
         Pose currPose = follower.pose();
         Velocity vel = follower.velocity();
@@ -149,7 +169,7 @@ public final class Robot {
                 shooter.setTargetRpm(MANUAL_RPM + LIVE_RPM_TRIM);
             }
             hood.setPosition(MANUAL_HOOD + LIVE_HOOD_TRIM);
-            turret.setPositionAll(TurretCalc.solve(turretForward ? 0.0 : manualTurretDeg, 0.0, alliance)); // TODO delete: -> setPosition
+            turret.setPositionAll(solveTurret(turretForward ? 0.0 : manualTurretDeg, 0.0)); // TODO delete: -> setPosition
             return;
         }
 
@@ -167,8 +187,8 @@ public final class Robot {
             hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
             double bearingDeg = Math.toDegrees(robotToGoal.theta() - currPose.heading());
             // TODO delete: -> setPosition
-            turret.setPositionAll(turretForward ? TurretCalc.solve(0.0, 0.0, alliance)
-                    : TurretCalc.solve(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity, alliance));
+            turret.setPositionAll(turretForward ? solveTurret(0.0, 0.0)
+                    : solveTurret(ShooterCalc.normalizeDegrees(bearingDeg), angularVelocity));
             return;
         }
         underHive = false;
@@ -188,8 +208,8 @@ public final class Robot {
             shooter.setTargetVelocity(tps);
         }
         if (!Double.isNaN(result[1])) hood.setPosition(result[1] + LIVE_HOOD_TRIM);   // NaN: no tuned points
-        turret.setPositionAll(turretForward ? TurretCalc.solve(0.0, 0.0, alliance) // driver 2: straight ahead
-                : TurretCalc.solve(result[2], angularVelocity, alliance)); // TODO delete: -> setPosition
+        turret.setPositionAll(turretForward ? solveTurret(0.0, 0.0) // driver 2: straight ahead
+                : solveTurret(result[2], angularVelocity)); // TODO delete: -> setPosition
     }
 
     // ---- Manual fallback ---------------------------------------------------------------------------------------

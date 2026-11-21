@@ -33,7 +33,7 @@ public class TurretCalc {
 
     /** Per-alliance aim trim in DEGREES, added to the commanded angle (+ = counter-clockwise). Driver 2 changes the
      *  current alliance's one live with RB / LB in TeleOp. The old robot's 15 / 10 were removed: start at 0. */
-    public static double turretOffset = -11;  // RED
+    public static double turretOffset = 0;  // RED
     public static double turretOffset2 = -8; // BLUE
 
     /** Servo-position trims in servo units (0..1), added to the servo signal. */
@@ -71,6 +71,7 @@ public class TurretCalc {
     private static double targetRate = 0.0;
     private static double lastSlewTarget = Double.NaN;
     private static double lastChosenTurretAngle = Double.NaN;
+    private static double lastUnwrappedTargetDeg = Double.NaN;
     private static boolean wrapping = false;
     private static final ElapsedTime slewTimer = new ElapsedTime();
 
@@ -83,6 +84,7 @@ public class TurretCalc {
         targetRate = 0.0;
         lastSlewTarget = Double.NaN;
         lastChosenTurretAngle = Double.NaN;
+        lastUnwrappedTargetDeg = Double.NaN;
         wrapping = false;
         slewTimer.reset();
         outOfRange = false;
@@ -91,14 +93,17 @@ public class TurretCalc {
 
     /** Turret command -> servo position, and records outOfRange() / aimErrorDeg() (turret test telemetry). */
     public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance) {
-        double servoPosition = servoPosition(commandedAngleDeg, robotAngularVelocityRadPerSec, alliance);
+        return solve(commandedAngleDeg, robotAngularVelocityRadPerSec,
+                alliance == Alliance.RED ? turretOffset : turretOffset2);
+    }
 
-        aimErrorDeg = Math.abs(lastChosenTurretAngle - slewedTurretAngle);
+    /** Solves turret aim using an explicit trim in degrees (positive is counterclockwise). */
+    public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg) {
+        lastUnwrappedTargetDeg = Double.NaN;
+        double targetDeg = targetAngle(commandedAngleDeg, robotAngularVelocityRadPerSec, offsetDeg);
+        double servoPosition = servoPosition(getClosestValidTurretAngle(targetDeg));
 
-        double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
-        if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
-        double allianceOffset = (alliance == Alliance.RED) ? turretOffset : turretOffset2;
-        double base = normalizeDegrees(commandedAngleDeg + allianceOffset - angularVelDeg * yawFeedforwardGain);
+        double base = normalizeDegrees(targetDeg);
         outOfRange = true;
         for (int k = -1; k <= 1; k++) {
             double cand = base + 360.0 * k;
@@ -107,18 +112,33 @@ public class TurretCalc {
         return servoPosition;
     }
 
+    /** Tracks the same turn through the angle seam and caps the command at the travel limits. */
+    public static double solveWithoutWrap(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg) {
+        double targetDeg = targetAngle(commandedAngleDeg, robotAngularVelocityRadPerSec, offsetDeg);
+        double previousDeg = lastUnwrappedTargetDeg;
+        if (Double.isNaN(previousDeg)) {
+            previousDeg = Double.isNaN(lastChosenTurretAngle) ? 0.0 : lastChosenTurretAngle;
+        }
+        lastUnwrappedTargetDeg = previousDeg + normalizeDegrees(targetDeg - previousDeg);
+        outOfRange = lastUnwrappedTargetDeg < MIN_ANGLE || lastUnwrappedTargetDeg > MAX_ANGLE;
+        lastChosenTurretAngle = Range.clip(lastUnwrappedTargetDeg, MIN_ANGLE, MAX_ANGLE);
+        wrapping = false;
+        return servoPosition(lastChosenTurretAngle);
+    }
+
+    private static double targetAngle(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg) {
+        double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
+        if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
+        return commandedAngleDeg + offsetDeg - angularVelDeg * yawFeedforwardGain;
+    }
+
     public static boolean outOfRange() { return outOfRange; }
 
     public static double aimErrorDeg() { return aimErrorDeg; }
 
-    private static double servoPosition(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance) {
-        double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
-        if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
-        double feedforwardOffset = angularVelDeg * yawFeedforwardGain;
-        double allianceOffset = (alliance == Alliance.RED) ? turretOffset : turretOffset2;
-
-        double rawTarget = getClosestValidTurretAngle(commandedAngleDeg + allianceOffset - feedforwardOffset);
-        double targetTurretAngle = slewTurret(rawTarget);
+    private static double servoPosition(double targetDeg) {
+        double targetTurretAngle = slewTurret(targetDeg);
+        aimErrorDeg = Math.abs(targetDeg - targetTurretAngle);
 
         double servoPositionSignal = servoPositionFor(targetTurretAngle);
         servoPositionSignal = Math.max(0.0, Math.min(1.0, servoPositionSignal));

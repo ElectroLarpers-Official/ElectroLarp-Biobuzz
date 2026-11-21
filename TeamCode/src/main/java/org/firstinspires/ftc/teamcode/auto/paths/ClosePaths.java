@@ -50,9 +50,15 @@ public final class ClosePaths {
                 .build();
     }
 
-    public static Path goInFlower(Alliance a) {
+    public static Path goInFlower(Alliance a, Command shootCycle2) {
         Poses waypoints = new Poses(a);
-        return curve(waypoints.endPointFlower, waypoints.point3Control1, waypoints.point3).constant(waypoints.point3);
+        Path path = curve(waypoints.endPointFlower, waypoints.point3Control1, waypoints.point3)
+                .constant(waypoints.point3);
+        Pose midpoint = path.get(path.curve.parameter(0.4));
+        return follower().pathBuilder()
+                .addPath(path)
+                .addPoseCallback(midpoint, shootCycle2, 2.0)
+                .build();
     }
 
     public static Path park(Alliance a) {
