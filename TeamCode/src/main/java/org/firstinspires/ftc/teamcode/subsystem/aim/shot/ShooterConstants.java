@@ -14,20 +14,21 @@ public class ShooterConstants {
     // +-2 in. TOP = higher y, BOTTOM = lower y. The field is 180-degree symmetric (not a
     // left/right mirror): RED_TOP <-> BLUE_BOTTOM and RED_BOTTOM <-> BLUE_TOP, so
     // x + x' = 144 and y + y' = 144.
-    public static double HIVE_RED_TOP_X = 60, HIVE_RED_TOP_Y = 82;
-    public static double HIVE_RED_BOTTOM_X = 60, HIVE_RED_BOTTOM_Y = 62;
-    public static double HIVE_BLUE_TOP_X = 84, HIVE_BLUE_TOP_Y = 82;
-    public static double HIVE_BLUE_BOTTOM_X = 84, HIVE_BLUE_BOTTOM_Y = 62;
+    public static double HIVE_RED_TOP_X = 59.25, HIVE_RED_TOP_Y = 86.5;
+    public static double HIVE_RED_BOTTOM_X = 59.25, HIVE_RED_BOTTOM_Y = 57.5;
+    public static double HIVE_BLUE_TOP_X = 84.75, HIVE_BLUE_TOP_Y = 86.5;
+    public static double HIVE_BLUE_BOTTOM_X = 84.75, HIVE_BLUE_BOTTOM_Y = 57.5;
 
     /** Toggle: aim at the window centres from the field CAD instead of the measured points above. The tuned
      *  points were tuned with this on, so their RPM / hood assume the turret points at these. */
     public static boolean USE_MAP_AIM_POINTS = true;
-    /** Window centres from the field CAD (shooter_analysis/NOTES.md), Pedro inches. TOP = far cell (high y),
-     *  BOTTOM = audience cell (low y). Window centre height is 58.4 in. */
-    public static double MAP_RED_TOP_X = 59.25, MAP_RED_TOP_Y = 88.45;
-    public static double MAP_RED_BOTTOM_X = 59.25, MAP_RED_BOTTOM_Y = 55.55;
-    public static double MAP_BLUE_TOP_X = 84.75, MAP_BLUE_TOP_Y = 88.45;
-    public static double MAP_BLUE_BOTTOM_X = 84.75, MAP_BLUE_BOTTOM_Y = 55.55;
+    /** Turret aim points from the field CAD, Pedro inches. TOP = far cell (high y), BOTTOM = audience cell (low y).
+     *  x is the window centre; y is 2 in past the window centre (88.45 / 55.55) into the cell, so the turret points
+     *  at the middle of the opening from the front, side or back. Window centre height is 58.4 in. */
+    public static double MAP_RED_TOP_X = 59.25, MAP_RED_TOP_Y = 86.5;
+    public static double MAP_RED_BOTTOM_X = 59.25, MAP_RED_BOTTOM_Y = 57.5;
+    public static double MAP_BLUE_TOP_X = 84.75, MAP_BLUE_TOP_Y = 86.5;
+    public static double MAP_BLUE_BOTTOM_X = 84.75, MAP_BLUE_BOTTOM_Y = 57.5;
 
     /** Aim point for a cell: the CAD window centre when USE_MAP_AIM_POINTS, otherwise the measured point. */
     public static Pose hiveAimPoint(boolean red, boolean far) {
@@ -68,7 +69,7 @@ public class ShooterConstants {
     public static double UNDER_HIVE_X_MIN = 47.27, UNDER_HIVE_X_MAX = 96.73;
     public static double UNDER_HIVE_Y_MIN = 46.7, UNDER_HIVE_Y_MAX = 97.3;
     /** Flywheel target while under the HIVE, motor RPM (a typical shot speed, so it's ready on the way out). */
-    public static double UNDER_HIVE_RPM = 3300;
+    public static double UNDER_HIVE_RPM = 4200;
     /** Hood while under the HIVE, launch angle in degrees. */
     public static double UNDER_HIVE_LAUNCH_DEG = 72;
 

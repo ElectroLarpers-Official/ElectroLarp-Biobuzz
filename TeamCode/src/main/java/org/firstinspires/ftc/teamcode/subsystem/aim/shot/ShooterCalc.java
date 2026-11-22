@@ -219,7 +219,7 @@ public class ShooterCalc {
      *  written. Off: the adjustable hood (LAUNCH_MIN_DEG..LAUNCH_MAX_DEG). */
     public static boolean FIXED_LAUNCH = true;
     /** The undershooter's launch angle, degrees above horizontal. */
-    public static double FIXED_LAUNCH_DEG = 70;
+    public static double FIXED_LAUNCH_DEG = 67;
 
     /** Hood drive: 33T gear on the servo -> 200T on the hood, goBILDA servo with 300 deg over position 0..1
      *  (Hood sets the 500-2500 us PWM range for that). Servo position 0 = the flattest launch angle,

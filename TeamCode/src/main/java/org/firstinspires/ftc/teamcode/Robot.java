@@ -44,6 +44,7 @@ import java.util.List;
 
 
 @Configurable
+//"can I take 8 inches, do you wanna try" nithin 2026
 public final class Robot {
     /** How long shootCycle() keeps the latch open and the transfer running, ms. */
     public static double SHOOT_DELAY_MS = 250; // TODO: tune

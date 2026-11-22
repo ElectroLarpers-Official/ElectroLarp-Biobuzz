@@ -27,10 +27,10 @@ import java.util.List;
 
 /**
  * Shooter bench test using the robot's real subsystems: Intake (intake + belted transfer), Shooter (Meta PIDF,
- * bang-bang while shooting) and Hood. No Robot, Follower, drivetrain, turret or latch is constructed.
+ * feeding kP while shooting) and Hood. No Robot, Follower, drivetrain, turret or latch is constructed.
  * Flywheel gains and directions live in Shooter / Intake and are edited in Panels there.
  *
- * <p>Gamepad 1: A = intake on/off, B = shoot (intake on + flywheel in bang-bang), Y = shooter on/off,
+ * <p>Gamepad 1: A = intake on/off, B = shoot (intake on + flywheel on kP_FEEDING), Y = shooter on/off,
  * X = auto speed on/off.
  * Auto speed ON: the robot is assumed to sit at ROBOT_X / ROBOT_Y / ROBOT_HEADING_DEG (Pedro inches); target RPM
  * and hood come from the same solver TeleOp uses. Dpad moves that pose by POSE_STEP (up = +y,

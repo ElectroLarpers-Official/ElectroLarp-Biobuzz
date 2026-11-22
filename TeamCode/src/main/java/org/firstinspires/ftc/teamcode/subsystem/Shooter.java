@@ -20,8 +20,8 @@ import java.util.List;
  * <ul>
  *   <li>Normally PIDF on motor RPM (Meta's PIDController in velocity mode): feedforward = kF * targetRPM / 5200,
  *       plus kP / kI / kD on the RPM error, all scaled by 12 V / battery voltage.</li>
- *   <li>While shooting (setShooting(true), done by Robot when it shoots): bang-bang, BANG_POWER whenever the wheel
- *       is more than DEADBAND_RPM under target, else 0. This recovers the wheel between balls.</li>
+ *   <li>While shooting (setShooting(true), done by Robot when it shoots): the same PIDF with kP_FEEDING instead of
+ *       kP, a stiffer P term that recovers the wheel between balls.</li>
  * </ul>
  * The rest of the code still talks in motor encoder ticks/s (setTargetVelocity, velocity()); this class converts.
  */
@@ -39,14 +39,12 @@ public final class Shooter {
 
     // PIDF, tuned in FlywheelPIDFTest. kF = 1 is full power at 5200 motor RPM (hardcoded in PIDController).
     public static double kP = 0.001;
+    /** kP while feeding (setShooting(true)): stiffer, so the wheel recovers between balls. 0.01 = +1 power at a
+     *  100 RPM drop (at 12 V). */
+    public static double kP_FEEDING = 0.01;
     public static double kI = 0;
     public static double kD = 0;
     public static double kF = 0.98;
-
-    // Meta's behaviour while balls go through the wheel.
-    public static boolean BANG_BANG_WHILE_SHOOTING = true;
-    public static double DEADBAND_RPM = 15;
-    public static double BANG_POWER = 1.0;
 
     /** Only write motor power when it changes by more than this (Meta: 0.005). While shooting every change is
      *  written, so the wheel recovers between balls as fast as possible. */
@@ -71,7 +69,7 @@ public final class Shooter {
     /** The ramp ends once the wheel reaches this fraction of the target speed. */
     public static double SPINUP_DONE_FRACTION = 0.9;
 
-    public enum Mode { OFF, PIDF, BANG_BANG }
+    public enum Mode { OFF, PIDF }
 
     private final DcMotorEx motor1, motor2;
     private final List<LynxModule> hubs;
@@ -109,7 +107,6 @@ public final class Shooter {
 
         Mode next;
         if (targetVelocity <= 0) next = Mode.OFF;
-        else if (BANG_BANG_WHILE_SHOOTING && shooting) next = Mode.BANG_BANG;
         else next = Mode.PIDF;
         // Fresh integral / derivative history whenever PIDF takes over.
         if (next == Mode.PIDF && mode != Mode.PIDF) pid.reset();
@@ -123,11 +120,8 @@ public final class Shooter {
         mode = next;
 
         switch (mode) {
-            case BANG_BANG:
-                power = rpm < targetRpm - DEADBAND_RPM ? BANG_POWER : 0;
-                break;
             case PIDF:
-                pid.setGains(kP, kI, kD, kF);
+                pid.setGains(shooting ? kP_FEEDING : kP, kI, kD, kF);
                 power = pid.update(targetRpm, rpm, voltage);
                 break;
             default:
@@ -165,7 +159,7 @@ public final class Shooter {
     /** Target in motor encoder ticks/s. */
     public void setTargetVelocity(double ticksPerSecond) { targetVelocity = Math.max(0, ticksPerSecond); }
     public void setTargetRpm(double motorRpm) { setTargetVelocity(motorRpm * TICKS_PER_REV / 60.0); }
-    /** True while balls are going through the wheel: switches to bang-bang (if enabled). */
+    /** True while balls are going through the wheel: switches the PIDF to kP_FEEDING. */
     public void setShooting(boolean shooting) { this.shooting = shooting; }
     public void partyMode() { setTargetVelocity(PARTY_MODE_VELOCITY); }
     public void stop() {

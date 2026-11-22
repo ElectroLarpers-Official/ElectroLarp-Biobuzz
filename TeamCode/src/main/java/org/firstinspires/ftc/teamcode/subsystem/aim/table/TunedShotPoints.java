@@ -42,6 +42,15 @@ public final class TunedShotPoints {
             // stored at the wrong spot. Check the pose against the wall, then re-tune that corner.
             // p(RED_AUD, 114.6, -0.9, 4242, 0.132),
             // p(RED_AUD, 127.3, -8.2, 4342, 0.127),*/
+            p(RED_AUD, 64.56, 17.68, 4296.1, 0.5603),
+            p(RED_AUD,69.86,22.99,4271.1,0.5603),
+            p(RED_AUD,69.35,10.68,4363.1,0.5603),
+            p(RED_AUD,58.89,8.99,4393.9,0.5553),
+            p(RED_AUD,84.91,5.56,4584.8,0.5595),
+            p(RED_AUD,85.69,14.54,4296.5,0.5598),
+            p(RED_AUD,94.92,16.48,4469.6,0.5548),
+            p(RED_AUD,107.86,13.77,4722.1,0.5372),
+            p(RED_AUD,43.16,0.47,4502.7,0.5529)
     };
 
     static List<TunedShotTable.Point> points() { return Arrays.asList(POINTS); }
