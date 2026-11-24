@@ -2,7 +2,7 @@
 
 Which number to change, where it lives, and what it fixes.
 
-> **Testing on the old (Decode) robot.** Every number borrowed from the old robot is marked `// TODO(new robot): old-robot value` in the source. When the new robot is ready, search the project for `TODO(new robot)` and retune each one (Android Studio: Edit > Find > Find in Files). Everything marked `public static` can be changed live in Panels, but **Panels changes are lost on restart: copy the final value back into the Java file.**
+> **Old-robot numbers.** Every number still borrowed from the old (Decode) robot is marked `// TODO(new robot): old-robot value` in the source. Search the project for `TODO(new robot)` and retune each one (Android Studio: Edit > Find > Find in Files). Everything marked `public static` can be changed live in Panels, but **Panels changes are lost on restart: copy the final value back into the Java file.**
 
 Files (all under `teamcode/`):
 
@@ -36,7 +36,7 @@ The turret angle is turned into a servo position from the gearing: `servo positi
 | `TurretCalc.SERVO_CENTER` | 0.5 | Servo position with the turret pointing straight ahead. |
 | `TurretCalc.SERVO_REVERSED` | false | Set true if a positive angle turns the turret clockwise (positive should be counter-clockwise, to the robot's left). |
 | `SERVO_GEAR_TEETH` / `STAGE1_DRIVEN_TEETH` / `STAGE2_DRIVE_TEETH` / `TURRET_RING_TEETH` | 48 / 15 / 33 / 61 | Only if the gears change. |
-| `TurretCalc.MIN_ANGLE` / `MAX_ANGLE` | -224.75 / 224.75 | Soft limits (degrees from straight ahead), e.g. for wiring. Must stay inside what the servos reach (about ±307° with the defaults). |
+| `TurretCalc.MIN_ANGLE` / `MAX_ANGLE` | -190 / 190 | Soft limits (degrees from straight ahead), e.g. for wiring. Must stay inside what the servos reach (about ±307° with the defaults). |
 | `Turret.TURRET_FORWARD_OFFSET` / `TURRET_STRAFE_OFFSET` | 0 / 0 | Turret pivot distance from the Pinpoint/Pedro pose point, inches (forward +, left +). 0 from CAD: the turret axis is on the robot's centre of rotation (middle of the four wheel axles), and the Pinpoint pod offsets in `pedro/Constants` are measured from that point. If the pod offsets move the pose point, change these to match. |
 | `Turret.SERVO_THRESHOLD` | 0.0002 | Only writes the servo if the position moved more than this. Raise if the turret buzzes while still; lower if it moves in visible steps. |
 
@@ -47,13 +47,14 @@ Meta Infinity's PIDF on **motor RPM**: power = (`kF` × target RPM / 5200 + `kP`
 
 | Number | Default | Change when |
 |---|---|---|
-| `kF` | 1.1 | Feedforward. `kF = 1` is full power at 5200 motor RPM. Tune first with `kP = 0`: the wheel should settle close to target on its own. |
-| `kP` | 0.0006 | Power per RPM of error. Raise if it recovers slowly after a shot; lower if it oscillates. |
+| `kF` | 1 | Feedforward. `kF = 1` is full power at 5200 motor RPM. Tune first with `kP = 0`: the wheel should settle close to target on its own. |
+| `kP` | 0.001 | Power per RPM of error. Raise if it recovers slowly after a shot; lower if it oscillates. |
 | `kI` / `kD` | 0 / 0 | Usually leave at 0. |
 | `BANG_BANG_WHILE_SHOOTING` | false | Turn on to use full power (`BANG_POWER`, 1.0) whenever the wheel is more than `DEADBAND_RPM` (15) under target while shooting. Off = PIDF the whole time. |
 | `VELOCITY_TOLERANCE` | 100 ticks/s | How close counts as "at speed" on telemetry. |
-| `ENCODER_REVERSED` / `MOTORS_REVERSED` | true / false | Flip `ENCODER_REVERSED` if the RPM reads negative while the wheel spins the right way. |
-| `WRITE_THRESHOLD` | 0.005 | Only writes motor power when it changes by more than this. |
+| `ENCODER_REVERSED` / `MOTORS_REVERSED` | false / true | Flip `ENCODER_REVERSED` if the RPM reads negative while the wheel spins the right way. |
+| `WRITE_THRESHOLD` / `WRITE_MAX_AGE_MS` | 0.005 / 20 ms | Only writes motor power when it changes by more than 0.005, except: 0 and full power are always written, every change is written while shooting, and any change is written once the last write is 20 ms old (so the threshold can't leave a dead band in the loop). |
+| `SPINUP_RAMP_PER_SEC` / `SPINUP_START_RPM` / `SPINUP_DONE_FRACTION` | 1.5 / 500 / 0.9 | Starting from below 500 RPM, power may rise only 1.5 per second until the wheel reaches 90 % of target, so the start doesn't sag the battery. 0 = off. |
 
 ### 3. Hood model — `ShooterCalc`, `Hood`
 Tuned points store the hood servo position directly. The launch angle is only needed for the flight time (lead) and the under-HIVE hold.
@@ -61,6 +62,7 @@ Tuned points store the hood servo position directly. The launch angle is only ne
 - **Launch angle → hood servo:** 33T servo gear → 200T hood, goBILDA servo with 300° over 0..1. `position = HOOD_SERVO_POS_AT_LAUNCH_MIN + (deg − LAUNCH_MIN_DEG) × (200/33) / 300`. Position 0 = flattest angle; 80° ≈ 0.747. Check it with `HoodServoPositionTuning` and a protractor. If 43.02° isn't on the flat stop, adjust `HOOD_SERVO_POS_AT_LAUNCH_MIN` (0). If 80° is off, check `HOOD_SERVO_RANGE_DEG` (300).
 - **`LAUNCH_MIN_DEG` / `LAUNCH_MAX_DEG`** (43.01765° / 80°): the real hood's launch-angle range. The solver never asks for more.
 - **`Hood.HOOD_MIN_POS` / `HOOD_MAX_POS`** (0.0 / 0.75): servo clamps, so the hood never hits its hard stops. `Hood.START_LAUNCH_DEG` (80) is where it goes at init.
+- The hood servo is written whenever `hoodServo` is in the robot config (tuned points, manual mode, under-HIVE hold, driver 2's hood trim). On a robot with a fixed hood, leave `hoodServo` out of the config.
 
 ### 4. Where you're aiming — `ShooterConstants`
 | Number | Default | Change when |
@@ -74,20 +76,20 @@ Tuned points store the hood servo position directly. The launch angle is only ne
 ### 5. Stationary shots — tuned points
 Shoot from a standstill first. Don't touch the moving-shot numbers until these land.
 
-Every RPM and hood comes from your tuned points (see **Tuned shot points** below). The fix for a spot that misses is a tuned point there; **Shot source** on telemetry shows how far the nearest point is. To shift every shot at once (new batch of balls), driver 2's live trims (d-pad up/down = RPM, right/left = hood) apply everywhere.
+Every RPM and hood comes from your tuned points (see **Tuned shot points** below). If a cell has no tuned points at all, the flywheel stays off. The fix for a spot that misses is a tuned point there; **Shot source** on telemetry shows how far the nearest point is. To shift every shot at once (new batch of balls), driver 2's live trims (d-pad up/down = RPM, right/left = hood) apply everywhere except under the HIVE.
 
 ### 6. Turret aim — `TurretCalc`
 | Symptom | Number | Direction |
 |---|---|---|
-| Consistently left/right on **red** | `turretOffset` (15) | Degrees added to the turret command. **Old-robot value.** |
-| Consistently left/right on **blue** | `turretOffset2` (10) | Same, blue only. **Old-robot value.** |
-| Aim lags behind while the robot spins in place | `yawFeedforwardGain` (0.145) | Raise. Aim *leads* (swings past) while spinning → lower. |
+| Consistently left/right on **red** | `turretOffset` (20) | Degrees added to the turret command (+ = counter-clockwise). 20 = the LM1 comp correction. Driver 2 LT / RT change it live by 1°; BACK sets it to 0. |
+| Consistently left/right on **blue** | `turretOffset2` (20) | Same, blue only. |
+| Aim lags behind while the robot spins in place | `yawFeedforwardGain` (0) | Raise. Aim *leads* (swings past) while spinning → lower. |
 | Turret too slow to track | `maxSlewNormalDegPerSec` (400) | Raise. Turret overshoots/jerks → lower. |
 | Wrap-around sweep too slow | `maxSlewWrapDegPerSec` (540) | Raise. Jerky wrap → lower. |
-| Turret wobbles / overshoots after a snap | `maxAccelDegPerSec2` (5000) | Lower (3000–4000). The command speeds up and slows down at this rate, so it stops on the target instead of arriving at full speed. Good test: drive slowly across y = 72 so the aim jumps between cells. 0 = no limit (old behaviour). |
-| Braking (SOTM) shots fire before the turret gets there | `maxAccelDegPerSec2` | Raise (6000+), or lower it only as far as the wobble needs. |
+| Turret wobbles / overshoots after a snap | `maxAccelDegPerSec2` (1500) | Lower. The command speeds up and slows down at this rate, so it stops on the target instead of arriving at full speed. Good test: drive slowly across y = 72 so the aim jumps between cells. 0 = no limit (old behaviour). |
+| Braking (SOTM) shots fire before the turret gets there | `maxAccelDegPerSec2` | Raise (simulated: 5000 settles braking aim jumps within 2° in 120–180 ms), or lower it only as far as the wobble needs. |
 | Command jittery while tracking | `targetRateFilter` (0.5) | Lower (more smoothing of the target-speed feedforward). Lags a turning target → raise. |
-| Turret sits at a different point during a wrap | `wrapServoOffset` / `servoOffset` (0 / 0) | Servo units (0–1). All 4 servos share one wire, so this shifts the whole turret. Leave at 0 unless you need it. |
+| Turret sits at a different point during a wrap | `wrapServoOffset` / `servoOffset` (0 / 0) | Servo units (0–1). Added to the one position all 4 servos get, so this shifts the whole turret. Leave at 0 unless you need it. |
 
 ### 7. Shooting while moving — `ShooterCalc`
 Only after steps 5 and 6 are solid.
@@ -111,7 +113,7 @@ Accel filtering (usually leave alone): `accelFilterAlphaDecel` (0.5), `accelFilt
 | Braking model kicks in during normal driving | `revAmpedBrakeThreshold` (-100) | More negative. |
 | Braking model drops out mid-stop | `revAmpedReleaseThreshold` (-75) | Toward -10 holds it longer. |
 | Want it always on / never on | `revAmpedMode` | `2` = always, `1` = auto (default), `0` = off. |
-| New drivetrain | `Braking.coefA` / `coefB` (0.00097587 / 0.11091) | **Still the old robot's.** Take the forward values from Pedro AutoTune: `quadraticBrakeCoefficients` → `coefA`, `linearBrakeCoefficients` → `coefB`. (`pedro/Constants` currently has quadratic `diag(0.00147, 0.00138)` and linear `diag(0.106, 0.087)`; check which entry is forward before copying.) |
+| New drivetrain | `Braking.coefA` / `coefB` (0.00097587 / 0.11091) | **Still the old robot's.** Take the forward values from Pedro AutoTune: `quadraticBrakeCoefficients` → `coefA`, `linearBrakeCoefficients` → `coefB`. (`pedro/Constants`, tuned 2026-11-04, has quadratic `diag(0.0015915, 0.00098418)` and linear `diag(0.0850, 0.0944)`; check which entry is forward before copying.) |
 
 Check `RevAmped braking active` on telemetry to see when it's on.
 

@@ -53,3 +53,46 @@ android {
 dependencies {
     implementation project(':FtcRobotController')
 }
+
+// Saves the robot's hardware config XML(s) into /configs every time you build/deploy (Run in Android Studio
+// builds first). Best effort: no robot connected over adb = silently skipped, never fails the build.
+tasks.register('saveRobotConfig') {
+    doLast {
+        try {
+            def props = new Properties()
+            def lp = new File(rootDir, 'local.properties')
+            if (lp.exists()) lp.withInputStream { props.load(it) }
+            def sdk = props.getProperty('sdk.dir')
+            def adb = (sdk && new File(sdk, 'platform-tools/adb').exists()) ? new File(sdk, 'platform-tools/adb').path : 'adb'
+
+            def run = { List<String> cmd ->
+                def r = providers.exec {
+                    commandLine cmd
+                    ignoreExitValue = true
+                }
+                r.standardOutput.asText.get().trim()
+            }
+
+            def files = run([adb, 'shell', 'ls', '/sdcard/FIRST/*.xml']).readLines()
+                    .collect { it.trim() }.findAll { it.endsWith('.xml') }
+            if (files.isEmpty()) {
+                println 'saveRobotConfig: no robot connected / no config XML found, skipped'
+                return
+            }
+            def dest = new File(rootDir, 'configs')
+            dest.mkdirs()
+            files.each { f ->
+                run([adb, 'pull', f, new File(dest, f.tokenize('/').last()).path])
+                println "saveRobotConfig: saved ${f.tokenize('/').last()} to configs/"
+            }
+        } catch (Exception e) {
+            println "saveRobotConfig: skipped (${e.cause ?: e.message})"
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.matching { it.name == 'assembleDebug' || it.name == 'assembleRelease' }.configureEach {
+        finalizedBy 'saveRobotConfig'
+    }
+}
