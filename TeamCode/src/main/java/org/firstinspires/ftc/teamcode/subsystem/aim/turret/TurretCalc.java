@@ -33,8 +33,8 @@ public class TurretCalc {
 
     /** Per-alliance aim trim in DEGREES, added to the commanded angle (+ = counter-clockwise). Driver 2 changes the
      *  current alliance's one live with RB / LB in TeleOp. The old robot's 15 / 10 were removed: start at 0. */
-    public static double turretOffset = 0;  // RED
-    public static double turretOffset2 = -8; // BLUE
+    public static double turretOffset = -7;  // RED
+    public static double turretOffset2 = -7; // BLUE
 
     /** Servo-position trims in servo units (0..1), added to the servo signal. */
     public static double servoOffset = 0.0; // TODO: tune

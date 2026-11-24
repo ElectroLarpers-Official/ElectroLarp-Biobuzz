@@ -50,7 +50,9 @@ public final class TunedShotPoints {
             p(RED_AUD,85.69,14.54,4296.5,0.5598),
             p(RED_AUD,94.92,16.48,4469.6,0.5548),
             p(RED_AUD,107.86,13.77,4722.1,0.5372),
-            p(RED_AUD,43.16,0.47,4502.7,0.5529)
+            p(RED_AUD,43.16,7,4552.7,0.5529),
+            p(RED_AUD,24,0.47,4700.7,0.5529),
+            p(RED_AUD,12,0.47,4830.7,0.5529)
     };
 
     static List<TunedShotTable.Point> points() { return Arrays.asList(POINTS); }

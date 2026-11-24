@@ -56,7 +56,7 @@ public final class Robot {
 
     // ---- Driver 2 live trims: added to every shot (tuned points and manual mode) -------------------------------
     /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
-    public static double LIVE_RPM_TRIM = 0;
+    public static double LIVE_RPM_TRIM = 25;
     /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
 
@@ -247,8 +247,15 @@ public final class Robot {
     }
 
 
+    /** TEMPORARY: true = robot-centric TeleOp driving (stick forward = robot forward, ignores the Pinpoint heading).
+     *  false = field-centric. */
+    public static boolean ROBOT_CENTRIC = false;
+
     public void drive(double forward, double lateral, double turn, double forwardOffsetRad) {
-        follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, follower.pose().heading(), forwardOffsetRad));
+        // Robot-centric = field-centric with heading 0 and no offset (no rotation of the stick).
+        double heading = ROBOT_CENTRIC ? 0.0 : follower.pose().heading();
+        double offset = ROBOT_CENTRIC ? 0.0 : forwardOffsetRad;
+        follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, heading, offset));
     }
 
     public boolean isPaused() {
