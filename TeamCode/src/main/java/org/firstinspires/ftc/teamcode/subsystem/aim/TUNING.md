@@ -38,7 +38,7 @@ The turret angle is turned into a servo position from the gearing: `servo positi
 | `SERVO_GEAR_TEETH` / `STAGE1_DRIVEN_TEETH` / `STAGE2_DRIVE_TEETH` / `TURRET_RING_TEETH` | 48 / 15 / 33 / 61 | Only if the gears change. |
 | `TurretCalc.MIN_ANGLE` / `MAX_ANGLE` | -190 / 190 | Soft limits (degrees from straight ahead), e.g. for wiring. Must stay inside what the servos reach (about ±307° with the defaults). |
 | `Turret.TURRET_FORWARD_OFFSET` / `TURRET_STRAFE_OFFSET` | 0 / 0 | Turret pivot distance from the Pinpoint/Pedro pose point, inches (forward +, left +). 0 from CAD: the turret axis is on the robot's centre of rotation (middle of the four wheel axles), and the Pinpoint pod offsets in `pedro/Constants` are measured from that point. If the pod offsets move the pose point, change these to match. |
-| `Turret.SERVO_THRESHOLD` | 0.0002 | Only writes the servo if the position moved more than this. Raise if the turret buzzes while still; lower if it moves in visible steps. |
+| `Turret.SERVO_THRESHOLD` | 0.001 (about 0.6 turret deg) | Only writes the servo if the position moved more than this. Raise if the turret buzzes while still; lower if it moves in visible steps. |
 
 Use `TurretTrackingTest` (needs only the Pinpoint and the turret servo): push/spin the robot by hand and the turret should keep pointing at the cell.
 
@@ -98,7 +98,7 @@ Only after steps 5 and 6 are solid.
 |---|---|---|
 | Misses **behind** the direction of travel (not enough lead) | `leadGain` (1.0) | Raise. |
 | Misses **ahead** of travel (too much lead) | `leadGain` | Lower. |
-| Lead wrong only at some ranges | `TunedShotTable.FLIGHT_TIME_FACTOR` (1.03) / `ShooterCalc.launchHeight` (11 in) | The flight time is 1.03 × the no-drag time to the window centre (58.4 in up) from the hood angle and range. |
+| Lead wrong only at some ranges | `TunedShotTable.FLIGHT_TIME_FACTOR` (1.0) / `ShooterCalc.launchHeight` (11 in) | The flight time is 1.0 × the no-drag time to the window centre (58.4 in up) from the hood angle and range. |
 | Time from latch-open to ball leaving is different | `feederDelay` (0.1 s) | Measure on high-fps video. |
 | Turret still arriving when the ball leaves | `turretSettleTime` (0.03 s) | Raise. |
 | Turret jitters when turning in place (fake speed) | `sotmMinSpeed` (12 in/s) | Raise. Below this (projected) speed no lead is applied (except while the braking model is on); the release point is still projected forward. |

@@ -19,7 +19,9 @@ public final class Turret {
     /** Turret servo names this Turret looked for and didn't find in the config (telemetry). */
     private final List<String> missing = new ArrayList<>();
     private double LAST_POSITION = -1;
-    public static double SERVO_THRESHOLD = 0.0002; // TODO(new robot): old-robot value
+    /** Only write the servos when the position moves more than this. 0.001 = about 0.6 turret deg (0.5 in at 50 in):
+     *  cuts the 4 servo writes per loop while the robot moves. */
+    public static double SERVO_THRESHOLD = 0.001;
     // Turret pivot offset from the robot's pose point, inches (forward +, left +). From CAD on the new robot: the
     // turret bearing is centred on the robot's centre of rotation (middle of the four wheel axles) to within 0.01 mm,
     // and the Pinpoint pod offsets make that point the pose point, so both are 0. Only valid with those pod offsets.
@@ -97,6 +99,9 @@ public final class Turret {
     public static boolean REVERSE_SERVO_2 = true;
     public static boolean REVERSE_SERVO_3 = true;
     public static boolean REVERSE_SERVO_4 = true;
+    /** TEMPORARY: false = turretServo4 is not driven (PWM off, goes limp), one less write per loop. Read when Robot is
+     *  built, so change it before INIT. */
+    public static boolean USE_SERVO_4 = false;
     // Only with Turret(hw, true) and only the ones in the config (null otherwise). Written by setPositionAll, never by
     // setPosition. Separate fields, not a list, so setPositionAll writes them one after another without a loop.
     private ServoImplEx turret2;
@@ -111,6 +116,10 @@ public final class Turret {
         turret2 = extraServo(hw, HardwareNames.TURRET_2, REVERSE_SERVO_2);
         turret3 = extraServo(hw, HardwareNames.TURRET_3, REVERSE_SERVO_3);
         turret4 = extraServo(hw, HardwareNames.TURRET_4, REVERSE_SERVO_4);
+        if (!USE_SERVO_4 && turret4 != null) {
+            turret4.setPwmDisable(); // limp, so it doesn't hold an old position against the others
+            turret4 = null;
+        }
         if (turret2 != null) appliedReverse[1] = REVERSE_SERVO_2;
         if (turret3 != null) appliedReverse[2] = REVERSE_SERVO_3;
         if (turret4 != null) appliedReverse[3] = REVERSE_SERVO_4;

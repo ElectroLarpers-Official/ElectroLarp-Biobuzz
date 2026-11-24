@@ -282,6 +282,62 @@ public class ShooterCalc {
      *  solve call. No tuned points for the cell: ticks/s 0 and hood NaN (leave the hood where it is). */
     private static final double[] solveOut = new double[3];
 
+    // ---- Meta Infinity's shoot-while-moving ---------------------------------------------------------------------
+
+    /** Which shoot-while-moving method runs. true = Meta Infinity's (their DECODE public release, Robot.update):
+     *  flight time at the current distance, aim at goal - velocity * flight time, RPM from the distance to that
+     *  point. One step: no release-point projection, no acceleration, no braking model, no iteration, no minimum
+     *  speed. false = ours (everything below solveMeta). Live in Panels. */
+    public static boolean USE_META_SOTM = true;
+
+    /** Meta's method. Same inputs and outputs as solve(). Their flight time came from a measured table; ours comes
+     *  from flightTime() (launch angle + range), at the current distance like theirs. */
+    private static double[] solveMeta(double robotHeading, double x, double goalTheta, Vector2D robotVel) {
+        // Flight time at the current (static) distance.
+        queryTuned(x, goalTheta);
+        double tf = shotFlightSec;
+
+        // Robot velocity in the goal frame: along = toward the goal, across = left of the robot -> goal line.
+        double speed = robotVel.magnitude();
+        double along = speed * Math.cos(robotVel.theta() - goalTheta);
+        double across = speed * Math.sin(robotVel.theta() - goalTheta);
+
+        // Meta: track point = goal - velocity * flight time. In the goal frame the robot is at (0, 0) and the goal at
+        // (x, 0), so the track point is (x - along * tf, -across * tf).
+        double virtualX = x - along * tf;
+        double virtualY = -across * tf;
+        double virtualRange = Math.max(1.0, Math.hypot(virtualX, virtualY));
+        double virtualBearing = goalTheta + Math.atan2(virtualY, virtualX);
+
+        // RPM / hood from the distance to the track point (Meta: shooter.update(distanceToGoal)).
+        queryTuned(virtualRange, virtualBearing);
+        double headingAngle = normalizeDegrees(Math.toDegrees(virtualBearing - robotHeading));
+        double tps = shotOk ? Math.max(0.0, tunedShot.rpm * MOTOR_TICKS_PER_REV / 60.0) : 0.0;
+        double hoodPos = shotOk ? tunedShot.hood : Double.NaN;
+
+        requiredRPM = tps * 60.0 / MOTOR_TICKS_PER_REV;
+        lastBurstHoodDeltaDeg = 0.0;   // no burst comp in Meta's method (it needs a hood anyway)
+        lastBurstSag = 0.0;
+        revAmpedActive = false;
+        lastIterations = 1;
+        lastConverged = true;
+        lastFlightTime = tf;
+        lastProjectedSpeed = speed;
+        lastAlongTrackAccel = 0.0;
+        lastRange = x;
+        lastProjectedRange = x;
+        lastVirtualRange = virtualRange;
+        lastHeadingAngle = headingAngle;
+        lastSotmActive = true;
+
+        solveOut[0] = tps;
+        solveOut[1] = hoodPos;
+        solveOut[2] = headingAngle;
+        return solveOut;
+    }
+
+    // ---- Our shoot-while-moving (USE_META_SOTM = false) ---------------------------------------------------------
+
     public static double[] solve(
             double robotHeading, Vector2D robotToGoalVector, Vector2D robotVel, double robotAngularVelocity) {
 
@@ -289,6 +345,7 @@ public class ShooterCalc {
         if (x < 1.0) x = 1.0;
 
         double goalTheta = robotToGoalVector.theta();
+        if (USE_META_SOTM) return solveMeta(robotHeading, x, goalTheta, robotVel);
         double currentSpeed = robotVel.magnitude();
         double velTheta = robotVel.theta();
         double horizon = feederDelay + turretSettleTime;

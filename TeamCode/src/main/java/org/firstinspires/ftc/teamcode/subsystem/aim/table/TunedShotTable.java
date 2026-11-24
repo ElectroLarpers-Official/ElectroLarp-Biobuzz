@@ -52,8 +52,9 @@ public final class TunedShotTable {
      *  close, inches. */
     public static double REPLACE_RADIUS_IN = 3.0;
     /** Flight time = factor * sqrt(2 * (R tan(launch) - h) / g), h = window centre above the release point.
-     *  1.03 matches the drag simulation to a few percent from 50 to 78 deg. Only used for shoot-while-moving lead. */
-    public static double FLIGHT_TIME_FACTOR = 0.94;
+     *  1.0 matches the drag simulation for the undershooter (67 deg launch) and shoots best on the robot. Only used
+     *  for the shoot-while-moving lead. */
+    public static double FLIGHT_TIME_FACTOR = 1;
     /** Window centre above the tiles, inches (field CAD). */
     public static double WINDOW_CENTRE_HEIGHT_IN = 58.4;
 

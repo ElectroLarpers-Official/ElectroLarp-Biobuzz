@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 
 @Configurable
@@ -40,7 +41,12 @@ public class TurretCalc {
     public static double servoOffset = 0.0; // TODO: tune
     public static double wrapServoOffset = 0.0; // TODO: tune
 
+    /** Turret lead for the robot turning, seconds: the turret aims where the robot's heading will be this far ahead
+     *  (turret angle -= turn rate * this). Used with our shoot-while-moving (ShooterCalc.USE_META_SOTM off). */
     public static double yawFeedforwardGain = 0; // TODO(new robot): old-robot value
+    /** Meta's turret lead, seconds (their TURRET_ANG_VEL_LEAD_SEC). Used instead of yawFeedforwardGain while
+     *  ShooterCalc.USE_META_SOTM is on. */
+    public static double META_TURRET_LEAD_SEC = 0.05;
 
     // ---- Servo -> turret gearing (BIOBUZZ) -------------------------------------
     // 4 Axon MAXes, positional, all at the same position (four ports; turretServo2 reversed, see Turret). Each pair drives a 15T through 48T gears (48:15 speed-up); each 15T shares
@@ -129,7 +135,8 @@ public class TurretCalc {
     private static double targetAngle(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg) {
         double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
         if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
-        return commandedAngleDeg + offsetDeg - angularVelDeg * yawFeedforwardGain;
+        double leadSec = ShooterCalc.USE_META_SOTM ? META_TURRET_LEAD_SEC : yawFeedforwardGain;
+        return commandedAngleDeg + offsetDeg - angularVelDeg * leadSec;
     }
 
     public static boolean outOfRange() { return outOfRange; }
