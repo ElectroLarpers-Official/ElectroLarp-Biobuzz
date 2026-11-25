@@ -11,7 +11,7 @@ public final class Latch {
     public static double OPEN_POS = 0.92;
     public static double CLOSED_POS = 0.81;
 
-    private final Servo latch; // null if stopperServo isn't in the config (not plugged in yet): everything is a no-op
+    private final Servo latch;
     private boolean open;
 
     public Latch(HardwareMap hw) {

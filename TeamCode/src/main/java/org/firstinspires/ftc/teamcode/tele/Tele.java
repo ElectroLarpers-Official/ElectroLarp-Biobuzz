@@ -1,15 +1,8 @@
 package org.firstinspires.ftc.teamcode.tele;
-
 import static com.pedropathing.ivy.commands.Commands.infinite;
-import static com.pedropathing.ivy.commands.Commands.instant;
-
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
-
-import org.electrolightsftc.pulse.electropathing.PulseFollower;
-import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.Drivetrain;
@@ -23,23 +16,15 @@ import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
 
 @Configurable
 public class Tele extends CommandOpMode {
-    /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
-    /** Start from where the last auto ended (used once, by the first TeleOp after that auto), else START_X/Y/HEADING. */
     public static boolean USE_SAVED_POSE = true;
-
-    /** Driver 2 trim steps: motor RPM, hood servo position, turret degrees. */
     public static double RPM_TRIM_STEP = 25, HOOD_TRIM_STEP = 0.005, TURRET_TRIM_STEP_DEG = 1;
-    /** Driver 2 right stick dead band in manual mode. */
     public static double MANUAL_STICK_DEADBAND = 0.05;
-    /** Driver Station + Panels telemetry is built and sent at most this often, ms (it costs a few ms each time).
-     *  The robot loop itself runs every cycle regardless. 100 = 10 updates/s; 0 = every loop. */
     public static double TELEMETRY_PERIOD_MS = 100;
 
     private final Alliance a;
     private Robot robot;
     private GamepadEx gp1, gp2;
-    private Command shootCycle;
     private TeleTelemetry tele;
     private long lastExecNanos = 0;
     private long lastTelemetryNanos = 0;
@@ -60,7 +45,6 @@ public class Tele extends CommandOpMode {
         // Use the auto's end pose once, then clear it so a later TeleOp run doesn't reuse a stale pose.
         OpModeStorage.endPose = null;
         robot.follower.update();
-        shootCycle = robot.shootCycle();
         robot.startTeleOpDrive();   // RevAmped arcade drive owns the drive motors from here
 
         gp1 = new GamepadEx(gamepad1);
@@ -115,8 +99,6 @@ public class Tele extends CommandOpMode {
     @Override
     public void end() {
         if (robot == null) return;
-        // Don't save the pose here: only an auto that actually ran saves one (Close / Far / OneTip). Saving it from
-        // TeleOp made every later TeleOp start from wherever the previous TeleOp happened to stop.
         robot.stop();
     }
 

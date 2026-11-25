@@ -8,19 +8,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.HardwareNames;
 import org.firstinspires.ftc.teamcode.util.hardware.CachedMotor;
 
-/**
- * Intake + transfer. They are belted together on the robot, so they run as one subsystem: the "intake" motor and,
- * if it is in the config, the "transfer" motor, always at the same power.
- * Directions as tuned in FlywheelPIDFTest: intake motor reversed, transfer motor forward.
- */
+
 @Configurable
 public final class Intake {
-    public static boolean REVERSED = true;            // FlywheelPIDFTest ran the intake at -1
-    public static boolean TRANSFER_REVERSED = false;  // and the transfer at +1
+    public static boolean REVERSED = true;
+    public static boolean TRANSFER_REVERSED = false;
 
     public static double ON_POWER = 1;
     public static double REVERSE_POWER = -1.0;
-    public static double SLOW_REVERSE_POWER = -0.5; // used to clear a jam
+    public static double SLOW_REVERSE_POWER = -0.5;
 
     public enum IntakeState {
         ON,
@@ -30,7 +26,7 @@ public final class Intake {
     }
 
     private final CachedMotor motor;
-    private final CachedMotor transferMotor; // null if "transfer" isn't configured
+    private final CachedMotor transferMotor;
     private IntakeState state = IntakeState.OFF;
 
     public Intake(HardwareMap hw) {

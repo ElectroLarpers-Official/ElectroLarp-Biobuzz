@@ -17,41 +17,33 @@ import org.firstinspires.ftc.teamcode.util.Alliance;
 @Configurable
 public class ShooterCalc {
 
-    // ---- Fixed-point solver parameters -------------------------------------
-    // feederDelay + turretSettleTime is the horizon the launch state is projected over; flight time
-    // is the lead solved inside the fixed-point loop. Kept separate: speed is not constant across both.
-    public static double feederDelay = 0.1; // TODO(new robot): old-robot value
-    public static double turretSettleTime = 0.03; // TODO(new robot): old-robot value
-    public static double leadGain = 1; // TODO(new robot): old-robot value
-    public static double solveTolerance = 0.001; // TODO(new robot): old-robot value
-    public static int maxIterations = 5; // TODO(new robot): old-robot value
+
+    public static double feederDelay = 0.1;
+    public static double turretSettleTime = 0.03;
+    public static double leadGain = 1;
+    public static double solveTolerance = 0.001;
+    public static int maxIterations = 5;
 
     // ---- RevAmped braking override ------------------------------------------
     public static final int REVAMPED_OFF = 0;
     public static final int REVAMPED_AUTO = 1;
     public static final int REVAMPED_ALWAYS = 2;
     public static int revAmpedMode = REVAMPED_AUTO;
-    /** Measured decel (in/s^2) that ENGAGES the braking model. Clear of the ~-52 float coast. */
-    public static double revAmpedBrakeThreshold = -100.0; // TODO(new robot): old-robot value
-    /** Measured decel (in/s^2) at which it RELEASES. Latched far from the engage threshold so
-     *  one stop is treated as one event instead of stepping the aim point between models. */
-    public static double revAmpedReleaseThreshold = -75.0; // TODO(new robot): old-robot value
+    public static double revAmpedBrakeThreshold = -100.0;
+    public static double revAmpedReleaseThreshold = -75.0;
     public static boolean revAmpedBypassMinSpeed = true;
     public static boolean revAmpedActive = false;
 
     // ---- Accel filter --------------------------------------------------------
-    public static double accelFilterAlphaDecel = 0.5; // TODO(new robot): old-robot value
-    public static double accelFilterAlphaAccel = 0.3; // TODO(new robot): old-robot value
-    public static double maxProjectedSpeed = 125.0; // TODO(new robot): old-robot value
-    /** Rotate the velocity direction forward through the horizon so the lead points where the robot
-     *  will be heading at launch. Without it, at 30 deg/s the hit rate on a 7in target fell to 50%;
-     *  with it, 99%. Robot passes the follower's real yaw rate (the old code passed 0, so this never ran there). */
+    public static double accelFilterAlphaDecel = 0.5;
+    public static double accelFilterAlphaAccel = 0.3;
+    public static double maxProjectedSpeed = 125.0;
     public static boolean compensateTurning = true;
-    public static double minAngularVelocity = 0.02; // TODO(new robot): old-robot value
-    public static double maxAngularVelocity = 6.0; // TODO(new robot): old-robot value
-    public static double accelClamp = 400.0; // TODO(new robot): old-robot value
-    public static double positiveAccelGain = 0.5; // TODO(new robot): old-robot value
-    public static double slopeWindowSeconds = 0.15; // TODO(new robot): old-robot value
+    public static double minAngularVelocity = 0.02;
+    public static double maxAngularVelocity = 6.0;
+    public static double accelClamp = 400.0;
+    public static double positiveAccelGain = 0.5;
+    public static double slopeWindowSeconds = 0.15;
     public static double lastAlongTrackAccelRaw = 0.0;
 
     private static final int HIST_N = 12;
@@ -62,28 +54,17 @@ public class ShooterCalc {
     private static double filteredAlongTrackAccel = 0.0;
 
     // ---- Release point ---------------------------------------------------------
-    /** Shooter exit above the tiles, inches. CAD: 10.4 in (steepest) to 11.6 in (flattest) release height.
-     *  Only used for the flight time. */
     public static double launchHeight = 11.0;
 
     // ---- Tuned points (TunedShotTable) -------------------------------------------
-    // Every shot comes from the tuned points: their RPM and hood are blended at the release point the robot will be
-    // at (after the lead), and the flight time for the lead comes from the blended hood angle and the range.
-
-    /** Release point -> nearest tuned point of the cell, inches (telemetry: tune more points where this is big).
-     *  NaN: the cell has no tuned points. */
     public static double lastTunedNearestIn = Double.NaN;
     public static int lastTunedPointsUsed = 0;
 
     private static final TunedShotTable.Shot tunedShot = new TunedShotTable.Shot();
-    /** This loop's shot: true when the cell has tuned points. */
     private static boolean shotOk = false;
     private static double shotFlightSec = 0.0;
     private static HiveCell lastCell = null;
     private static double lastGoalX = Double.NaN, lastGoalY = Double.NaN;
-
-    /** Look up the tuned shot for the release point {@code range} inches from the goal, approaching along field
-     *  bearing {@code bearing} (release point -> goal, radians), and its flight time. Needs goal() this loop. */
     private static void queryTuned(double range, double bearing) {
         shotOk = false;
         if (lastCell == null || isNaN(lastGoalX)) return;
@@ -96,12 +77,6 @@ public class ShooterCalc {
         shotFlightSec = shotOk ? flightTime(range, tunedShot.hood) : 0.0;
     }
 
-    /**
-     * Flight time to the window centre from the hood's launch angle and the range alone: a no-drag arc through the
-     * window has t = sqrt(2 (R tan(launch) - h) / g), h = window centre above the release point; drag adds a few
-     * percent (TunedShotTable.FLIGHT_TIME_FACTOR). Only used for the shoot-while-moving lead. 0 (no lead) when the
-     * arc can't clear the window height, which only happens closer than about 17 in (under the HIVE).
-     */
     public static double flightTime(double range, double hoodPosition) {
         double th = Math.toRadians(clamp(launchDegForHoodPosition(hoodPosition), LAUNCH_MIN_DEG, LAUNCH_MAX_DEG));
         double rise = range * Math.tan(th) - (TunedShotTable.WINDOW_CENTRE_HEIGHT_IN - launchHeight);
@@ -126,64 +101,34 @@ public class ShooterCalc {
         histCount = 0;
     }
 
-    /** Below this projected speed (in/s) there's no lead, except while the braking model is on. */
-    public static double sotmMinSpeed = 12.0; // TODO(new robot): old-robot value
+
+    public static double sotmMinSpeed = 12.0;
 
     // ---- Burst comp (RevAmped's SimpleShooterMath) ------------------------------
-    /** Burst comp: while feeding, re-aim the hood for the slower ball the sagging flywheel throws.
-     *  The hood moves toward the launch angle that needs the least speed: steeper on flat shots, flatter on
-     *  lob shots (the line between them is about 60-67 deg, depending on range). */
     public static boolean burstCompEnabled = false;
-    /** true: the sag is measured, from the flywheel's real speed vs its target each loop.
-     *  false: a fixed burstSpeedSag is assumed for every ball after the first. */
     public static boolean burstCompUseMeasured = true;
-    /** Only with burstCompUseMeasured off: fraction of exit speed the later balls lose.
-     *  A 300 RPM drop at ~3700 RPM is about 0.08. */
     public static double burstSpeedSag = 0.08;
-    /** Sag smaller than this is ignored (no hood change), fraction of the target speed. */
     public static double burstCompDeadband = 0.01;
-    /** Largest sag the comp will correct for, fraction (beyond this it's a stall, not a sag). */
     public static double burstCompMaxSag = 0.20;
-    /** Written by Robot each loop: the flywheel's measured speed, motor ticks/s. */
     public static double flywheelTps = 0.0;
-    /** Delay from feed start to applying the comp. 30 ms lands after ball 1 exits and
-     *  leaves the hood servo time to move before ball 2. */
-    public static double burstCompDelayMs = 30.0; // TODO(new robot): old-robot value
-    /** Written by Robot each loop from its feed timer. */
+    public static double burstCompDelayMs = 30.0;
     public static boolean burstCompActive = false;
-    /** Hood change the burst comp applied last loop, degrees. Telemetry. */
     public static double lastBurstHoodDeltaDeg = 0.0;
-    /** Measured flywheel sag last loop while feeding, fraction of target (0.08 = 8% under). Telemetry. */
     public static double lastBurstSag = 0.0;
 
     // ---- Ball exit speed (burst comp only) ------------------------------------------
-    // 3 in flywheel, 20T GT2 on the motors -> 40T on the flywheel (motors spin 2x the flywheel).
-    /** Ball exit speed / flywheel surface speed. 0.79 measured on the counter-roller shooter (2026-10-20, video +
-     *  shots). Only the burst comp uses it: it turns the tuned RPM into the ball speed the sag is taken off. */
     public static double FLYWHEEL_EXIT_EFFICIENCY = 0.79;
     public static double FLYWHEEL_DIAMETER_IN = 3.0;
     public static double MOTOR_PULLEY_TEETH = 20;
     public static double FLYWHEEL_PULLEY_TEETH = 40;
 
-    /** Motor RPM -> ball exit speed, m/s. */
     public static double ballSpeedForMotorRpm(double motorRpm) {
         double flywheelRevPerSec = motorRpm / 60.0 / (FLYWHEEL_PULLEY_TEETH / MOTOR_PULLEY_TEETH);
         return flywheelRevPerSec * Math.PI * FLYWHEEL_DIAMETER_IN * 0.0254 * FLYWHEEL_EXIT_EFFICIENCY;
     }
-
-    /**
-     * Launch angle (rad) that puts a ball of exit speed {@code v} (in/s) through the same point ({@code range} in,
-     * {@code height} in above the release) as the planned shot, the one nearest {@code planned} (the planned launch
-     * angle). No-drag model, so for a tuned point it is exact at the tuned speed.
-     *
-     * <p>Two angles reach the point when the ball is fast enough: the flat one and the lob. Taking the nearest
-     * one moves the hood toward the least-speed angle: steeper for flat shots, flatter for lobs. Too slow for
-     * either: the least-speed angle itself (closest the ball can get), never a wild value.
-     */
     static double hoodForSpeed(double range, double height, double v, double planned) {
         double minSpeedAngle = Math.atan((height + Math.hypot(height, range)) / range);
         if (v <= 0.0 || range <= 1e-6) return minSpeedAngle;
-        // range*tan(th) - g r^2 (1 + tan^2) / (2 v^2) = height  ->  a T^2 - r T + (a + h) = 0, T = tan(th)
         double a = G_IN * range * range / (2.0 * v * v);
         double disc = range * range - 4.0 * a * (a + height);
         if (disc < 0.0) return minSpeedAngle;
@@ -207,37 +152,25 @@ public class ShooterCalc {
     public static boolean lastSotmActive = false;
 
     private static final double G_IN = 32.174 * 12.0;
-    /** Flywheel motor encoder counts per motor revolution (goBILDA 5203). */
     private static final double MOTOR_TICKS_PER_REV = 28;
 
     // ---- Launch angle limits and hood servo -------------------------------------
-    /** Launch angle range the hood can reach, degrees above horizontal (team, 2026-10-17). */
     public static double LAUNCH_MIN_DEG = 43.01765;
     public static double LAUNCH_MAX_DEG = 80.0;
-    /** Fixed launch angle (no adjustable hood: the undershooter). On: every shot is at FIXED_LAUNCH_DEG (flight time
-     *  for the lead), the tuned points' hood values are ignored, the burst comp is off, and the hood servo is never
-     *  written. Off: the adjustable hood (LAUNCH_MIN_DEG..LAUNCH_MAX_DEG). */
     public static boolean FIXED_LAUNCH = true;
-    /** The undershooter's launch angle, degrees above horizontal. */
     public static double FIXED_LAUNCH_DEG = 67;
 
-    /** Hood drive: 33T gear on the servo -> 200T on the hood, goBILDA servo with 300 deg over position 0..1
-     *  (Hood sets the 500-2500 us PWM range for that). Servo position 0 = the flattest launch angle,
-     *  LAUNCH_MIN_DEG; position rises as the hood steepens. 80 deg launch -> about 0.747. */
     public static double HOOD_SERVO_TEETH = 33;
     public static double HOOD_GEAR_TEETH = 200;
     public static double HOOD_SERVO_RANGE_DEG = 300;
-    /** Servo position at LAUNCH_MIN_DEG. Trim this if the hood doesn't sit exactly on the flat stop at 0. */
     public static double HOOD_SERVO_POS_AT_LAUNCH_MIN = 0.0;
 
-    /** Launch angle (deg) -> hood servo position: every hood degree is 200/33 servo degrees. */
     public static double hoodServoPosition(double launchDeg) {
         double servoDeg = (launchDeg - LAUNCH_MIN_DEG) * (HOOD_GEAR_TEETH / HOOD_SERVO_TEETH);
         return HOOD_SERVO_POS_AT_LAUNCH_MIN + servoDeg / HOOD_SERVO_RANGE_DEG;
     }
-    /** Inverse of hoodServoPosition: hood servo position -> launch angle, degrees. */
     public static double launchDegForHoodPosition(double position) {
-        if (FIXED_LAUNCH) return FIXED_LAUNCH_DEG;   // no hood: every shot (and tuned point) is at the fixed angle
+        if (FIXED_LAUNCH) return FIXED_LAUNCH_DEG;
         double servoDeg = (position - HOOD_SERVO_POS_AT_LAUNCH_MIN) * HOOD_SERVO_RANGE_DEG;
         return LAUNCH_MIN_DEG + servoDeg * (HOOD_SERVO_TEETH / HOOD_GEAR_TEETH);
     }
@@ -260,8 +193,6 @@ public class ShooterCalc {
         } else if (robotY < HIVE_SIDE_SPLIT_Y - HIVE_SIDE_HYSTERESIS) {
             hiveAimFar = false;
         }
-        // Alliance picks the HIVE (red -> red HIVE, blue -> blue HIVE); field side picks the cell.
-        // The Pose is cached per cell and only rebuilt when the aim point changes (e.g. edited in Panels).
         int i = (red ? 0 : 2) + (hiveAimFar ? 1 : 0);
         double ax = ShooterConstants.hiveAimX(red, hiveAimFar), ay = ShooterConstants.hiveAimY(red, hiveAimFar);
         Pose aim = goalCache[i];
@@ -278,45 +209,32 @@ public class ShooterCalc {
 
     public static boolean hiveAimFar() { return hiveAimFar; }
 
-    /** Reused result of solve: {motor ticks/s, hood servo position, turret heading deg}. Read it before the next
-     *  solve call. No tuned points for the cell: ticks/s 0 and hood NaN (leave the hood where it is). */
     private static final double[] solveOut = new double[3];
 
     // ---- Meta Infinity's shoot-while-moving ---------------------------------------------------------------------
 
-    /** Which shoot-while-moving method runs. true = Meta Infinity's (their DECODE public release, Robot.update):
-     *  flight time at the current distance, aim at goal - velocity * flight time, RPM from the distance to that
-     *  point. One step: no release-point projection, no acceleration, no braking model, no iteration, no minimum
-     *  speed. false = ours (everything below solveMeta). Live in Panels. */
     public static boolean USE_META_SOTM = true;
 
-    /** Meta's method. Same inputs and outputs as solve(). Their flight time came from a measured table; ours comes
-     *  from flightTime() (launch angle + range), at the current distance like theirs. */
     private static double[] solveMeta(double robotHeading, double x, double goalTheta, Vector2D robotVel) {
-        // Flight time at the current (static) distance.
         queryTuned(x, goalTheta);
         double tf = shotFlightSec;
 
-        // Robot velocity in the goal frame: along = toward the goal, across = left of the robot -> goal line.
         double speed = robotVel.magnitude();
         double along = speed * Math.cos(robotVel.theta() - goalTheta);
         double across = speed * Math.sin(robotVel.theta() - goalTheta);
 
-        // Meta: track point = goal - velocity * flight time. In the goal frame the robot is at (0, 0) and the goal at
-        // (x, 0), so the track point is (x - along * tf, -across * tf).
         double virtualX = x - along * tf;
         double virtualY = -across * tf;
         double virtualRange = Math.max(1.0, Math.hypot(virtualX, virtualY));
         double virtualBearing = goalTheta + Math.atan2(virtualY, virtualX);
 
-        // RPM / hood from the distance to the track point (Meta: shooter.update(distanceToGoal)).
         queryTuned(virtualRange, virtualBearing);
         double headingAngle = normalizeDegrees(Math.toDegrees(virtualBearing - robotHeading));
         double tps = shotOk ? Math.max(0.0, tunedShot.rpm * MOTOR_TICKS_PER_REV / 60.0) : 0.0;
         double hoodPos = shotOk ? tunedShot.hood : Double.NaN;
 
         requiredRPM = tps * 60.0 / MOTOR_TICKS_PER_REV;
-        lastBurstHoodDeltaDeg = 0.0;   // no burst comp in Meta's method (it needs a hood anyway)
+        lastBurstHoodDeltaDeg = 0.0;
         lastBurstSag = 0.0;
         revAmpedActive = false;
         lastIterations = 1;
@@ -382,8 +300,6 @@ public class ShooterCalc {
         double projectedSpeed;
         double projectedDistance;
 
-        // Where the robot will be at release: measured speed + filtered acceleration over the horizon, or the
-        // Braking model while it's braking hard (revAmpedMode).
         double a = filteredAlongTrackAccel;
         if (a > 0.0) a *= positiveAccelGain;
 
@@ -445,7 +361,6 @@ public class ShooterCalc {
         double parallelComponent = sotmActive ? Math.cos(coordinateTheta) * projectedSpeed : 0.0;
         double perpendicularComponent = sotmActive ? Math.sin(coordinateTheta) * projectedSpeed : 0.0;
 
-        // Look up the tuned shot (and its flight time) at the projected release point.
         queryTuned(projectedRange, goalTheta + projectedBearingShift);
         double tf = shotFlightSec;
 
@@ -453,8 +368,6 @@ public class ShooterCalc {
         double virtualX = projectedRange;
         double virtualY = 0.0;
         int iterations = 0;
-        // No lead (SOTM off or too slow): the virtual release point is the projected one, which the lookup above
-        // already used, so there is nothing to iterate.
         boolean converged = !sotmActive;
 
         for (int i = 0; i < maxIterations && sotmActive; i++) {
@@ -479,8 +392,6 @@ public class ShooterCalc {
         lastConverged = converged;
         lastFlightTime = tf;
 
-        // The last lookup (above, or the loop's last pass) was at the final virtual release point: its RPM / hood
-        // are the shot.
         double virtualBearing = goalTheta + projectedBearingShift + Math.atan2(virtualY, virtualX);
         double headingAngle = normalizeDegrees(Math.toDegrees(virtualBearing - robotHeading));
 
@@ -488,15 +399,13 @@ public class ShooterCalc {
         double hoodPos = shotOk ? tunedShot.hood : Double.NaN;
         requiredRPM = tps * 60.0 / MOTOR_TICKS_PER_REV;
 
-        // Burst comp: while feeding, steer the hood so the slower (sagged) ball still goes through the point the
-        // tuned shot goes through at this range.
         lastBurstHoodDeltaDeg = 0.0;
         if (burstCompEnabled && !FIXED_LAUNCH && burstCompActive && shotOk && tps > 0.0) {
             double sag = burstCompUseMeasured ? 1.0 - flywheelTps / tps : burstSpeedSag;
             if (sag > burstCompDeadband) {
                 sag = Math.min(sag, burstCompMaxSag);
                 double th = Math.toRadians(clamp(launchDegForHoodPosition(tunedShot.hood), LAUNCH_MIN_DEG, LAUNCH_MAX_DEG));
-                double v = ballSpeedForMotorRpm(tunedShot.rpm) * 39.37;   // in/s
+                double v = ballSpeedForMotorRpm(tunedShot.rpm) * 39.37;
                 double c = Math.cos(th);
                 double height = virtualRange * Math.tan(th) - G_IN * virtualRange * virtualRange / (2.0 * v * v * c * c);
                 double comp = clamp(hoodForSpeed(virtualRange, height, v * (1.0 - sag), th),

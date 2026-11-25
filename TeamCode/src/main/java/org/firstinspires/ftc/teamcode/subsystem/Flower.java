@@ -23,10 +23,8 @@ public class Flower {
         if (flower != null) flower.setPosition(state ? DOWN_POS : UP_POS);
     }
 
-    /** No-op for the positional servo (Robot / Close call it every loop). */
     public void update() {}
 
-    /** No-op for the positional servo (Robot calls it on stop). */
     public void stop() {}
 
     public void toggle() { setDown(!down); }

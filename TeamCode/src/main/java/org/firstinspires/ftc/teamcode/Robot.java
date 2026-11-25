@@ -6,19 +6,6 @@ import static com.pedropathing.ivy.groups.Groups.sequential;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ivy.Command;
-import com.pedropathing.algorithm.ForesightConfig;
-import com.pedropathing.api.Paths;
-import com.pedropathing.config.Modifier;
-import com.pedropathing.paths.CompoundPath;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathSegment;
-import com.pedropathing.paths.Piecewise;
-import com.pedropathing.paths.curves.Curve;
-import com.pedropathing.paths.curves.Line;
-import com.pedropathing.paths.curves.bezier.BezierCurve;
-import org.electrolightsftc.pulse.electropathing.paths.PathModifiers;
-import java.util.ArrayList;
-import java.util.Collections;
 import com.pedropathing.math.Pose;
 import com.pedropathing.math.Vector2D;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -47,36 +34,13 @@ import java.util.List;
 
 
 @Configurable
-//"can I take 8 inches, do you wanna try" nithin 2026
 public final class Robot {
-    /** How long shootCycle() keeps the latch open and the transfer running, ms. */
     public static double SHOOT_DELAY_MS = 250; // TODO: tune
-    /** Drive all 4 turret servos (turretServo1-4 on their own ports, directions in Turret). Off = only
-     *  turretServo1, e.g. with the Y-split or to run on one servo. Read when the OpMode is initialised. */
     public static boolean TURRET_ALL_SERVOS = true; // TODO delete (quad turret)
-    public static double RESUME_MIN_REMAINING_IN = 0.5;
-    public static double RESUME_JOIN_DISTANCE_IN = 3.0;
-
-    // ---- Driver 2 live trims: added to every shot (tuned points and manual mode) -------------------------------
-    /** Motor RPM added to the flywheel target. Driver 2 d-pad up / down in TeleOp. */
     public static double LIVE_RPM_TRIM = 25;
-    /** Hood servo position added to the hood target (+ = steeper). Driver 2 d-pad right / left in TeleOp. */
     public static double LIVE_HOOD_TRIM = 0;
-
-    // ---- Manual fallback (driver 2 X): for when the pose can't be trusted ----------------------------------
-    // The turret points where driver 2 puts it (straight ahead to start), the flywheel runs MANUAL_RPM
-    // (+ LIVE_RPM_TRIM) and the hood sits at MANUAL_HOOD (+ LIVE_HOOD_TRIM).
     public static double MANUAL_RPM = 6000, MANUAL_HOOD = 0.435;
-    /** Turret speed under driver 2's right stick in manual mode, deg/s at full stick. */
     public static double MANUAL_TURRET_RATE_DEG_S = 120;
-
-    // ---- Pose reset (driver 1 X) ---------------------------------------------------------------------------------
-    /** Where the robot is when driver 1 presses X, Pedro inches / degrees: the red alliance corner with the robot
-     *  squared against both walls. SET THESE for the robot: x / y = distance from each wall to the pose point,
-     *  heading = which way the robot faces there. The pose point is the centre of rotation, not the middle of the
-     *  frame. From CAD it is 6.92 in from the backplate, 9.57 in from the front of the side panels, 6.86 in from
-     *  each side panel and 7.56 in from the outside of the flower pivots. Blue uses
-     *  the same spot turned 180 degrees about the field centre (144 - x, 144 - y, heading + 180). */
     public static double RESET_X = 9, RESET_Y = 9, RESET_HEADING_DEG = 90;
 
     public final Alliance alliance;
@@ -88,9 +52,7 @@ public final class Robot {
     public final Turret turret;
     public final Shooter shooter;
     public final Hood hood;
-    /** RevAmped arcade drive (TeleOp). Writes the drive motors itself after {@link #startTeleOpDrive()}. */
     public final Drivetrain drivetrain;
-    /** True after {@link #startTeleOpDrive()}: update() runs the localizer only, so the follower never drives. */
     private boolean teleOpDrive = false;
 
     private final List<LynxModule> hubs;
@@ -102,13 +64,8 @@ public final class Robot {
     private double manualTurretDeg = 0;
     private Double turretOffsetOverrideDeg;
     private Double fixedTurretAngleDeg;
-    private Path pausedPath = null;
-    private int pausedIndex = 0;
-    private double pausedT = 0;
-    /** Stick blend for the turret (TeleOp only, off unless StickLead.STICK_BLEND_DRIVE / TURN are set). */
     private final StickLead stickLead = new StickLead();
     private long lastAimNanos = 0;
-    /** Shot log (off unless ShotLogger.SHOT_LOG is on). Written to the Hub in stop(). */
     private final ShotLogger shotLog = new ShotLogger();
 
 
@@ -125,7 +82,7 @@ public final class Robot {
         drivetrain = new Drivetrain(hardwareMap, follower, alliance);
         intake = new Intake(hardwareMap);
         latch = new Latch(hardwareMap);
-        turret = new Turret(hardwareMap, TURRET_ALL_SERVOS); // TODO delete: -> new Turret(hardwareMap)
+        turret = new Turret(hardwareMap, TURRET_ALL_SERVOS);
         shooter = new Shooter(hardwareMap);
         hood = new Hood(hardwareMap);
         ShooterCalc.resetProjectionFilter();
@@ -137,29 +94,24 @@ public final class Robot {
         for (LynxModule hub : hubs) {
             hub.clearBulkCache();
         }
-        if (teleOpDrive) FollowerLocalization.update(follower);   // RevAmped TeleOp: everything but driving
+        if (teleOpDrive) FollowerLocalization.update(follower);
         else follower.update();
         updateAiming();
         shooter.update();
         flower.update();
-        stickLead.clearSticks();   // used once: TeleOp sends them again next loop, autos never do
-
+        stickLead.clearSticks();
         long now = System.nanoTime();
         if (lastLoopNanos != 0) loopMs = (now - lastLoopNanos) / 1e6;
         lastLoopNanos = now;
         if (ShotLogger.SHOT_LOG) logShot(now);
     }
 
-    /** TeleOp, every loop before update(): driver 1's sticks, exactly as given to drive(). Only the turret's stick
-     *  blend uses them (StickLead); the shot lead and RPM never do. */
     public void setDriverSticks(double forward, double lateral, double turn, double forwardOffsetRad) {
         stickLead.setSticks(forward, lateral, turn, forwardOffsetRad, !drivetrain.isFieldCentric());
     }
 
-    /** How far the stick blend moved the turret this loop, degrees (0 = not acting). Telemetry. */
     public double stickBlendDeg() { return stickLead.changeDeg(); }
 
-    /** One shot-log row for this loop (ShotLogger keeps it only around shooting). */
     private void logShot(long nowNanos) {
         Pose pose = follower.pose();
         Velocity vel = follower.velocity();
@@ -187,7 +139,6 @@ public final class Robot {
         shotLog.commit(isShooting());
     }
 
-    /** Driver 1 A / Y: open / close the latch by hand. */
     public void manualLatch(boolean open) {
         if (open) latch.open(); else latch.close();
     }
@@ -196,7 +147,6 @@ public final class Robot {
         turretOffsetOverrideDeg = offsetDeg;
     }
 
-    /** Holds a robot-relative turret angle in degrees, with counterclockwise positive. */
     public void setFixedTurretAngle(double angleDeg) {
         fixedTurretAngleDeg = angleDeg;
     }
@@ -216,21 +166,21 @@ public final class Robot {
         Vector2D velocity = vel.toVector2D();
         double angularVelocity = vel.omega;
 
-        // Stick blend clocks: time since driver 1 last moved the sticks (nothing happens without sticks).
+
         long aimNanos = System.nanoTime();
         double aimDt = lastAimNanos == 0 ? 0.0 : Math.min(0.1, (aimNanos - lastAimNanos) / 1e9);
         lastAimNanos = aimNanos;
         stickLead.track(aimDt);
         stickLead.apply(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);   // not acting unless the normal shot below runs
 
-        // Manual fallback: the pose isn't trusted, so no solver and no under-HIVE box.
+
         if (manual) {
             underHive = false;
             if(!Close.autoRPM) {
                 shooter.setTargetRpm(MANUAL_RPM + LIVE_RPM_TRIM);
             }
             hood.setPosition(MANUAL_HOOD + LIVE_HOOD_TRIM);
-            turret.setPositionAll(solveTurret(turretForward ? 0.0 : manualTurretDeg, 0.0)); // TODO delete: -> setPosition
+            turret.setPositionAll(solveTurret(turretForward ? 0.0 : manualTurretDeg, 0.0));
             return;
         }
 
@@ -238,8 +188,6 @@ public final class Robot {
         Pose goal = ShooterCalc.goal(alliance, currPose.y());
         Vector2D robotToGoal = Turret.getTurretToGoalVector(turretPose, goal);
 
-        // Under the HIVE: don't run the solver (no shot exists there). Hold a fixed flywheel speed and hood, keep the
-        // turret pointed at the cell so it's ready on the way out.
         if (ShooterConstants.underHive(currPose.x(), currPose.y())) {
             underHive = true;
             if(!Close.autoRPM) {
@@ -256,7 +204,7 @@ public final class Robot {
 
         double shootMs = (shootStartNanos == 0) ? 0.0 : (System.nanoTime() - shootStartNanos) / 1e6;
         ShooterCalc.burstCompActive = shootStartNanos != 0 && shootMs >= ShooterCalc.burstCompDelayMs;
-        // Measured flywheel speed for the burst comp, live trim taken off so it compares with the solver's target.
+
         if(!Close.autoRPM) {
             ShooterCalc.flywheelTps = shooter.velocity() - LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0;
         }
@@ -268,171 +216,51 @@ public final class Robot {
         if(!Close.autoRPM) {
             shooter.setTargetVelocity(tps);
         }
-        if (!Double.isNaN(result[1])) hood.setPosition(result[1] + LIVE_HOOD_TRIM);   // NaN: no tuned points
+        if (!Double.isNaN(result[1])) hood.setPosition(result[1] + LIVE_HOOD_TRIM);
 
-        // Stick blend (TeleOp, turret only): start moving the turret when the driver moves the sticks, before the
-        // measured velocity changes. The RPM and shot lead above stay on the measured velocity.
+
         double speed = velocity.magnitude();
         stickLead.apply(result[2], ShooterCalc.lastVirtualRange, currPose.heading(),
                 speed * Math.cos(velocity.theta()), speed * Math.sin(velocity.theta()), angularVelocity,
                 TurretCalc.leadSec());
-        turret.setPositionAll(turretForward ? solveTurret(0.0, 0.0) // driver 2: straight ahead
+        turret.setPositionAll(turretForward ? solveTurret(0.0, 0.0)
                 : solveTurret(stickLead.aimDeg(), stickLead.omega())); // TODO delete: -> setPosition
     }
 
     // ---- Manual fallback ---------------------------------------------------------------------------------------
     public boolean isManual() { return manual; }
     private boolean turretForward = false;
-    /** Driver 2's turret-forward toggle: turret held straight ahead (0 deg + the alliance turret trim). */
     public boolean isTurretForward() { return turretForward; }
     public void setTurretForward(boolean on) { turretForward = on; }
-    /** Turn manual mode on / off. Turning it on starts with the turret straight ahead. */
+
     public void setManual(boolean on) {
         if (on && !manual) manualTurretDeg = 0;
         manual = on;
     }
     public double manualTurretDeg() { return manualTurretDeg; }
-    /** Turns the manual turret aim by {@code deg} (+ = counter-clockwise), inside the turret's travel. */
     public void nudgeManualTurret(double deg) {
         manualTurretDeg = Math.max(TurretCalc.MIN_ANGLE, Math.min(TurretCalc.MAX_ANGLE, manualTurretDeg + deg));
     }
 
     // ---- Pose reset ------------------------------------------------------------------------------------------
-    /** The pose reset spot for an alliance (RESET_X / Y / HEADING_DEG for red, turned 180 deg for blue). */
     public static Pose resetPose(Alliance alliance) {
         if (alliance == Alliance.RED) return new Pose(RESET_X, RESET_Y, Math.toRadians(RESET_HEADING_DEG));
         return new Pose(144 - RESET_X, 144 - RESET_Y, Math.toRadians(RESET_HEADING_DEG + 180));
     }
-    /** Tells the localizer the robot is at the reset spot now. */
     public void resetPose() {
         follower.setPose(resetPose(alliance));
     }
 
-    /** True while the robot is under the HIVE (solver skipped, fixed RPM / hood). */
     public boolean underHive() {
         return underHive;
     }
 
 
-    /**
-     * TeleOp only (RevAmped way): from now on {@link #update()} updates just the localizer, so the follower stops
-     * driving the motors and {@link #drivetrain} writes them directly. Also sets the drive motors to brake.
-     * Autos never call this.
-     */
     public void startTeleOpDrive() {
         teleOpDrive = true;
         drivetrain.startTeleOpDrive();
     }
 
-    public boolean isPaused() {
-        return pausedPath != null;
-    }
-
-    public boolean pauseFollowing(boolean hold) {
-        if (!follower.following()) return false;
-        Path path = follower.currentPath();
-        if (path == null) return false;
-        pausedPath = path;
-        pausedIndex = follower.pathIndex();
-        pausedT = follower.parametricCompletion();
-        Pose holdPose = hold ? follower.pose() : null;
-        follower.breakFollowing();
-        if (hold) follower.hold(holdPose);
-        return true;
-    }
-
-    public boolean resumeFollowing() {
-        if (pausedPath == null) return false;
-        Path original = pausedPath;
-        int pathIndex = pausedIndex;
-        double guess = pausedT;
-        pausedPath = null;
-
-        List<PathSegment> segments = original.getSegments();
-        List<List<Modifier>> modifiers = new ArrayList<>();
-        collectModifiers(original, new ArrayList<>(), modifiers);
-        int index = Math.max(0, Math.min(pathIndex, segments.size() - 1));
-
-        PathSegment current = segments.get(index);
-        Pose pose = follower.pose();
-        double t = Math.max(0.0, Math.min(1.0, current.curve.closestParameter(pose.toVector2D(), guess)));
-
-        List<Path> legs = new ArrayList<>();
-        if (current.curve.remainingDistance(t) > RESUME_MIN_REMAINING_IN) {
-            Curve tail = tailOf(current.curve, t);
-            if (tail != null) {
-                if (pose.toVector2D().distance(tail.startPoint()) > RESUME_JOIN_DISTANCE_IN) {
-                    ForesightConfig config = follower.foresightConfig();
-                    double fromHeading = pose.heading();
-                    double toHeading = current.heading(t);
-                    double turn = Math.atan2(Math.sin(toHeading - fromHeading), Math.cos(toHeading - fromHeading));
-                    legs.add(Paths.path(new Line(pose.toVector2D(), tail.startPoint()))
-                            .heading((c, s) -> fromHeading + turn * s)
-                            .with(modifiers.get(index))
-                            .with(config.brakeAtEnd.at(false), config.pathSkip.at(true)));
-                }
-                final double startT = t;
-                legs.add(Paths.path(tail)
-                        .heading((c, s) -> current.heading(Math.min(1.0, startT + s * (1.0 - startT))))
-                        .with(modifiers.get(index)));
-            }
-        }
-        for (int i = index + 1; i < segments.size(); i++) {
-            PathSegment segment = segments.get(i);
-            legs.add(Paths.path(segment.curve)
-                    .heading((c, s) -> segment.heading(s))
-                    .with(modifiers.get(i)));
-        }
-
-        if (legs.isEmpty()) {
-            follower.hold(segments.get(segments.size() - 1).endPose());
-            return true;
-        }
-
-        Path resumed = legs.size() == 1 ? legs.get(0) : Paths.path(legs.toArray(new Path[0]));
-        if (PathModifiers.isCoasting(original)) PathModifiers.markCoasting(resumed);
-        follower.follow(resumed);
-        return true;
-    }
-
-    public void clearPause() {
-        pausedPath = null;
-    }
-
-    private static void collectModifiers(Path path, List<Modifier> inherited, List<List<Modifier>> out) {
-        List<Modifier> all = new ArrayList<>(inherited);
-        all.addAll(path.modifiers);
-        if (path instanceof CompoundPath) {
-            for (Piecewise.Segment<Path> child : ((CompoundPath) path).segments()) {
-                collectModifiers(child.value(), all, out);
-            }
-        } else {
-            out.add(all);
-        }
-    }
-
-    private static Curve tailOf(Curve curve, double t) {
-        if (curve instanceof BezierCurve) {
-            List<Vector2D> level = new ArrayList<>(((BezierCurve) curve).getControlPoints());
-            List<Vector2D> right = new ArrayList<>();
-            while (true) {
-                right.add(level.get(level.size() - 1));
-                if (level.size() == 1) break;
-                List<Vector2D> next = new ArrayList<>();
-                for (int i = 0; i < level.size() - 1; i++) {
-                    next.add(level.get(i).times(1.0 - t).plus(level.get(i + 1).times(t)));
-                }
-                level = next;
-            }
-            Collections.reverse(right);
-            return new BezierCurve(right);
-        }
-        Vector2D start = curve.get(t);
-        Vector2D end = curve.endPoint();
-        return start.distance(end) < 1e-3 ? null : new Line(start, end);
-    }
-
-    /** Open latch, transfer on. Stays on until stopShooting() (Tele right trigger hold). */
     public void startShooting() {
         shootStartNanos = System.nanoTime();
         latch.open();
@@ -440,7 +268,6 @@ public final class Robot {
         shooter.setShooting(true);
     }
 
-    /** Transfer off, close latch. */
     public void stopShooting() {
         shootStartNanos = 0;
         intake.off();
@@ -448,12 +275,12 @@ public final class Robot {
         shooter.setShooting(false);
     }
 
-    /** True between startShooting() and stopShooting(). */
+
     public boolean isShooting() {
         return shootStartNanos != 0;
     }
 
-    /** Open latch, transfer on, wait SHOOT_DELAY_MS, transfer off, close latch. */
+
     public Command shootCycle() {
         return sequential(
                 instant(this::startShooting),
@@ -467,8 +294,8 @@ public final class Robot {
     }
 
     public void stop() {
-        shotLog.save();   // writes the shot log file if anything was recorded
-        pausedPath = null;
+        shotLog.save();
+        clearPause();
         shootStartNanos = 0;
         intake.off();
         latch.close();
@@ -479,5 +306,183 @@ public final class Robot {
 
     public double loopMs() {
         return loopMs;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // =============================================================================================================
+    // ---- Pause / resume following (UNUSED: nothing calls this; kept on request) --------------------------------
+    // Fully qualified names so none of its imports sit at the top of the file.
+    // =============================================================================================================
+
+    public static double RESUME_MIN_REMAINING_IN = 0.5;
+    public static double RESUME_JOIN_DISTANCE_IN = 3.0;
+
+    private com.pedropathing.paths.Path pausedPath = null;
+    private int pausedIndex = 0;
+    private double pausedT = 0;
+
+    public boolean isPaused() {
+        return pausedPath != null;
+    }
+
+    public boolean pauseFollowing(boolean hold) {
+        if (!follower.following()) return false;
+        com.pedropathing.paths.Path path = follower.currentPath();
+        if (path == null) return false;
+        pausedPath = path;
+        pausedIndex = follower.pathIndex();
+        pausedT = follower.parametricCompletion();
+        Pose holdPose = hold ? follower.pose() : null;
+        follower.breakFollowing();
+        if (hold) follower.hold(holdPose);
+        return true;
+    }
+
+    public boolean resumeFollowing() {
+        if (pausedPath == null) return false;
+        com.pedropathing.paths.Path original = pausedPath;
+        int pathIndex = pausedIndex;
+        double guess = pausedT;
+        pausedPath = null;
+
+        List<com.pedropathing.paths.PathSegment> segments = original.getSegments();
+        List<List<com.pedropathing.config.Modifier>> modifiers = new java.util.ArrayList<>();
+        collectModifiers(original, new java.util.ArrayList<>(), modifiers);
+        int index = Math.max(0, Math.min(pathIndex, segments.size() - 1));
+
+        com.pedropathing.paths.PathSegment current = segments.get(index);
+        Pose pose = follower.pose();
+        double t = Math.max(0.0, Math.min(1.0, current.curve.closestParameter(pose.toVector2D(), guess)));
+
+        List<com.pedropathing.paths.Path> legs = new java.util.ArrayList<>();
+        if (current.curve.remainingDistance(t) > RESUME_MIN_REMAINING_IN) {
+            com.pedropathing.paths.curves.Curve tail = tailOf(current.curve, t);
+            if (tail != null) {
+                if (pose.toVector2D().distance(tail.startPoint()) > RESUME_JOIN_DISTANCE_IN) {
+                    com.pedropathing.algorithm.ForesightConfig config = follower.foresightConfig();
+                    double fromHeading = pose.heading();
+                    double toHeading = current.heading(t);
+                    double turn = Math.atan2(Math.sin(toHeading - fromHeading), Math.cos(toHeading - fromHeading));
+                    legs.add(com.pedropathing.api.Paths.path(
+                                    new com.pedropathing.paths.curves.Line(pose.toVector2D(), tail.startPoint()))
+                            .heading((c, s) -> fromHeading + turn * s)
+                            .with(modifiers.get(index))
+                            .with(config.brakeAtEnd.at(false), config.pathSkip.at(true)));
+                }
+                final double startT = t;
+                legs.add(com.pedropathing.api.Paths.path(tail)
+                        .heading((c, s) -> current.heading(Math.min(1.0, startT + s * (1.0 - startT))))
+                        .with(modifiers.get(index)));
+            }
+        }
+        for (int i = index + 1; i < segments.size(); i++) {
+            com.pedropathing.paths.PathSegment segment = segments.get(i);
+            legs.add(com.pedropathing.api.Paths.path(segment.curve)
+                    .heading((c, s) -> segment.heading(s))
+                    .with(modifiers.get(i)));
+        }
+
+        if (legs.isEmpty()) {
+            follower.hold(segments.get(segments.size() - 1).endPose());
+            return true;
+        }
+
+        com.pedropathing.paths.Path resumed = legs.size() == 1 ? legs.get(0)
+                : com.pedropathing.api.Paths.path(legs.toArray(new com.pedropathing.paths.Path[0]));
+        if (org.electrolightsftc.pulse.electropathing.paths.PathModifiers.isCoasting(original)) {
+            org.electrolightsftc.pulse.electropathing.paths.PathModifiers.markCoasting(resumed);
+        }
+        follower.follow(resumed);
+        return true;
+    }
+
+    public void clearPause() {
+        pausedPath = null;
+    }
+
+    private static void collectModifiers(com.pedropathing.paths.Path path,
+                                         List<com.pedropathing.config.Modifier> inherited,
+                                         List<List<com.pedropathing.config.Modifier>> out) {
+        List<com.pedropathing.config.Modifier> all = new java.util.ArrayList<>(inherited);
+        all.addAll(path.modifiers);
+        if (path instanceof com.pedropathing.paths.CompoundPath) {
+            for (com.pedropathing.paths.Piecewise.Segment<com.pedropathing.paths.Path> child
+                    : ((com.pedropathing.paths.CompoundPath) path).segments()) {
+                collectModifiers(child.value(), all, out);
+            }
+        } else {
+            out.add(all);
+        }
+    }
+
+    private static com.pedropathing.paths.curves.Curve tailOf(com.pedropathing.paths.curves.Curve curve, double t) {
+        if (curve instanceof com.pedropathing.paths.curves.bezier.BezierCurve) {
+            List<Vector2D> level = new java.util.ArrayList<>(
+                    ((com.pedropathing.paths.curves.bezier.BezierCurve) curve).getControlPoints());
+            List<Vector2D> right = new java.util.ArrayList<>();
+            while (true) {
+                right.add(level.get(level.size() - 1));
+                if (level.size() == 1) break;
+                List<Vector2D> next = new java.util.ArrayList<>();
+                for (int i = 0; i < level.size() - 1; i++) {
+                    next.add(level.get(i).times(1.0 - t).plus(level.get(i + 1).times(t)));
+                }
+                level = next;
+            }
+            java.util.Collections.reverse(right);
+            return new com.pedropathing.paths.curves.bezier.BezierCurve(right);
+        }
+        Vector2D start = curve.get(t);
+        Vector2D end = curve.endPoint();
+        return start.distance(end) < 1e-3 ? null : new com.pedropathing.paths.curves.Line(start, end);
     }
 }

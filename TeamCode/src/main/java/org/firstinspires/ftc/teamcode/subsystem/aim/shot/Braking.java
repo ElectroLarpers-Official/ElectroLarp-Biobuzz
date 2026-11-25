@@ -4,34 +4,10 @@ import com.bylazar.configurables.annotations.Configurable;
 
 @Configurable
 public class Braking {
-
-    /** Quadratic braking coefficient, s^2/in.
-     *
-     *  From the old robot's Pedro PredictiveBrakingCoefficients(0.18, 0.11091, 0.00097587)
-     *  -> (prop, lin, quad). RevAmped's converted value (3.82e-5) is ~26x smaller because it
-     *  was fit on a heavier robot with different wheels; only the STRUCTURE here is theirs.
-     *
-     *  Refit on the new robot (pedro/Constants quadraticBrakeCoefficients is the Foresight
-     *  equivalent once AutoTune has been run). */
-    public static double coefA = 0.00097587; // TODO(new robot): old-robot value
-
-    /** Linear braking coefficient, seconds. Same source as {@link #coefA}. */
-    public static double coefB = 0.11091; // TODO(new robot): old-robot value
-
-    /** Linearisation reference speed, in/s. The Lambert solution is evaluated once at this
-     *  speed and scaled linearly by actual speed, so it is most accurate near this value. */
-    public static double coefV0 = 72.0; // TODO(new robot): old-robot value
-
-    /**
-     * Projection horizon, seconds. THEIRS IS 0.5 - start here and tune to this
-     * robot. Note the cached factors are recomputed whenever this changes, so
-     * it is safe to sweep live from Panels.
-     *
-     * This is a TUNING KNOB, not feederDelay + turretSettleTime: the long lookahead acts as
-     * implicit turret-lag compensation. Do NOT combine it with an explicit command-rate
-     * feedforward, or the same servo lag gets corrected twice.
-     */
-    public static double horizonSeconds = 0.5; // TODO(new robot): old-robot value
+    public static double coefA = 0.00097587;
+    public static double coefB = 0.11091;
+    public static double coefV0 = 72.0;
+    public static double horizonSeconds = 0.5;
 
     private static double cachedSpeedFactor = 0.0;
     private static double cachedDistFactor = 0.0;

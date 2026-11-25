@@ -20,11 +20,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.firstinspires.ftc.teamcode.HardwareNames;
 
-/**
- * TODO(new robot): old-robot values. Copied from the old Pedro3+Ivy branch (tuned on last season's robot, commit c1856d8).
- * Re-tune on this robot with AutoTune and paste the results over them.
- * Exception: the Pinpoint pod offsets are from the new robot's CAD (pod directions are still old-robot).
- */
 public class Constants {
     public static MecanumConfig drivetrainConfig = new MecanumConfig(
             c -> {
