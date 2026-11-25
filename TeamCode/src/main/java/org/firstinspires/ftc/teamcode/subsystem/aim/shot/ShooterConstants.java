@@ -25,10 +25,10 @@ public class ShooterConstants {
     /** Turret aim points from the field CAD, Pedro inches. TOP = far cell (high y), BOTTOM = audience cell (low y).
      *  x is the window centre; y is 2 in past the window centre (88.45 / 55.55) into the cell, so the turret points
      *  at the middle of the opening from the front, side or back. Window centre height is 58.4 in. */
-    public static double MAP_RED_TOP_X = 59.25, MAP_RED_TOP_Y = 86.5;
-    public static double MAP_RED_BOTTOM_X = 59.25, MAP_RED_BOTTOM_Y = 57.5;
-    public static double MAP_BLUE_TOP_X = 84.75, MAP_BLUE_TOP_Y = 86.5;
-    public static double MAP_BLUE_BOTTOM_X = 84.75, MAP_BLUE_BOTTOM_Y = 57.5;
+    public static double MAP_RED_TOP_X = 57.67, MAP_RED_TOP_Y = 88;
+    public static double MAP_RED_BOTTOM_X = 57.67, MAP_RED_BOTTOM_Y = 56;
+    public static double MAP_BLUE_TOP_X = 83.83, MAP_BLUE_TOP_Y = 88;
+    public static double MAP_BLUE_BOTTOM_X = 83.83, MAP_BLUE_BOTTOM_Y = 56;
 
     /** Aim point for a cell: the CAD window centre when USE_MAP_AIM_POINTS, otherwise the measured point. */
     public static Pose hiveAimPoint(boolean red, boolean far) {

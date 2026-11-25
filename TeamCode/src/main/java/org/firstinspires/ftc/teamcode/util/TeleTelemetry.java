@@ -55,6 +55,8 @@ public class TeleTelemetry {
                 + (robot.underHive() ? " (UNDER HIVE: fixed RPM / hood)" : ""));
         telemetry.addData("Shot source", shotSourceText());
         telemetry.addData("Turret heading angle", "%.1f", ShooterCalc.lastHeadingAngle);
+        telemetry.addData("Stick blend", "%.1f deg", robot.stickBlendDeg());
+        telemetry.addData("Turn rate", "%.0f deg/s", Math.toDegrees(robot.follower.velocity().omega));
         telemetry.addData("SOTM active", ShooterCalc.lastSotmActive);
         telemetry.addData("Flight time", "%.3f", ShooterCalc.lastFlightTime);
         telemetry.addData("Speed projected / aAlongV (filt)", "%.1f / %.1f",
@@ -84,6 +86,8 @@ public class TeleTelemetry {
         panels.addData("Virtual range in", ShooterCalc.lastVirtualRange);
         panels.addData("Turret angle deg", ShooterCalc.lastHeadingAngle);
         panels.addData("Robot speed in/s (proj)", ShooterCalc.lastProjectedSpeed);
+        panels.addData("Turn rate deg/s", Math.toDegrees(robot.follower.velocity().omega));
+        panels.addData("Stick blend deg", robot.stickBlendDeg());
         panels.addData("Accel in/s^2 (filt)", ShooterCalc.lastAlongTrackAccel);
         panels.addData("Manual mode", robot.isManual() ? 1 : 0);
         panels.addData("Live RPM trim", Robot.LIVE_RPM_TRIM);

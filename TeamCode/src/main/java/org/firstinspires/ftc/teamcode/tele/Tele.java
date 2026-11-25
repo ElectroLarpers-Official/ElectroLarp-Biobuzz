@@ -78,9 +78,13 @@ public class Tele extends CommandOpMode {
 
         tele = new TeleTelemetry(telemetry, robot, a);
         schedule(infinite(() -> {
+            double forward = -gp1.left_stick_y.getVal();
+            double lateral = -gp1.left_stick_x.getVal();
+            double turn = -gp1.right_stick_x.getVal();
+            // The sticks go to Robot before update(), so the turret's stick blend uses this loop's sticks.
+            robot.setDriverSticks(forward, lateral, turn, forwardOffsetRad());
             robot.update();
-            robot.drive(-gp1.left_stick_y.getVal(), -gp1.left_stick_x.getVal(), -gp1.right_stick_x.getVal(),
-                    forwardOffsetRad());
+            robot.drive(forward, lateral, turn, forwardOffsetRad());
             long now = System.nanoTime();
             if ((now - lastTelemetryNanos) / 1e6 >= TELEMETRY_PERIOD_MS) {
                 lastTelemetryNanos = now;

@@ -39,6 +39,9 @@ The turret angle is turned into a servo position from the gearing: `servo positi
 | `TurretCalc.MIN_ANGLE` / `MAX_ANGLE` | -190 / 190 | Soft limits (degrees from straight ahead), e.g. for wiring. Must stay inside what the servos reach (about ±307° with the defaults). |
 | `Turret.TURRET_FORWARD_OFFSET` / `TURRET_STRAFE_OFFSET` | 0 / 0 | Turret pivot distance from the Pinpoint/Pedro pose point, inches (forward +, left +). 0 from CAD: the turret axis is on the robot's centre of rotation (middle of the four wheel axles), and the Pinpoint pod offsets in `pedro/Constants` are measured from that point. If the pod offsets move the pose point, change these to match. |
 | `Turret.SERVO_THRESHOLD` | 0.001 (about 0.6 turret deg) | Only writes the servo if the position moved more than this. Raise if the turret buzzes while still; lower if it moves in visible steps. |
+| `Turret.turretFighting` | 0.007 | Backlash preload, servo units. The two 15T pinions are commanded this far apart in opposite directions so they take up the slop in the turret ring. Rock the turret by hand while it holds: raise in steps of about 0.003 until the slop is gone, and stop there (more only heats the servos). |
+| `Turret.SERVO_3_PARTNER` | 0 | Which servo shares a 15T pinion with turretServo3: 1 = servo 1 (servo 4 is then with servo 2), 2 = servo 2 (servo 4 with servo 1). Servos on the same pinion must get the same command. 0 = not set: servos 3 and 4 get no preload offset, so servo 3 works against its own partner. |
+| `Turret.USE_SERVO_4` | false | false = turretServo4 is limp (not driven). Read at INIT. |
 
 Use `TurretTrackingTest` (needs only the Pinpoint and the turret servo): push/spin the robot by hand and the turret should keep pointing at the cell.
 
@@ -104,6 +107,25 @@ Only after steps 5 and 6 are solid.
 | Turret jitters when turning in place (fake speed) | `sotmMinSpeed` (12 in/s) | Raise. Below this (projected) speed no lead is applied (except while the braking model is on); the release point is still projected forward. |
 | Misses while driving a curve | `compensateTurning` (true) | Leave on. Tune `leadGain` first. |
 
+**Meta mode** (`ShooterCalc.USE_META_SOTM`, on): Meta Infinity's method. Aim at goal − measured velocity × flight time, RPM from the distance to that point, turret led for turning by `TurretCalc.META_TURRET_LEAD_SEC` (0.05 s). The rows above except `FLIGHT_TIME_FACTOR` / `launchHeight` only apply with it off. Tune in this order:
+
+| Step | Test | Number |
+|---|---|---|
+| Turn lead | Spin in place while shooting. Misses on the side you're turning from → raise; the side you're turning toward → lower. | `TurretCalc.META_TURRET_LEAD_SEC` (0.05) |
+| Shot lead | Drive straight across the goal while shooting. Balls land behind → raise; ahead → lower. Then check driving toward / away. | `TunedShotTable.FLIGHT_TIME_FACTOR` (1.0) |
+
+**Stick blend** (`StickLead`, TeleOp only; driving on at 0.5, turning off): the turret starts moving when driver 1 moves the sticks, before the measured velocity changes, so it's ready for a reversal. It only changes where the turret points; the shot lead and RPM stay on the measured velocity. It acts for `STICK_BLEND_FADE_SEC` after the sticks last moved, so holding the sticks against another robot stops affecting the aim. A shot in the first part of a pin is still off (about 2.3 in for the drive stick, more for the turn stick, at blend 0.5). Tune last, after the two steps above:
+
+| Step | Test | Number |
+|---|---|---|
+| Top speeds | Read the real full-stick speed and turn rate (telemetry "Speed projected", "Turn rate") and enter them. | `StickLead.TOP_FORWARD_IN_S` (90.7), `TOP_STRAFE_IN_S` (76.5), `TOP_TURN_DEG_S` (300, a placeholder) |
+| Driving | Reverse hard across the goal while shooting. Turret late → raise; early → lower. Above 1 is allowed. Start at 0.5. | `StickLead.STICK_BLEND_DRIVE` (0.5; 0 = off) |
+| Turning | Reverse a spin while shooting, same rule. Leave at 0 if pins matter more than turn reversals. | `StickLead.STICK_BLEND_TURN` (0 = off) |
+| Fade | Slow reversals lose the correction partway → longer. Pinned shots miss → shorter. | `StickLead.STICK_BLEND_FADE_SEC` (0.5) |
+| Stick sensitivity | How far a stick must move (within about 0.1 s) to count as moved. | `StickLead.STICK_MOVE_THRESHOLD` (0.1) |
+
+**Shot log** (`ShotLogger.SHOT_LOG`, on): one CSV row per loop while shooting, plus the `PRE_TRIGGER_SEC` (0.5 s) before each trigger pull. Written when the OpMode stops, a new file each run: `FIRST/shotLog_(date)_(time).csv` on the Control Hub. Columns: `t, loopMs, x, y, headingDeg, vx, vy, speed, omega, range, virtualRange, flightTime, turretCmdDeg, rpmTarget, rpmActual, metaMode, shooting, stickBlendDeg`.
+
 Accel filtering (usually leave alone): `accelFilterAlphaDecel` (0.5), `accelFilterAlphaAccel` (0.3), `positiveAccelGain` (0.5), `slopeWindowSeconds` (0.15), `maxProjectedSpeed` (125), `accelClamp` (400).
 
 ### 8. Shooting while braking — `ShooterCalc`, `Braking`
@@ -165,6 +187,8 @@ Turn it off with `UNDER_HIVE_HOLD = false`.
 - **Aim** — which target is selected (HIVE far / audience cell), and `UNDER HIVE` when the hold is on.
 - **Range now / projected / virtual** — if projected ≠ now while standing still, the velocity is noisy.
 - **Flight time**, **Solver iters / converged** — solver health.
-- **Speed projected / aAlongV** — what the braking logic sees.
+- **Speed projected / aAlongV** — what the braking logic sees. In Meta mode "Speed projected" is the measured speed.
+- **Turn rate** — measured turn rate, deg/s (for `StickLead.TOP_TURN_DEG_S`).
+- **Stick blend** — how far the stick blend is moving the turret right now, degrees. 0 = not acting.
 - **Hood burst comp deg** — how much the burst comp is adding.
 - **Shooter** — motor RPM / target RPM, at speed / spinning up / off, mode (PIDF / BANG_BANG / OFF) and power. Not reaching target → step 2. Panels graphs: Motor RPM, Target RPM, RPM error, Shooter power, Battery V.

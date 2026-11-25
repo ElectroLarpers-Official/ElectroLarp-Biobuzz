@@ -135,9 +135,17 @@ public class TurretCalc {
     private static double targetAngle(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg) {
         double angularVelDeg = Math.toDegrees(robotAngularVelocityRadPerSec);
         if (Double.isNaN(angularVelDeg)) angularVelDeg = 0.0;
-        double leadSec = ShooterCalc.USE_META_SOTM ? META_TURRET_LEAD_SEC : yawFeedforwardGain;
-        return commandedAngleDeg + offsetDeg - angularVelDeg * leadSec;
+        return commandedAngleDeg + offsetDeg - angularVelDeg * leadSec();
     }
+
+    /** The turret lead time in use, seconds: Meta's in Meta mode, yawFeedforwardGain with our shoot-while-moving. */
+    public static double leadSec() {
+        return ShooterCalc.USE_META_SOTM ? META_TURRET_LEAD_SEC : yawFeedforwardGain;
+    }
+
+    /** The turret angle being commanded right now (after the speed / acceleration limit), degrees from straight
+     *  ahead, CCW +. NaN before the first command. Shot log. */
+    public static double commandDeg() { return slewedTurretAngle; }
 
     public static boolean outOfRange() { return outOfRange; }
 

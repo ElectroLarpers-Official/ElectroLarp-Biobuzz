@@ -143,7 +143,18 @@ public final class Turret {
         return (turret != null ? 1 : 0) + (turret2 != null ? 1 : 0) + (turret3 != null ? 1 : 0) + (turret4 != null ? 1 : 0);
     }
 
-    public static double turretFighting = 0.007;
+    /** Backlash preload, servo units: the two 15T pinions are commanded this far apart in opposite directions, so
+     *  they twist against each other and take up the slop in the turret ring. Servos on the SAME pinion must get the
+     *  same command (see SERVO_3_PARTNER). */
+    public static double turretFighting = 0.000;
+    /** Which servo shares a 15T pinion with turretServo3. turretServo1 (+turretFighting) and turretServo2
+     *  (-turretFighting) are on different pinions.
+     *  1 = servo 3 is with servo 1 (and servo 4 with servo 2); 2 = servo 3 is with servo 2 (and servo 4 with servo 1).
+     *  0 = not set: servos 3 and 4 get no preload offset (the old behaviour, where servo 3 works against its own
+     *  pinion partner). Live in Panels. */
+    public static int SERVO_3_PARTNER = 2;
+    private double appliedFighting = Double.NaN;
+    private int appliedPartner = -1;
 
     /** Writes turretServo1 and turretServo2-4 (from Turret(hw, true)) with the same position. With Turret(hw) or
      *  Turret(hw, false) this is the same as setPosition. */
@@ -152,12 +163,18 @@ public final class Turret {
         changed |= applyDirection(turret2, 1, REVERSE_SERVO_2);
         changed |= applyDirection(turret3, 2, REVERSE_SERVO_3);
         changed |= applyDirection(turret4, 3, REVERSE_SERVO_4);
+        // A Panels change to the preload is written straight away, not at the next turret move.
+        changed |= turretFighting != appliedFighting || SERVO_3_PARTNER != appliedPartner;
         if (changed || LAST_POSITION < 0 || Math.abs(pos - LAST_POSITION) > SERVO_THRESHOLD) {
-            if (turret != null) turret.setPosition(pos+turretFighting);
-            if (turret2 != null) turret2.setPosition(pos-turretFighting);
-            if (turret3 != null) turret3.setPosition(pos);
-            if (turret4 != null) turret4.setPosition(pos);
+            // Servos on the same pinion get the same offset; the two pinions get opposite ones.
+            double offset3 = SERVO_3_PARTNER == 1 ? turretFighting : SERVO_3_PARTNER == 2 ? -turretFighting : 0.0;
+            if (turret != null) turret.setPosition(pos + turretFighting);
+            if (turret2 != null) turret2.setPosition(pos - turretFighting);
+            if (turret3 != null) turret3.setPosition(pos + offset3);
+            if (turret4 != null) turret4.setPosition(pos - offset3);
             LAST_POSITION = pos;
+            appliedFighting = turretFighting;
+            appliedPartner = SERVO_3_PARTNER;
         }
     }
 

@@ -56,7 +56,7 @@ public final class TunedShotTable {
      *  for the shoot-while-moving lead. */
     public static double FLIGHT_TIME_FACTOR = 1;
     /** Window centre above the tiles, inches (field CAD). */
-    public static double WINDOW_CENTRE_HEIGHT_IN = 58.4;
+    public static double WINDOW_CENTRE_HEIGHT_IN = 61.25;
 
     public static final String FILE_NAME = "shotpoints.csv";
     private static final double FIELD_SIZE_IN = 144.0;
@@ -70,7 +70,6 @@ public final class TunedShotTable {
         public Point(HiveCell cell, double x, double y, double rpm, double hood, boolean fromFile) {
             this.cell = cell; this.x = x; this.y = y; this.rpm = rpm; this.hood = hood; this.fromFile = fromFile;
         }
-
         /** The line to paste into TunedShotPoints.POINTS. */
         public String javaLine() {
             return String.format(Locale.US, "p(%s, %.1f, %.1f, %.0f, %.3f),", cell.name(), x, y, rpm, hood);

@@ -37,8 +37,10 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterConstants;
 import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
+import org.firstinspires.ftc.teamcode.subsystem.aim.turret.StickLead;
 import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
+import org.firstinspires.ftc.teamcode.util.ShotLogger;
 import com.pedropathing.math.Velocity;
 import java.util.List;
 
@@ -98,6 +100,11 @@ public final class Robot {
     private Path pausedPath = null;
     private int pausedIndex = 0;
     private double pausedT = 0;
+    /** Stick blend for the turret (TeleOp only, off unless StickLead.STICK_BLEND_DRIVE / TURN are set). */
+    private final StickLead stickLead = new StickLead();
+    private long lastAimNanos = 0;
+    /** Shot log (off unless ShotLogger.SHOT_LOG is on). Written to the Hub in stop(). */
+    private final ShotLogger shotLog = new ShotLogger();
 
 
     public Robot(HardwareMap hardwareMap, Alliance alliance) {
@@ -128,10 +135,49 @@ public final class Robot {
         updateAiming();
         shooter.update();
         flower.update();
+        stickLead.clearSticks();   // used once: TeleOp sends them again next loop, autos never do
 
         long now = System.nanoTime();
         if (lastLoopNanos != 0) loopMs = (now - lastLoopNanos) / 1e6;
         lastLoopNanos = now;
+        if (ShotLogger.SHOT_LOG) logShot(now);
+    }
+
+    /** TeleOp, every loop before update(): driver 1's sticks, exactly as given to drive(). Only the turret's stick
+     *  blend uses them (StickLead); the shot lead and RPM never do. */
+    public void setDriverSticks(double forward, double lateral, double turn, double forwardOffsetRad) {
+        stickLead.setSticks(forward, lateral, turn, forwardOffsetRad, ROBOT_CENTRIC);
+    }
+
+    /** How far the stick blend moved the turret this loop, degrees (0 = not acting). Telemetry. */
+    public double stickBlendDeg() { return stickLead.changeDeg(); }
+
+    /** One shot-log row for this loop (ShotLogger keeps it only around shooting). */
+    private void logShot(long nowNanos) {
+        Pose pose = follower.pose();
+        Velocity vel = follower.velocity();
+        Vector2D v = vel.toVector2D();
+        double speed = v.magnitude();
+        double[] row = shotLog.row();
+        row[ShotLogger.T] = nowNanos * 1e-9;
+        row[ShotLogger.LOOP_MS] = loopMs;
+        row[ShotLogger.X] = pose.x();
+        row[ShotLogger.Y] = pose.y();
+        row[ShotLogger.HEADING_DEG] = Math.toDegrees(pose.heading());
+        row[ShotLogger.VX] = speed * Math.cos(v.theta());
+        row[ShotLogger.VY] = speed * Math.sin(v.theta());
+        row[ShotLogger.SPEED] = speed;
+        row[ShotLogger.OMEGA] = vel.omega;
+        row[ShotLogger.RANGE] = ShooterCalc.lastRange;
+        row[ShotLogger.VIRTUAL_RANGE] = ShooterCalc.lastVirtualRange;
+        row[ShotLogger.FLIGHT_TIME] = ShooterCalc.lastFlightTime;
+        row[ShotLogger.TURRET_CMD_DEG] = TurretCalc.commandDeg();
+        row[ShotLogger.RPM_TARGET] = shooter.targetRpm();
+        row[ShotLogger.RPM_ACTUAL] = shooter.rpm();
+        row[ShotLogger.META_MODE] = ShooterCalc.USE_META_SOTM ? 1 : 0;
+        row[ShotLogger.SHOOTING] = isShooting() ? 1 : 0;
+        row[ShotLogger.STICK_BLEND_DEG] = stickLead.changeDeg();
+        shotLog.commit(isShooting());
     }
 
     /** Driver 1 A / Y: open / close the latch by hand. */
@@ -162,6 +208,13 @@ public final class Robot {
         Velocity vel = follower.velocity();
         Vector2D velocity = vel.toVector2D();
         double angularVelocity = vel.omega;
+
+        // Stick blend clocks: time since driver 1 last moved the sticks (nothing happens without sticks).
+        long aimNanos = System.nanoTime();
+        double aimDt = lastAimNanos == 0 ? 0.0 : Math.min(0.1, (aimNanos - lastAimNanos) / 1e9);
+        lastAimNanos = aimNanos;
+        stickLead.track(aimDt);
+        stickLead.apply(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);   // not acting unless the normal shot below runs
 
         // Manual fallback: the pose isn't trusted, so no solver and no under-HIVE box.
         if (manual) {
@@ -209,8 +262,15 @@ public final class Robot {
             shooter.setTargetVelocity(tps);
         }
         if (!Double.isNaN(result[1])) hood.setPosition(result[1] + LIVE_HOOD_TRIM);   // NaN: no tuned points
+
+        // Stick blend (TeleOp, turret only): start moving the turret when the driver moves the sticks, before the
+        // measured velocity changes. The RPM and shot lead above stay on the measured velocity.
+        double speed = velocity.magnitude();
+        stickLead.apply(result[2], ShooterCalc.lastVirtualRange, currPose.heading(),
+                speed * Math.cos(velocity.theta()), speed * Math.sin(velocity.theta()), angularVelocity,
+                TurretCalc.leadSec());
         turret.setPositionAll(turretForward ? solveTurret(0.0, 0.0) // driver 2: straight ahead
-                : solveTurret(result[2], angularVelocity)); // TODO delete: -> setPosition
+                : solveTurret(stickLead.aimDeg(), stickLead.omega())); // TODO delete: -> setPosition
     }
 
     // ---- Manual fallback ---------------------------------------------------------------------------------------
@@ -401,6 +461,7 @@ public final class Robot {
     }
 
     public void stop() {
+        shotLog.save();   // writes the shot log file if anything was recorded
         pausedPath = null;
         shootStartNanos = 0;
         intake.off();
