@@ -68,6 +68,7 @@ public class TeleTelemetry {
         telemetry.addData("Latch", robot.latch.isOpen() ? "open" : "closed");
         telemetry.addData("Intake", robot.intake.getState());
         telemetry.addData("Loop ms", robot.loopMs());
+        robot.drivetrain.addTelemetry(telemetry);   // tip-correction lines, only while Drivetrain.tipCorrection
         telemetry.update();
     }
 

@@ -12,6 +12,7 @@ import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.subsystem.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
@@ -22,13 +23,6 @@ import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
 
 @Configurable
 public class Tele extends CommandOpMode {
-    /**
-     * Rotates the field-centric frame so "stick forward" points away from the driver.
-     * TODO: verify on the field which way each alliance's driver faces in Pedro coordinates.
-     */
-    public static double BLUE_FORWARD_OFFSET_DEG = 180;
-    public static double RED_FORWARD_OFFSET_DEG = 0;
-
     /** Start pose when no saved pose is used, Pedro inches / degrees. */
     public static double START_X = 72, START_Y = 72, START_HEADING_DEG = 0;
     /** Start from where the last auto ended (used once, by the first TeleOp after that auto), else START_X/Y/HEADING. */
@@ -67,6 +61,7 @@ public class Tele extends CommandOpMode {
         OpModeStorage.endPose = null;
         robot.follower.update();
         shootCycle = robot.shootCycle();
+        robot.startTeleOpDrive();   // RevAmped arcade drive owns the drive motors from here
 
         gp1 = new GamepadEx(gamepad1);
         gp2 = new GamepadEx(gamepad2);
@@ -84,7 +79,7 @@ public class Tele extends CommandOpMode {
             // The sticks go to Robot before update(), so the turret's stick blend uses this loop's sticks.
             robot.setDriverSticks(forward, lateral, turn, forwardOffsetRad());
             robot.update();
-            robot.drive(forward, lateral, turn, forwardOffsetRad());
+            robot.drivetrain.arcadeDrive(gamepad1);   // RevAmped arcade drive, writes the motors this loop
             long now = System.nanoTime();
             if ((now - lastTelemetryNanos) / 1e6 >= TELEMETRY_PERIOD_MS) {
                 lastTelemetryNanos = now;
@@ -196,8 +191,9 @@ public class Tele extends CommandOpMode {
 
     // ---- Helpers ---------------------------------------------------------------------------------------------
 
+    /** Drivetrain's per-alliance forward offset, for the turret stick blend (setDriverSticks). */
     private double forwardOffsetRad() {
-        return Math.toRadians(a == Alliance.BLUE ? BLUE_FORWARD_OFFSET_DEG : RED_FORWARD_OFFSET_DEG);
+        return Math.toRadians(a == Alliance.BLUE ? Drivetrain.BLUE_FORWARD_OFFSET_DEG : Drivetrain.RED_FORWARD_OFFSET_DEG);
     }
 
     private double turretOffset() { return a == Alliance.RED ? TurretCalc.turretOffset : TurretCalc.turretOffset2; }

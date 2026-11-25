@@ -80,7 +80,6 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
-/configs/Michiana.xml
 CLAUDE.md
 .claude/
 TeamCode/src/main/java/org/firstinspires/ftc/teamcode/context/

@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.tele.Tele;
 import org.firstinspires.ftc.teamcode.util.TeleTelemetry;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
+import org.firstinspires.ftc.teamcode.util.FollowerLocalization;
 import org.firstinspires.ftc.teamcode.util.input.FloatSupplier;
 import org.firstinspires.ftc.teamcode.util.input.GamepadEx;
 
@@ -86,6 +87,7 @@ public class    ShotPointTuner extends CommandOpMode {
         robot = new Robot(hardwareMap, alliance);   // also loads the tuned points
         robot.follower.setPose(new Pose(Tele.START_X, Tele.START_Y, Math.toRadians(Tele.START_HEADING_DEG)));
         robot.follower.update();
+        robot.startTeleOpDrive();   // RevAmped arcade drive owns the drive motors from here
         hubs = hardwareMap.getAll(LynxModule.class);
         if (TunedShotTable.lastError() != null) message = TunedShotTable.lastError();
     }
@@ -113,10 +115,9 @@ public class    ShotPointTuner extends CommandOpMode {
     public void execute() {
         for (LynxModule hub : hubs) hub.clearBulkCache();
         gp1.update();
-        robot.follower.update();
+        FollowerLocalization.update(robot.follower);   // follower minus driving: the drive motors are the arcade drive's
 
-        robot.drive(-gp1.left_stick_y.getVal(), -gp1.left_stick_x.getVal(), -gp1.right_stick_x.getVal(),
-                Math.toRadians(alliance == Alliance.BLUE ? Tele.BLUE_FORWARD_OFFSET_DEG : Tele.RED_FORWARD_OFFSET_DEG));
+        robot.drivetrain.arcadeDrive(gamepad1);
 
         aim();
         handleButtons();

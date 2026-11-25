@@ -63,7 +63,9 @@ tasks.register('saveRobotConfig') {
             def lp = new File(rootDir, 'local.properties')
             if (lp.exists()) lp.withInputStream { props.load(it) }
             def sdk = props.getProperty('sdk.dir')
-            def adb = (sdk && new File(sdk, 'platform-tools/adb').exists()) ? new File(sdk, 'platform-tools/adb').path : 'adb'
+            // Windows ships adb.exe, macOS/Linux ship adb
+            def adbFile = sdk ? ['platform-tools/adb', 'platform-tools/adb.exe'].collect { new File(sdk, it) }.find { it.exists() } : null
+            def adb = adbFile ? adbFile.path : 'adb'
 
             def run = { List<String> cmd ->
                 def r = providers.exec {

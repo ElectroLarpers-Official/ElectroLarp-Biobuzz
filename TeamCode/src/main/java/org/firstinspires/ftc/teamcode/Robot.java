@@ -5,7 +5,6 @@ import static com.pedropathing.ivy.commands.Commands.waitMs;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.follower.ManualDrive;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.algorithm.ForesightConfig;
 import com.pedropathing.api.Paths;
@@ -29,6 +28,7 @@ import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
 import org.firstinspires.ftc.teamcode.auto.Close;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.subsystem.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystem.Flower;
 import org.firstinspires.ftc.teamcode.subsystem.Hood;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
@@ -40,6 +40,7 @@ import org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc;
 import org.firstinspires.ftc.teamcode.subsystem.aim.turret.StickLead;
 import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
+import org.firstinspires.ftc.teamcode.util.FollowerLocalization;
 import org.firstinspires.ftc.teamcode.util.ShotLogger;
 import com.pedropathing.math.Velocity;
 import java.util.List;
@@ -87,6 +88,10 @@ public final class Robot {
     public final Turret turret;
     public final Shooter shooter;
     public final Hood hood;
+    /** RevAmped arcade drive (TeleOp). Writes the drive motors itself after {@link #startTeleOpDrive()}. */
+    public final Drivetrain drivetrain;
+    /** True after {@link #startTeleOpDrive()}: update() runs the localizer only, so the follower never drives. */
+    private boolean teleOpDrive = false;
 
     private final List<LynxModule> hubs;
     private long shootStartNanos = 0;
@@ -117,6 +122,7 @@ public final class Robot {
         flower = new Flower(hardwareMap);
 
         follower = PulseRuntime.follower();
+        drivetrain = new Drivetrain(hardwareMap, follower, alliance);
         intake = new Intake(hardwareMap);
         latch = new Latch(hardwareMap);
         turret = new Turret(hardwareMap, TURRET_ALL_SERVOS); // TODO delete: -> new Turret(hardwareMap)
@@ -131,7 +137,8 @@ public final class Robot {
         for (LynxModule hub : hubs) {
             hub.clearBulkCache();
         }
-        follower.update();
+        if (teleOpDrive) FollowerLocalization.update(follower);   // RevAmped TeleOp: everything but driving
+        else follower.update();
         updateAiming();
         shooter.update();
         flower.update();
@@ -146,7 +153,7 @@ public final class Robot {
     /** TeleOp, every loop before update(): driver 1's sticks, exactly as given to drive(). Only the turret's stick
      *  blend uses them (StickLead); the shot lead and RPM never do. */
     public void setDriverSticks(double forward, double lateral, double turn, double forwardOffsetRad) {
-        stickLead.setSticks(forward, lateral, turn, forwardOffsetRad, ROBOT_CENTRIC);
+        stickLead.setSticks(forward, lateral, turn, forwardOffsetRad, !drivetrain.isFieldCentric());
     }
 
     /** How far the stick blend moved the turret this loop, degrees (0 = not acting). Telemetry. */
@@ -307,15 +314,14 @@ public final class Robot {
     }
 
 
-    /** TEMPORARY: true = robot-centric TeleOp driving (stick forward = robot forward, ignores the Pinpoint heading).
-     *  false = field-centric. */
-    public static boolean ROBOT_CENTRIC = false;
-
-    public void drive(double forward, double lateral, double turn, double forwardOffsetRad) {
-        // Robot-centric = field-centric with heading 0 and no offset (no rotation of the stick).
-        double heading = ROBOT_CENTRIC ? 0.0 : follower.pose().heading();
-        double offset = ROBOT_CENTRIC ? 0.0 : forwardOffsetRad;
-        follower.manual(ManualDrive.fieldCentric(forward, lateral, turn, heading, offset));
+    /**
+     * TeleOp only (RevAmped way): from now on {@link #update()} updates just the localizer, so the follower stops
+     * driving the motors and {@link #drivetrain} writes them directly. Also sets the drive motors to brake.
+     * Autos never call this.
+     */
+    public void startTeleOpDrive() {
+        teleOpDrive = true;
+        drivetrain.startTeleOpDrive();
     }
 
     public boolean isPaused() {
