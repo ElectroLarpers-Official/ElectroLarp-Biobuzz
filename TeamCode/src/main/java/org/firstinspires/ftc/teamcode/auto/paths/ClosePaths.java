@@ -6,6 +6,7 @@ import static com.pedropathing.api.Paths.line;
 import com.pedropathing.api.PoseFactory;
 import org.electrolightsftc.pulse.lumen.Command;
 import com.pedropathing.math.Pose;
+import com.pedropathing.math.Vector2D;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.interpolator.Interpolator;
 import org.electrolightsftc.pulse.electropathing.*;
@@ -22,7 +23,7 @@ public final class ClosePaths {
 
     public static PoseFactory poses(Alliance a) {
         PoseFactory factory = PoseFactory.degrees();
-        return a == Alliance.BLUE ? factory.mirrorX(MIRROR_LINE) : factory;
+        return a == Alliance.BLUE ? factory.mirrorX(MIRROR_LINE).mirrorY(MIRROR_LINE): factory;
     }
 
     public static Pose startPose(Alliance a) {
@@ -50,15 +51,27 @@ public final class ClosePaths {
                 .build();
     }
 
-    public static Path goInFlower(Alliance a, Command shootCycle2) {
+    public static Path approachFlower(Alliance a) {
+        return flowerLeg(a, true);
+    }
+
+    public static Path finishFlower(Alliance a) {
+        return flowerLeg(a, false);
+    }
+
+
+    private static Path flowerLeg(Alliance a, boolean approach) {
         Poses waypoints = new Poses(a);
-        Path path = curve(waypoints.endPointFlower, waypoints.point3Control1, waypoints.point3)
-                .constant(waypoints.point3);
-        Pose midpoint = path.get(path.curve.parameter(0.4));
-        return follower().pathBuilder()
-                .addPath(path)
-                .addPoseCallback(midpoint, shootCycle2, 2.0)
-                .build();
+        Vector2D start = waypoints.endPointFlower.toVector2D();
+        Vector2D control = waypoints.point3Control1.toVector2D();
+        Vector2D end = waypoints.point3.toVector2D();
+        Path original = curve(start, control, end);
+        double t = original.curve.parameter(0.4);
+        Vector2D leftControl = start.times(1.0 - t).plus(control.times(t));
+        Vector2D rightControl = control.times(1.0 - t).plus(end.times(t));
+        Vector2D shotPoint = original.curve.get(t);
+        Path leg = approach ? curve(start, leftControl, shotPoint) : curve(shotPoint, rightControl, end);
+        return leg.constant(waypoints.point3);
     }
 
     public static Path park(Alliance a) {

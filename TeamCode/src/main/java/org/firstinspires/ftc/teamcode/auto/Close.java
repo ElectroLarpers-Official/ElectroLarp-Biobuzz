@@ -99,7 +99,6 @@ public class Close extends CommandOpMode {
     }
 
     private Command routine() {
-        Command flowerShot = shootCycle2();
         return sequential(
                 instant(()->robot.flower(false)),
                 waitMs(3000),
@@ -118,7 +117,9 @@ public class Close extends CommandOpMode {
                 follow(robot.follower, ClosePaths.goNearFlower(a, instant(() -> robot.flower.setDown(true))), false),
                 //shootCycle(),
                 sequential(robot.intake::on),
-                follow(robot.follower, ClosePaths.goInFlower(a, shootCycle2()), false, 0.7),
+                follow(robot.follower, ClosePaths.approachFlower(a), true, 0.7),
+                shootCycle2(),
+                follow(robot.follower, ClosePaths.finishFlower(a), false, 0.7),
 
                 sequential(robot.intake::on),
                 waitMs(2000),
