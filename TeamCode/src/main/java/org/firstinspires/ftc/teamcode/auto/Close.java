@@ -23,11 +23,11 @@ import org.firstinspires.ftc.teamcode.util.OpModeStorage;
 
 @Configurable
 public class Close extends CommandOpMode {
-    public static double RPM_1 = 4680;
-    public static double RPM_2 = 4250;
-    public static double RPM_3 = 4410;
+    // Fixed RPM presets. Close uses Robot's shot solver and live RPM trim.
+    // public static double RPM_1 = 4680;
+    // public static double RPM_2 = 4250;
+    // public static double RPM_3 = 4410;
     public static double FEED_DURATION_MS = 400;
-    public static boolean autoRPM = false;
 
     private static final double INITIAL_TURRET_OFFSET_DEG = 5;
     private static final double POST_INTAKE_TURRET_ANGLE_DEG = -169; // Clockwise from forward.
@@ -35,8 +35,8 @@ public class Close extends CommandOpMode {
     Alliance a;
     Robot robot;
     boolean started = false;
-    private enum ShooterStage { OPENING, FLOWER, FINAL }
-    private ShooterStage shooterStage = ShooterStage.OPENING;
+    // private enum ShooterStage { OPENING, FLOWER, FINAL }
+    // private ShooterStage shooterStage = ShooterStage.OPENING;
     private Command autoRoutine;
 
     public Close(Alliance a) {this.a = a;
@@ -55,7 +55,6 @@ public class Close extends CommandOpMode {
 
     @Override
     public void initializeLoop() {
-        autoRPM = true;
         telemetry.addData("Alliance", a);
         telemetry.addData("Pose", robot.follower.pose());
         telemetry.update();
@@ -64,7 +63,7 @@ public class Close extends CommandOpMode {
 
     @Override
     public void onStart() {
-        shooterStage = ShooterStage.OPENING;
+        // shooterStage = ShooterStage.OPENING;
         started = true;
         autoRoutine = routine();
         Scheduler.schedule(autoRoutine);
@@ -72,7 +71,9 @@ public class Close extends CommandOpMode {
 
     @Override
     public void execute() {
-        onUpdate();
+        robot.update();
+        // robot.shooter.setTargetRpm(targetRpm());
+        // robot.shooter.update();
         Scheduler.execute();
         telemetry.addData("Pose x", robot.follower.pose().x());
         telemetry.addData("Pose y", robot.follower.pose().y());
@@ -91,24 +92,17 @@ public class Close extends CommandOpMode {
         telemetry.update();
     }
 
-    private void onUpdate() {
-        robot.update();
-        robot.shooter.setTargetRpm(targetRpm());
-        robot.shooter.update();
-    }
-
-    private double targetRpm() {
-        switch (shooterStage) {
-            case FLOWER: return RPM_2;
-            case FINAL: return RPM_3;
-            case OPENING:
-            default: return RPM_1;
-        }
-    }
+    // private double targetRpm() {
+    //     switch (shooterStage) {
+    //         case FLOWER: return RPM_2;
+    //         case FINAL: return RPM_3;
+    //         case OPENING:
+    //         default: return RPM_1;
+    //     }
+    // }
 
     @Override
     public void end() {
-        autoRPM = false;
         if (autoRoutine != null) Scheduler.cancel(autoRoutine);
         Scheduler.reset();
         if (robot == null) return;
@@ -127,7 +121,7 @@ public class Close extends CommandOpMode {
                 follow(robot.follower, ClosePaths.intakeLoading(a), false,0.6),
                 instant(() -> robot.setFixedTurretAngle(POST_INTAKE_TURRET_ANGLE_DEG)),
                 waitMs(1000),
-                instant(() -> shooterStage = ShooterStage.FLOWER),
+                // instant(() -> shooterStage = ShooterStage.FLOWER),
                //shootCycle(),
                 instant(()->robot.latch.close()),
                 sequential(robot.intake::on),
@@ -137,7 +131,7 @@ public class Close extends CommandOpMode {
                 sequential(robot.intake::on),
                 follow(robot.follower, ClosePaths.approachFlower(a), true, 0.7),
                 shootCycle2(),
-                instant(() -> shooterStage = ShooterStage.FINAL),
+                // instant(() -> shooterStage = ShooterStage.FINAL),
                 follow(robot.follower, ClosePaths.finishFlower(a), false, 0.7),
 
                 sequential(robot.intake::on),

@@ -1,7 +1,7 @@
 {
   "project": "ElectroLarp-Biobuzz",
   "generated_date": "2026-11-27",
-  "git_head": "0aa215d7a41b2f432cab58ae65021b97ecfba007",
+  "git_head": "7e77c7c9d1fb5dd3929f9bdb5c76f0d839859efe",
   "scope": "Tracked non-sensitive repository paths; Java symbols and imports. No secrets, binary contents or generated build directories.",
   "limitations": "Regex-based declarations and dependency candidates; not a compiler-resolved call graph. Commented-out declarations excluded. No runtime validation.",
   "inventory": [
@@ -423,11 +423,11 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
-      "bytes": 11861
+      "bytes": 11623
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
-      "bytes": 6451
+      "bytes": 6431
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
@@ -443,7 +443,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
-      "bytes": 8220
+      "bytes": 8221
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
@@ -4363,7 +4363,7 @@
         {
           "name": "Robot",
           "kind": "class",
-          "line": 37
+          "line": 36
         }
       ],
       "methods": [
@@ -4371,169 +4371,169 @@
           "name": "Robot",
           "signature": "public Robot(HardwareMap hardwareMap, Alliance alliance)",
           "visibility": "public",
-          "line": 72
+          "line": 71
         },
         {
           "name": "update",
           "signature": "public void update()",
           "visibility": "public",
-          "line": 93
+          "line": 92
         },
         {
           "name": "setDriverSticks",
           "signature": "public void setDriverSticks(double forward, double lateral, double turn, double forwardOffsetRad)",
           "visibility": "public",
-          "line": 109
+          "line": 108
         },
         {
           "name": "stickBlendDeg",
           "signature": "public double stickBlendDeg()",
           "visibility": "public",
-          "line": 113
+          "line": 112
         },
         {
           "name": "logShot",
           "signature": "private void logShot(long nowNanos)",
           "visibility": "private",
-          "line": 115
+          "line": 114
         },
         {
           "name": "manualLatch",
           "signature": "public void manualLatch(boolean open)",
           "visibility": "public",
-          "line": 142
+          "line": 141
         },
         {
           "name": "setTurretOffsetOverride",
           "signature": "public void setTurretOffsetOverride(double offsetDeg)",
           "visibility": "public",
-          "line": 146
+          "line": 145
         },
         {
           "name": "setFixedTurretAngle",
           "signature": "public void setFixedTurretAngle(double angleDeg)",
           "visibility": "public",
-          "line": 150
+          "line": 149
         },
         {
           "name": "fixedTurretAngleDeg",
           "signature": "public Double fixedTurretAngleDeg()",
           "visibility": "public",
-          "line": 154
+          "line": 153
         },
         {
           "name": "solveTurret",
           "signature": "private double solveTurret(double angleDeg, double angularVelocity)",
           "visibility": "private",
-          "line": 156
+          "line": 155
         },
         {
           "name": "updateAiming",
           "signature": "private void updateAiming()",
           "visibility": "private",
-          "line": 165
+          "line": 164
         },
         {
           "name": "isManual",
           "signature": "public boolean isManual()",
           "visibility": "public",
-          "line": 233
+          "line": 224
         },
         {
           "name": "isTurretForward",
           "signature": "public boolean isTurretForward()",
           "visibility": "public",
-          "line": 235
+          "line": 226
         },
         {
           "name": "setTurretForward",
           "signature": "public void setTurretForward(boolean on)",
           "visibility": "public",
-          "line": 236
+          "line": 227
         },
         {
           "name": "setManual",
           "signature": "public void setManual(boolean on)",
           "visibility": "public",
-          "line": 238
+          "line": 229
         },
         {
           "name": "manualTurretDeg",
           "signature": "public double manualTurretDeg()",
           "visibility": "public",
-          "line": 242
+          "line": 233
         },
         {
           "name": "nudgeManualTurret",
           "signature": "public void nudgeManualTurret(double deg)",
           "visibility": "public",
-          "line": 243
+          "line": 234
         },
         {
           "name": "resetPose",
           "signature": "public static Pose resetPose(Alliance alliance)",
           "visibility": "public",
-          "line": 248
+          "line": 239
         },
         {
           "name": "resetPose",
           "signature": "public void resetPose()",
           "visibility": "public",
-          "line": 252
+          "line": 243
         },
         {
           "name": "underHive",
           "signature": "public boolean underHive()",
           "visibility": "public",
-          "line": 256
+          "line": 247
         },
         {
           "name": "startTeleOpDrive",
           "signature": "public void startTeleOpDrive()",
           "visibility": "public",
-          "line": 261
+          "line": 252
         },
         {
           "name": "startShooting",
           "signature": "public void startShooting()",
           "visibility": "public",
-          "line": 266
+          "line": 257
         },
         {
           "name": "stopShooting",
           "signature": "public void stopShooting()",
           "visibility": "public",
-          "line": 273
+          "line": 264
         },
         {
           "name": "isShooting",
           "signature": "public boolean isShooting()",
           "visibility": "public",
-          "line": 281
+          "line": 272
         },
         {
           "name": "shootCycle",
           "signature": "public Command shootCycle()",
           "visibility": "public",
-          "line": 286
+          "line": 277
         },
         {
           "name": "flower",
           "signature": "public void flower(boolean down)",
           "visibility": "public",
-          "line": 294
+          "line": 285
         },
         {
           "name": "stop",
           "signature": "public void stop()",
           "visibility": "public",
-          "line": 298
+          "line": 289
         },
         {
           "name": "loopMs",
           "signature": "public double loopMs()",
           "visibility": "public",
-          "line": 309
+          "line": 300
         }
       ],
       "imports": [
@@ -4548,7 +4548,6 @@
         "com.qualcomm.robotcore.hardware.HardwareMap",
         "org.electrolightsftc.pulse.electropathing.PulseFollower",
         "org.electrolightsftc.pulse.electropathing.PulseRuntime",
-        "org.firstinspires.ftc.teamcode.auto.Close",
         "org.firstinspires.ftc.teamcode.pedro.Constants",
         "org.firstinspires.ftc.teamcode.subsystem.Drivetrain",
         "org.firstinspires.ftc.teamcode.subsystem.Flower",
@@ -4568,10 +4567,9 @@
         "java.util.List"
       ],
       "role": "Owns hardware and follower; updates aiming and flywheel; coordinates shooting, manual fallback and pose reset.",
-      "lines": 313,
-      "sha256": "13b16f7de6122f90693143b0b02ee1795bb21e2b510e6d6b37e48d165eeecd46",
+      "lines": 304,
+      "sha256": "eb5b3074f17bfc12fd4935da2c9afef202b92c96ba07b518873088116cac76a8",
       "internal_dependencies": [
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java",
@@ -4597,11 +4595,6 @@
           "name": "Close",
           "kind": "class",
           "line": 25
-        },
-        {
-          "name": "ShooterStage",
-          "kind": "enum",
-          "line": 38
         }
       ],
       "methods": [
@@ -4627,49 +4620,37 @@
           "name": "onStart",
           "signature": "public void onStart()",
           "visibility": "public",
-          "line": 66
+          "line": 65
         },
         {
           "name": "execute",
           "signature": "public void execute()",
           "visibility": "public",
-          "line": 74
-        },
-        {
-          "name": "onUpdate",
-          "signature": "private void onUpdate()",
-          "visibility": "private",
-          "line": 94
-        },
-        {
-          "name": "targetRpm",
-          "signature": "private double targetRpm()",
-          "visibility": "private",
-          "line": 100
+          "line": 73
         },
         {
           "name": "end",
           "signature": "public void end()",
           "visibility": "public",
-          "line": 110
+          "line": 105
         },
         {
           "name": "routine",
           "signature": "private Command routine()",
           "visibility": "private",
-          "line": 119
+          "line": 113
         },
         {
           "name": "shootCycle",
           "signature": "private Command shootCycle()",
           "visibility": "private",
-          "line": 154
+          "line": 148
         },
         {
           "name": "shootCycle2",
           "signature": "private Command shootCycle2()",
           "visibility": "private",
-          "line": 167
+          "line": 161
         }
       ],
       "imports": [
@@ -4692,8 +4673,8 @@
         "org.firstinspires.ftc.teamcode.util.OpModeStorage"
       ],
       "role": "Near-side autonomous sequence: shooting, pollen loading, flower approach and retreat.",
-      "lines": 171,
-      "sha256": "2139519d35cbeee15923f9a1ca70205892219fc7503d9ebdc3b73a6204f2e819",
+      "lines": 165,
+      "sha256": "28eb886e3c424d105daed5eee1663c85b7939d5cd4d435587823ef6ebb541e6c",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
@@ -4945,7 +4926,7 @@
       ],
       "role": "Near-side paths, heading interpolation, mirrored poses and flower pose callback.",
       "lines": 199,
-      "sha256": "3b956f83c4c82dd3884b478410e112c0f4bd455a4db636197233401d7ff2963d",
+      "sha256": "02d1114f22de7d978097e00228ab1d5c8b0873cd702e286cb9edf23c523074fc",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
       ]
@@ -10003,11 +9984,6 @@
     {
       "from": "FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/internal/PermissionValidatorWrapper.java",
       "to": "FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/internal/FtcRobotControllerActivity.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
       "kind": "import-or-same-package-reference"
     },
     {

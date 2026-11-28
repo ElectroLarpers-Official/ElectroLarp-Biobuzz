@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.electrolightsftc.pulse.electropathing.PulseFollower;
 import org.electrolightsftc.pulse.electropathing.PulseRuntime;
-import org.firstinspires.ftc.teamcode.auto.Close;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystem.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystem.Flower;
@@ -178,9 +177,7 @@ public final class Robot {
 
         if (manual) {
             underHive = false;
-            if(!Close.autoRPM) {
-                shooter.setTargetRpm(MANUAL_RPM + LIVE_RPM_TRIM);
-            }
+            shooter.setTargetRpm(MANUAL_RPM + LIVE_RPM_TRIM);
             hood.setPosition(MANUAL_HOOD + LIVE_HOOD_TRIM);
             turret.setPositionAll(solveTurret(turretForward ? 0.0 : manualTurretDeg, 0.0));
             return;
@@ -192,9 +189,7 @@ public final class Robot {
 
         if (ShooterConstants.underHive(currPose.x(), currPose.y())) {
             underHive = true;
-            if(!Close.autoRPM) {
-                shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
-            }
+            shooter.setTargetRpm(ShooterConstants.UNDER_HIVE_RPM);
             hood.setLaunchAngle(ShooterConstants.UNDER_HIVE_LAUNCH_DEG);
             double bearingDeg = Math.toDegrees(robotToGoal.theta() - currPose.heading());
             // TODO delete: -> setPosition
@@ -207,17 +202,13 @@ public final class Robot {
         double shootMs = (shootStartNanos == 0) ? 0.0 : (System.nanoTime() - shootStartNanos) / 1e6;
         ShooterCalc.burstCompActive = shootStartNanos != 0 && shootMs >= ShooterCalc.burstCompDelayMs;
 
-        if(!Close.autoRPM) {
-            ShooterCalc.flywheelTps = shooter.velocity() - LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0;
-        }
+        ShooterCalc.flywheelTps = shooter.velocity() - LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0;
 
         double[] result = ShooterCalc.solve(currPose.heading(), robotToGoal, velocity, angularVelocity);
 
         double tps = result[0];
         if (tps > 0) tps = Math.max(0, tps + LIVE_RPM_TRIM * Shooter.TICKS_PER_REV / 60.0);
-        if(!Close.autoRPM) {
-            shooter.setTargetVelocity(tps);
-        }
+        shooter.setTargetVelocity(tps);
         if (!Double.isNaN(result[1])) hood.setPosition(result[1] + LIVE_HOOD_TRIM);
 
 
