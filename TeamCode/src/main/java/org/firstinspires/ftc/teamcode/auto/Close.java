@@ -16,24 +16,27 @@ import org.electrolightsftc.pulse.lumen.Scheduler;
 import org.electrolightsftc.pulse.electropathing.opmode.PulseOpMode;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.auto.paths.ClosePaths;
+import org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc;
 import org.firstinspires.ftc.teamcode.util.Alliance;
 import org.firstinspires.ftc.teamcode.util.CommandOpMode;
 import org.firstinspires.ftc.teamcode.util.OpModeStorage;
 
 @Configurable
 public class Close extends CommandOpMode {
-    public static double RPM_1 = 4450;
-    public static double RPM_2 = 4420;
+    public static double RPM_1 = 4680;
+    public static double RPM_2 = 4250;
+    public static double RPM_3 = 4410;
     public static double FEED_DURATION_MS = 400;
     public static boolean autoRPM = false;
 
-    private static final double INITIAL_TURRET_OFFSET_DEG = 4;
-    private static final double POST_INTAKE_TURRET_ANGLE_DEG = -173; // Clockwise from forward.
+    private static final double INITIAL_TURRET_OFFSET_DEG = 5;
+    private static final double POST_INTAKE_TURRET_ANGLE_DEG = -169; // Clockwise from forward.
     private static final double LATCH_OPEN_DELAY_MS = 320;
     Alliance a;
     Robot robot;
     boolean started = false;
-    private boolean secondRpm = false;
+    private enum ShooterStage { OPENING, FLOWER, FINAL }
+    private ShooterStage shooterStage = ShooterStage.OPENING;
     private Command autoRoutine;
 
     public Close(Alliance a) {this.a = a;
@@ -61,7 +64,7 @@ public class Close extends CommandOpMode {
 
     @Override
     public void onStart() {
-
+        shooterStage = ShooterStage.OPENING;
         started = true;
         autoRoutine = routine();
         Scheduler.schedule(autoRoutine);
@@ -78,15 +81,30 @@ public class Close extends CommandOpMode {
         telemetry.addData("Busy", robot.follower.isBusy());
         telemetry.addData("Vel x", robot.follower.velocity().vx);
         telemetry.addData("Vel y", robot.follower.velocity().vy);
+        telemetry.addData("Shooter RPM", "%.0f actual / %.0f target", robot.shooter.rpm(), robot.shooter.targetRpm());
+        Double fixedAngle = robot.fixedTurretAngleDeg();
+        telemetry.addData("Turret target", fixedAngle == null ? "Tracking (pre-intake)"
+                : String.format("Fixed %.1f deg", fixedAngle));
+        telemetry.addData("Turret command", "%.1f deg%s", TurretCalc.commandDeg(),
+                TurretCalc.outOfRange() ? " (at travel limit)" : "");
+        telemetry.addData("Turret servos", robot.turret.servoCount());
         telemetry.update();
     }
 
     private void onUpdate() {
         robot.update();
-        robot.shooter.setTargetRpm(secondRpm ? RPM_2 : RPM_1);
+        robot.shooter.setTargetRpm(targetRpm());
         robot.shooter.update();
     }
 
+    private double targetRpm() {
+        switch (shooterStage) {
+            case FLOWER: return RPM_2;
+            case FINAL: return RPM_3;
+            case OPENING:
+            default: return RPM_1;
+        }
+    }
 
     @Override
     public void end() {
@@ -101,15 +119,15 @@ public class Close extends CommandOpMode {
     private Command routine() {
         return sequential(
                 instant(()->robot.flower(false)),
-                waitMs(3000),
+                waitMs(4000),
                 shootCycle(),
                 waitMs(500),
                 instant(()->robot.latch.close()),
                 sequential(robot.intake::on),
-                follow(robot.follower, ClosePaths.intakeLoading(a), false),
+                follow(robot.follower, ClosePaths.intakeLoading(a), false,0.6),
                 instant(() -> robot.setFixedTurretAngle(POST_INTAKE_TURRET_ANGLE_DEG)),
                 waitMs(1000),
-                instant(() -> secondRpm = true),
+                instant(() -> shooterStage = ShooterStage.FLOWER),
                //shootCycle(),
                 instant(()->robot.latch.close()),
                 sequential(robot.intake::on),
@@ -119,6 +137,7 @@ public class Close extends CommandOpMode {
                 sequential(robot.intake::on),
                 follow(robot.follower, ClosePaths.approachFlower(a), true, 0.7),
                 shootCycle2(),
+                instant(() -> shooterStage = ShooterStage.FINAL),
                 follow(robot.follower, ClosePaths.finishFlower(a), false, 0.7),
 
                 sequential(robot.intake::on),

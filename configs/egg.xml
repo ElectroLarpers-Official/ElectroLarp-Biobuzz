@@ -7,10 +7,9 @@
             <goBILDA5201SeriesMotor name="frontRight" port="1" />
             <goBILDA5201SeriesMotor name="frontLeft" port="2" />
             <goBILDA5201SeriesMotor name="backLeft" port="3" />
-            <Servo name="stopperServo" port="0" />
-            <Servo name="turretServo1" port="1" />
+            <Servo name="turretServo1" port="0" />
+            <Servo name="turretServo3" port="1" />
             <Servo name="turretServo2" port="2" />
-            <Servo name="turretServo3" port="3" />
             <Servo name="flowerServo" port="5" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
@@ -18,6 +17,7 @@
             <goBILDA5201SeriesMotor name="shooter" port="1" />
             <goBILDA5201SeriesMotor name="intake" port="2" />
             <goBILDA5201SeriesMotor name="transfer" port="3" />
+            <Servo name="stopperServo" port="0" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
             <goBILDAPinpoint name="pinpoint" port="0" bus="1" />
         </LynxModule>

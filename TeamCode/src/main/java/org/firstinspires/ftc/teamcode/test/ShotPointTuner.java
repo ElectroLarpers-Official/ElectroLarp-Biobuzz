@@ -34,14 +34,15 @@ import java.util.Locale;
  *
  * <p>Pose: Pinpoint, starting from Tele.START_X / START_Y / START_HEADING_DEG. The turret aims at the cell on the
  * robot's side of the field (if plugged in). RPM / hood start at what TeleOp would shoot here (the blended tuned
- * points) and follow it as you drive, until you touch the d-pad or bumpers.
+ * points) and follow it as you drive until you adjust RPM or hood.
  *
  * <p>Gamepad 1 - init: right bumper = alliance. Running:
  * <ul>
  *   <li>sticks: drive (if the drive motors are plugged in)</li>
  *   <li>right trigger: shoot (hold), left trigger: intake (hold), Y: flywheel on/off</li>
  *   <li>d-pad up / down: RPM +/- RPM_STEP, right / left bumper: RPM +/- RPM_BIG_STEP</li>
- *   <li>d-pad right / left: hood +/- HOOD_STEP (servo position; up = steeper)</li>
+ *   <li>d-pad right / left: turn the turret trim clockwise / counterclockwise for the selected alliance</li>
+ *   <li>right / left stick click: hood +/- HOOD_STEP (servo position, higher is steeper)</li>
  *   <li>START: back to the predicted RPM / hood (follow mode)</li>
  *   <li>A: save a point here, B: delete the nearest file point, X: reload the file</li>
  *   <li>BACK: print all file points as Java lines (Driver Station + logcat tag ShotPoints);
@@ -119,6 +120,8 @@ public class    ShotPointTuner extends CommandOpMode {
 
         robot.drivetrain.arcadeDrive(gamepad1);
 
+        if (gp1.dpad_right.isRisingEdge()) nudgeTurret(-Tele.TURRET_TRIM_STEP_DEG);
+        if (gp1.dpad_left.isRisingEdge()) nudgeTurret(Tele.TURRET_TRIM_STEP_DEG);
         aim();
         handleButtons();
 
@@ -161,8 +164,8 @@ public class    ShotPointTuner extends CommandOpMode {
         if (gp1.dpad_down.isRisingEdge()) nudge(-RPM_STEP, 0);
         if (gp1.right_bumper.isRisingEdge()) nudge(RPM_BIG_STEP, 0);
         if (gp1.left_bumper.isRisingEdge()) nudge(-RPM_BIG_STEP, 0);
-        if (gp1.dpad_right.isRisingEdge()) nudge(0, HOOD_STEP);
-        if (gp1.dpad_left.isRisingEdge()) nudge(0, -HOOD_STEP);
+        if (gp1.right_stick_button.isRisingEdge()) nudge(0, HOOD_STEP);
+        if (gp1.left_stick_button.isRisingEdge()) nudge(0, -HOOD_STEP);
         if (gp1.start.isRisingEdge()) { follow = true; message = "Following the prediction"; }
 
         if (gp1.a.isRisingEdge()) save();
@@ -194,6 +197,11 @@ public class    ShotPointTuner extends CommandOpMode {
             cleared = true;
         }
         if (!gp1.back.isTrue()) backDownNanos = 0;
+    }
+
+    private void nudgeTurret(double degrees) {
+        if (alliance == Alliance.RED) TurretCalc.turretOffset += degrees;
+        else TurretCalc.turretOffset2 += degrees;
     }
 
     private void nudge(double rpm, double hood) {
@@ -248,6 +256,8 @@ public class    ShotPointTuner extends CommandOpMode {
         telemetry.addData("RPM", "%.0f set / %.0f actual%s", tuneRpm, robot.shooter.rpm(), flywheelOn ? "" : " (OFF, Y)");
         telemetry.addData("Hood", "%.3f (%.1f deg launch)", robot.hood.position(),
                 ShooterCalc.launchDegForHoodPosition(robot.hood.position()));
+        telemetry.addData("Turret offset", "%+.1f deg (D-pad left/right)",
+                alliance == Alliance.RED ? TurretCalc.turretOffset : TurretCalc.turretOffset2);
         telemetry.addData("Mode", follow ? "FOLLOW prediction" : "MANUAL (START = follow)");
         telemetry.addData("Prediction", "%.0f RPM, hood %.3f, from %s", predRpm, predHood, TeleTelemetry.shotSourceText());
         telemetry.addData("Nearest point", near == null ? "none for this cell"

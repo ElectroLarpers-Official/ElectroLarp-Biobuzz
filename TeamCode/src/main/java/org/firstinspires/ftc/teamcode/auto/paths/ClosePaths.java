@@ -66,7 +66,7 @@ public final class ClosePaths {
         Vector2D control = waypoints.point3Control1.toVector2D();
         Vector2D end = waypoints.point3.toVector2D();
         Path original = curve(start, control, end);
-        double t = original.curve.parameter(0.4);
+        double t = original.curve.parameter(0.74);
         Vector2D leftControl = start.times(1.0 - t).plus(control.times(t));
         Vector2D rightControl = control.times(1.0 - t).plus(end.times(t));
         Vector2D shotPoint = original.curve.get(t);
@@ -178,7 +178,7 @@ public final class ClosePaths {
             PoseFactory poseFactory = poses(a);
 
             start = poseFactory.of(37.668, 7.794, 180);
-            pollenEndingPose = poseFactory.of(9, 8.3998, -160); // "path1" in the visualizer
+            pollenEndingPose = poseFactory.of(9, 7.8, -157); // "path1" in the visualizer
             path1Control1 = poseFactory.of(25.4753, 11.0007, 0);
             path1Segment1Heading = poseFactory.of(9.8632, 8.3998, 180);
             path1Segment2Heading = poseFactory.of(9.8632, 8.3998, 192);

@@ -11,14 +11,12 @@ mindmap
         Robot
       auto
         Close
-        Far
         OneTip
       auto.blue
         blue1tip
         blueClose
       auto.paths
         ClosePaths
-        FarPaths
         OneTipPaths
       auto.red
         red1tip
@@ -38,6 +36,7 @@ mindmap
         ThreeWheelTuner
         TwoWheelTuner
       subsystem
+        Drivetrain
         Flower
         Hood
         Intake
@@ -53,6 +52,7 @@ mindmap
         TunedShotPoints
         TunedShotTable
       subsystem.aim.turret
+        StickLead
         TurretCalc
       tele
         Tele
@@ -70,7 +70,9 @@ mindmap
       util
         Alliance
         CommandOpMode
+        FollowerLocalization
         OpModeStorage
+        ShotLogger
         TeleTelemetry
       util.control
         PIDController
@@ -86,6 +88,11 @@ mindmap
         BooleanSwitch
         FloatSupplier
         GamepadEx
+      util.math
+        RotMatrix
+        VectorMagnitude
+        VectorPrint
+        VectorTransform
     SDK host
       FtcRobotController
       Samples and utility OpModes
@@ -104,7 +111,7 @@ mindmap
       com.pedropathing tuning 1.0.1
       com.pedropathing.ivy pedro 1.1.1
       com.pedropathing telemetry 1.0.0
-      org.electrolightsftc pulse-electropathing 2.1.1
+      org.electrolightsftc pulse-electropathing 2.1.2
       org.electrolightsftc pulse-lumen 2.1.0
       dev.frozenmilk.sinister Sloth 0.3.2
       com.bylazar.sloth fullpanels 0.3.2+1.0.13

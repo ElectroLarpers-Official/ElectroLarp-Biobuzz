@@ -1,12 +1,12 @@
 # ElectroLarp-Biobuzz project index
 
-Generated 2026-11-21, source HEAD `fd6f8a8c51fb738977064fc8101677498ca9540b`. Source files were inspected directly.
+Generated 2026-11-27, source HEAD `0aa215d7a41b2f432cab58ae65021b97ecfba007`. Source files were inspected directly.
 
 ## Coverage
 
-- 190 tracked non-sensitive paths inventoried.
-- 61 TeamCode Java files, 70 SDK/vendor Java files.
-- 778 method/constructor declarations; 147 candidate internal dependency edges.
+- 197 tracked non-sensitive paths inventoried.
+- 67 TeamCode Java files, 70 SDK/vendor Java files.
+- 813 method/constructor declarations; 155 candidate internal dependency edges.
 - [Interactive mind map](mindmap.html), [Mermaid mind map](MINDMAP.md), [machine-readable inventory and symbols](index.json).
 - [Regeneration script](../../scripts/generate_context_index.py): run `python scripts/generate_context_index.py` from this checkout. It writes local documents only; Atlas refresh is a separate explicit operation.
 
@@ -63,7 +63,7 @@ Paths in this table are relative to `TeamCode/src/main/java/org/firstinspires/ft
 - `com.pedropathing:tuning:1.0.1`
 - `com.pedropathing.ivy:pedro:1.1.1`
 - `com.pedropathing:telemetry:1.0.0`
-- `org.electrolightsftc:pulse-electropathing:2.1.1`
+- `org.electrolightsftc:pulse-electropathing:2.1.2`
 - `org.electrolightsftc:pulse-lumen:2.1.0`
 - `dev.frozenmilk.sinister:Sloth:0.3.2`
 - `com.bylazar.sloth:fullpanels:0.3.2+1.0.13`
@@ -104,80 +104,62 @@ Internal dependency candidates: none detected
 
 Owns hardware and follower; updates aiming and flywheel; coordinates shooting, manual fallback and pose reset.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java); 408 lines; SHA-256 `c72b6493ee26667726d0e817bb0b45d9c005585e1fd590d62784772d685ee5c2`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java); 313 lines; SHA-256 `13b16f7de6122f90693143b0b02ee1795bb21e2b510e6d6b37e48d165eeecd46`.
 
-Types: `Robot` (class, line 47)
+Types: `Robot` (class, line 37)
 
-- L102: `public Robot(HardwareMap hardwareMap, Alliance alliance)`
-- L122: `public void update()`
-- L137: `public void manualLatch(boolean open)`
-- L141: `public void setTurretOffsetOverride(double offsetDeg)`
-- L146: `public void setFixedTurretAngle(double angleDeg)`
-- L150: `private double solveTurret(double angleDeg, double angularVelocity)`
-- L159: `private void updateAiming()`
-- L216: `public boolean isManual()`
-- L219: `public boolean isTurretForward()`
-- L220: `public void setTurretForward(boolean on)`
-- L222: `public void setManual(boolean on)`
-- L226: `public double manualTurretDeg()`
-- L228: `public void nudgeManualTurret(double deg)`
-- L234: `public static Pose resetPose(Alliance alliance)`
-- L239: `public void resetPose()`
-- L244: `public boolean underHive()`
-- L249: `public void drive(double forward, double lateral, double turn, double forwardOffsetRad)`
-- L253: `public boolean isPaused()`
-- L257: `public boolean pauseFollowing(boolean hold)`
-- L270: `public boolean resumeFollowing()`
-- L324: `public void clearPause()`
-- L328: `private static void collectModifiers(Path path, List<Modifier> inherited, List<List<Modifier>> out)`
-- L340: `private static Curve tailOf(Curve curve, double t)`
-- L362: `public void startShooting()`
-- L370: `public void stopShooting()`
-- L378: `public boolean isShooting()`
-- L383: `public Command shootCycle()`
-- L391: `public void flower(boolean down)`
-- L395: `public void stop()`
-- L405: `public double loopMs()`
+- L72: `public Robot(HardwareMap hardwareMap, Alliance alliance)`
+- L93: `public void update()`
+- L109: `public void setDriverSticks(double forward, double lateral, double turn, double forwardOffsetRad)`
+- L113: `public double stickBlendDeg()`
+- L115: `private void logShot(long nowNanos)`
+- L142: `public void manualLatch(boolean open)`
+- L146: `public void setTurretOffsetOverride(double offsetDeg)`
+- L150: `public void setFixedTurretAngle(double angleDeg)`
+- L154: `public Double fixedTurretAngleDeg()`
+- L156: `private double solveTurret(double angleDeg, double angularVelocity)`
+- L165: `private void updateAiming()`
+- L233: `public boolean isManual()`
+- L235: `public boolean isTurretForward()`
+- L236: `public void setTurretForward(boolean on)`
+- L238: `public void setManual(boolean on)`
+- L242: `public double manualTurretDeg()`
+- L243: `public void nudgeManualTurret(double deg)`
+- L248: `public static Pose resetPose(Alliance alliance)`
+- L252: `public void resetPose()`
+- L256: `public boolean underHive()`
+- L261: `public void startTeleOpDrive()`
+- L266: `public void startShooting()`
+- L273: `public void stopShooting()`
+- L281: `public boolean isShooting()`
+- L286: `public Command shootCycle()`
+- L294: `public void flower(boolean down)`
+- L298: `public void stop()`
+- L309: `public double loopMs()`
 
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Hood.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Hood.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java`
 
 ### auto/Close.java
 
 Near-side autonomous sequence: shooting, pollen loading, flower approach and retreat.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java); 151 lines; SHA-256 `1309ea0678fa4c19cb1cb94cf8de6bb753aa3a1c5474a13e8e64a011a8ac089a`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java); 171 lines; SHA-256 `2139519d35cbeee15923f9a1ca70205892219fc7503d9ebdc3b73a6204f2e819`.
 
-Types: `Close` (class, line 24)
+Types: `Close` (class, line 25), `ShooterStage` (enum, line 38)
 
-- L39: `public Close(Alliance a)`
-- L44: `public void initialize()`
-- L54: `public void initializeLoop()`
-- L63: `public void onStart()`
-- L71: `public void execute()`
-- L84: `private void onUpdate()`
-- L92: `public void end()`
-- L101: `private Command routine()`
-- L134: `private Command shootCycle()`
-- L147: `private Command shootCycle2()`
+- L42: `public Close(Alliance a)`
+- L47: `public void initialize()`
+- L57: `public void initializeLoop()`
+- L66: `public void onStart()`
+- L74: `public void execute()`
+- L94: `private void onUpdate()`
+- L100: `private double targetRpm()`
+- L110: `public void end()`
+- L119: `private Command routine()`
+- L154: `private Command shootCycle()`
+- L167: `private Command shootCycle2()`
 
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`
-
-### auto/Far.java
-
-Far-side autonomous lifecycle; routine currently a placeholder.
-
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java); 60 lines; SHA-256 `eff0d4f04083a2d9786476059afb4717aaf302fcea2af0ccd2793d51772033be`.
-
-Types: `Far` (class, line 16)
-
-- L21: `public Far(Alliance a)`
-- L24: `public void initialize()`
-- L31: `public void initializeLoop()`
-- L38: `public void onStart()`
-- L47: `public void end()`
-- L57: `private Command routine()`
-
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`
 
 ### auto/OneTip.java
 
@@ -227,31 +209,19 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Near-side paths, heading interpolation, mirrored poses and flower pose callback.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java); 186 lines; SHA-256 `9c0caca88be291e9d09c769441cee857984ae759455c9f0d670844988a423d54`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java); 199 lines; SHA-256 `3b956f83c4c82dd3884b478410e112c0f4bd455a4db636197233401d7ff2963d`.
 
-Types: `ClosePaths` (class, line 18), `Poses` (class, line 147)
+Types: `ClosePaths` (class, line 19), `Poses` (class, line 160)
 
-- L19: `private ClosePaths()`
-- L23: `public static PoseFactory poses(Alliance a)`
-- L28: `public static Pose startPose(Alliance a)`
-- L34: `public static Path intakeLoading(Alliance a)`
-- L42: `public static Path goNearFlower(Alliance a, Command openFlower)`
-- L53: `public static Path goInFlower(Alliance a, Command shootCycle2)`
-- L64: `public static Path park(Alliance a)`
-
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
-
-### auto/paths/FarPaths.java
-
-Far-side pose factory and placeholder starting pose; paths not implemented.
-
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java); 23 lines; SHA-256 `a6a74be0b649233647f256240298f2c17e61cb6a8c09bf57a24a586609be78d1`.
-
-Types: `FarPaths` (class, line 8)
-
-- L9: `private FarPaths()`
-- L14: `public static PoseFactory poses(Alliance a)`
-- L20: `public static Pose startPose(Alliance a)`
+- L20: `private ClosePaths()`
+- L24: `public static PoseFactory poses(Alliance a)`
+- L29: `public static Pose startPose(Alliance a)`
+- L35: `public static Path intakeLoading(Alliance a)`
+- L43: `public static Path goNearFlower(Alliance a, Command openFlower)`
+- L54: `public static Path approachFlower(Alliance a)`
+- L58: `public static Path finishFlower(Alliance a)`
+- L63: `private static Path flowerLeg(Alliance a, boolean approach)`
+- L77: `public static Path park(Alliance a)`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
 
@@ -300,11 +270,11 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Builds PulseFollower from Pinpoint localization, Mecanum or NoDrivetrain, and Foresight configuration.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java); 101 lines; SHA-256 `1877dd8f6c8419a0adecd4b69488f0862ba8622d099828e381d4204ed026306e`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java); 96 lines; SHA-256 `c2d437440fe3bd744a8653196d6434b98168393cb433e0a19f104291e24f9352`.
 
-Types: `Constants` (class, line 28)
+Types: `Constants` (class, line 23)
 
-- L88: `public static PulseFollower create(HardwareMap h)`
+- L83: `public static PulseFollower create(HardwareMap h)`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java`
 
@@ -312,15 +282,15 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Drivetrain fallback when the four drive motors are absent.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java); 20 lines; SHA-256 `8fa5e6b75fd99e6588366c708f4145eaeea885e36b646701881959cfdb7cc894`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java); 16 lines; SHA-256 `4e98c00b715b2fa89c0dc41923a448b916fe7e481212c2a03f5cea64f9ea0bd9`.
 
-Types: `NoDrivetrain` (class, line 13)
+Types: `NoDrivetrain` (class, line 9)
 
-- L14: `public void drive(DrivePowers powers, boolean useBrake)`
-- L15: `public double maxScaling(DrivePowers a, DrivePowers b)`
-- L16: `public void stop()`
-- L17: `public void stop(boolean useBrake)`
-- L19: `public double interpolateVelocity(double a, double b, double c)`
+- L10: `public void drive(DrivePowers powers, boolean useBrake)`
+- L11: `public double maxScaling(DrivePowers a, DrivePowers b)`
+- L12: `public void stop()`
+- L13: `public void stop(boolean useBrake)`
+- L15: `public double interpolateVelocity(double a, double b, double c)`
 
 Internal dependency candidates: none detected
 
@@ -549,21 +519,45 @@ Types: `TwoWheelTuner` (class, line 15), `TwoWheelSetup` (class, line 141), `Two
 
 Internal dependency candidates: none detected
 
+### subsystem/Drivetrain.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java); 225 lines; SHA-256 `dbca14d209c7f1c59d71dec109d57a5c0aecc4c2c7aed5bddb62ddcab4437104`.
+
+Types: `Drivetrain` (class, line 21)
+
+- L45: `public Drivetrain(HardwareMap hardwareMap, PulseFollower follower, Alliance alliance)`
+- L54: `public void startTeleOpDrive()`
+- L58: `public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior)`
+- L66: `public void setPowers(double lf, double lr, double rf, double rr)`
+- L93: `public void arcadeDrive(double x, double y, double rx, float DZ, float angleZero, float maxPower)`
+- L173: `public void setFieldCentric(boolean fieldCentric)`
+- L177: `public boolean isFieldCentric()`
+- L181: `private double forwardOffsetDeg()`
+- L185: `private Vector2D smoothGamepadAngle(double x, double y, double zeroAngle)`
+- L197: `public void arcadeDrive(double x, double y, double rx)`
+- L201: `public void arcadeDrive(Gamepad gamepad)`
+- L205: `public double getLambda(double s, double alpha)`
+- L216: `public void addTelemetry(Telemetry telemetry)`
+
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java`
+
 ### subsystem/Flower.java
 
 Optional flower mechanism servo.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java); 37 lines; SHA-256 `8e59c4d78688a3400f93312bc34766822cb399cae7600d1d13b5860adde8215f`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java); 35 lines; SHA-256 `53e70e739e4fcd6afd98b7e237e4212ee28b2f6ac3532caada7b69762688e53c`.
 
 Types: `Flower` (class, line 10)
 
 - L17: `public Flower(HardwareMap hw)`
 - L21: `public void setDown(boolean state)`
-- L27: `public void update()`
-- L30: `public void stop()`
-- L32: `public void toggle()`
-- L34: `public boolean isDown()`
-- L36: `public boolean isConnected()`
+- L26: `public void update()`
+- L28: `public void stop()`
+- L30: `public void toggle()`
+- L32: `public boolean isDown()`
+- L34: `public boolean isConnected()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`
 
@@ -586,19 +580,19 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Intake plus optional belted transfer motor, controlled together.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java); 83 lines; SHA-256 `1b4ae8b6f3e74f31d6e97dbe3d5aa5485b44bb9a617964537e1e2da26231a444`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java); 79 lines; SHA-256 `9a95ff875f55f50fc058d0af9477f235ac6758ea0d7c0e7d11c7d5f344571d33`.
 
-Types: `Intake` (class, line 17), `IntakeState` (enum, line 25)
+Types: `Intake` (class, line 13), `IntakeState` (enum, line 21)
 
-- L36: `public Intake(HardwareMap hw)`
-- L47: `private void setPower(double power)`
-- L52: `public void on()`
-- L57: `public void reverse()`
-- L62: `public void slowReverse()`
-- L67: `public void off()`
-- L72: `public IntakeState getState()`
-- L76: `public boolean atState(IntakeState state)`
-- L80: `public boolean hasTransferMotor()`
+- L32: `public Intake(HardwareMap hw)`
+- L43: `private void setPower(double power)`
+- L48: `public void on()`
+- L53: `public void reverse()`
+- L58: `public void slowReverse()`
+- L63: `public void off()`
+- L68: `public IntakeState getState()`
+- L72: `public boolean atState(IntakeState state)`
+- L76: `public boolean hasTransferMotor()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/hardware/CachedMotor.java`
 
@@ -606,7 +600,7 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Optional shooting gate servo.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java); 37 lines; SHA-256 `6e4a5db05aa460131f8579b2a02b2f1b056d5a5db1fb2958b3e8c8c870741905`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java); 37 lines; SHA-256 `eebfe5b5b9cf813600d4db6f0a89e602c33f3b4ea4f733a2fa3bebed2fed7a07`.
 
 Types: `Latch` (class, line 10)
 
@@ -622,29 +616,29 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Dual flywheel motors, encoder feedback, PIDF and optional shooting bang-bang control.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java); 189 lines; SHA-256 `c55d5c2e335138beab19874b04f002db934dbbd9147dc2e685f8f3edd7e7233d`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java); 149 lines; SHA-256 `9ba26560e450d8adbd406a75b6d06558f9e31cf8c54d9e7ac0eebe520cf36467`.
 
-Types: `Shooter` (class, line 29), `Mode` (enum, line 74)
+Types: `Shooter` (class, line 19), `Mode` (enum, line 43)
 
-- L91: `public Shooter(HardwareMap hw)`
-- L105: `public void update()`
-- L146: `private void writePower(double p)`
-- L160: `private void readVoltage()`
-- L166: `public void setTargetVelocity(double ticksPerSecond)`
-- L167: `public void setTargetRpm(double motorRpm)`
-- L169: `public void setShooting(boolean shooting)`
-- L170: `public void partyMode()`
-- L171: `public void stop()`
-- L178: `public boolean isSpinning()`
-- L179: `public boolean atTarget()`
-- L181: `public double velocity()`
-- L182: `public double targetVelocity()`
-- L183: `public double rpm()`
-- L184: `public double targetRpm()`
-- L185: `public double power()`
-- L186: `public double voltage()`
-- L187: `public Mode mode()`
-- L188: `public boolean isShooting()`
+- L60: `public Shooter(HardwareMap hw)`
+- L72: `public void update()`
+- L107: `private void writePower(double p)`
+- L121: `private void readVoltage()`
+- L127: `public void setTargetVelocity(double ticksPerSecond)`
+- L128: `public void setTargetRpm(double motorRpm)`
+- L130: `public void setShooting(boolean shooting)`
+- L131: `public void partyMode()`
+- L132: `public void stop()`
+- L139: `public boolean isSpinning()`
+- L140: `public boolean atTarget()`
+- L141: `public double velocity()`
+- L142: `public double targetVelocity()`
+- L143: `public double rpm()`
+- L144: `public double targetRpm()`
+- L145: `public double power()`
+- L146: `public double voltage()`
+- L147: `public Mode mode()`
+- L148: `public boolean isShooting()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/control/PIDController.java`
 
@@ -652,24 +646,24 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Turret servo hardware, optional four-servo operation and robot-to-turret geometry.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java); 173 lines; SHA-256 `39765355fc141858fb570da099b750c11976272b28ac4a8e4e80ee6a12ee1651`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java); 187 lines; SHA-256 `e1a7583c7bef3946450a50f45c48d0a9014f6314f4c1e7b658dc25423a0bc143`.
 
 Types: `Turret` (class, line 17)
 
-- L37: `public Turret(HardwareMap hw)`
-- L49: `private static Servo.Direction direction(boolean reversed)`
-- L54: `private boolean applyDirection(ServoImplEx servo, int i, boolean reversed)`
-- L61: `public static Pose getTurretPose(Pose robotPose)`
-- L72: `public static Vector2D getTurretToGoalVector(Pose turretPose, Pose goal)`
-- L78: `public boolean isConnected()`
-- L81: `public List<String> missing()`
-- L83: `public void setPosition(double pos)`
-- L108: `public Turret(HardwareMap hw, boolean fourServos)`
-- L120: `private ServoImplEx extraServo(HardwareMap hw, String name, boolean reversed)`
-- L133: `public int servoCount()`
-- L141: `public void setPositionAll(double pos)`
-- L156: `public void setExtraServosEnabled(boolean enabled)`
-- L162: `private void setEnabled(ServoImplEx servo, boolean enabled)`
+- L30: `public Turret(HardwareMap hw)`
+- L42: `private static Servo.Direction direction(boolean reversed)`
+- L46: `private boolean applyDirection(ServoImplEx servo, int i, boolean reversed)`
+- L53: `public static Pose getTurretPose(Pose robotPose)`
+- L64: `public static Vector2D getTurretToGoalVector(Pose turretPose, Pose goal)`
+- L70: `public boolean isConnected()`
+- L71: `public List<String> missing()`
+- L73: `public void setPosition(double pos)`
+- L101: `public Turret(HardwareMap hw, boolean fourServos)`
+- L117: `private ServoImplEx extraServo(HardwareMap hw, String name, boolean reversed)`
+- L130: `public int servoCount()`
+- L149: `public void setPositionAll(double pos)`
+- L170: `public void setExtraServosEnabled(boolean enabled)`
+- L176: `private void setEnabled(ServoImplEx servo, boolean enabled)`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java`
 
@@ -677,17 +671,17 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Stopping prediction used by aiming.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java); 112 lines; SHA-256 `a8e1eecaf4674ab83c3a320ad11952d9faf05cfc2020b51bd323bd60d7fc9825`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java); 88 lines; SHA-256 `49fb386f0041d510dc6de74c2090ea07755eac87b100fcde8c17a9ba1cdecebe`.
 
 Types: `Braking` (class, line 6)
 
-- L42: `public static double lambertW(double x)`
-- L61: `private static double computeX(double t)`
-- L66: `private static void refreshFactors()`
-- L84: `private static void ensureFresh()`
-- L92: `public static double speedAfter(double currentSpeed)`
-- L100: `public static double distanceAfter(double currentSpeed)`
-- L108: `public static double impliedDecel(double currentSpeed)`
+- L18: `public static double lambertW(double x)`
+- L37: `private static double computeX(double t)`
+- L42: `private static void refreshFactors()`
+- L60: `private static void ensureFresh()`
+- L68: `public static double speedAfter(double currentSpeed)`
+- L76: `public static double distanceAfter(double currentSpeed)`
+- L84: `public static double impliedDecel(double currentSpeed)`
 
 Internal dependency candidates: none detected
 
@@ -695,20 +689,21 @@ Internal dependency candidates: none detected
 
 Selects and solves shots; tuned-point/map lookup, motion prediction and hardware target conversion.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java); 464 lines; SHA-256 `3a6ef4dba606a1169b004442920bbf7c49f3516c325d7ccdd7b273a75431e31d`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java); 430 lines; SHA-256 `862d5579d0ad876c4a5b11d106da3ab90c3c72de4b5a7eed8b89dab592102441`.
 
 Types: `ShooterCalc` (class, line 18)
 
-- L87: `private static void queryTuned(double range, double bearing)`
-- L105: `public static double flightTime(double range, double hoodPosition)`
-- L114: `public static void resetProjectionFilter()`
-- L169: `public static double ballSpeedForMotorRpm(double motorRpm)`
-- L234: `public static double hoodServoPosition(double launchDeg)`
-- L239: `public static double launchDegForHoodPosition(double position)`
-- L245: `public static double normalizeDegrees(double degrees)`
-- L253: `public static Pose goal(Alliance alliance, double robotY)`
-- L279: `public static boolean hiveAimFar()`
-- L285: `public static double[] solve( double robotHeading, Vector2D robotToGoalVector, Vector2D robotVel, double robotAngularVelocity)`
+- L68: `private static void queryTuned(double range, double bearing)`
+- L80: `public static double flightTime(double range, double hoodPosition)`
+- L89: `public static void resetProjectionFilter()`
+- L125: `public static double ballSpeedForMotorRpm(double motorRpm)`
+- L168: `public static double hoodServoPosition(double launchDeg)`
+- L172: `public static double launchDegForHoodPosition(double position)`
+- L178: `public static double normalizeDegrees(double degrees)`
+- L186: `public static Pose goal(Alliance alliance, double robotY)`
+- L210: `public static boolean hiveAimFar()`
+- L218: `private static double[] solveMeta(double robotHeading, double x, double goalTheta, Vector2D robotVel)`
+- L259: `public static double[] solve( double robotHeading, Vector2D robotToGoalVector, Vector2D robotVel, double robotAngularVelocity)`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
 
@@ -716,14 +711,14 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Field/HIVE geometry, target selection constants and under-HIVE behavior.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java); 82 lines; SHA-256 `a51afe30c2d75d0e5940d7ea27a2e4acb9dde413ddf826d7cad3b1827d163790`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java); 56 lines; SHA-256 `fc230eb564588091665cf91cffa8535640c1fff35440034fdda4467866ba27e3`.
 
 Types: `ShooterConstants` (class, line 7)
 
-- L33: `public static Pose hiveAimPoint(boolean red, boolean far)`
-- L43: `public static double hiveAimX(boolean red, boolean far)`
-- L48: `public static double hiveAimY(boolean red, boolean far)`
-- L75: `public static boolean underHive(double x, double y)`
+- L21: `public static Pose hiveAimPoint(boolean red, boolean far)`
+- L30: `public static double hiveAimX(boolean red, boolean far)`
+- L34: `public static double hiveAimY(boolean red, boolean far)`
+- L49: `public static boolean underHive(double x, double y)`
 
 Internal dependency candidates: none detected
 
@@ -743,12 +738,12 @@ Internal dependency candidates: none detected
 
 Committed calibrated shot points.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java); 52 lines; SHA-256 `e27fd706f483ecb4f72ff0bd905c8cf4b15a1dbfbf4cb0f6fe8b513534d20da1`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java); 63 lines; SHA-256 `27903efe84fd0cef93020cc6e1454b05dec279a5cf2135a4f569cc1e672cf76f`.
 
 Types: `TunedShotPoints` (class, line 17)
 
 - L18: `private TunedShotPoints()`
-- L49: `private static TunedShotTable.Point p(HiveCell cell, double x, double y, double rpm, double hood)`
+- L60: `private static TunedShotTable.Point p(HiveCell cell, double x, double y, double rpm, double hood)`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java`
 
@@ -756,11 +751,11 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Blends hand-tuned points; merges committed points with Control Hub shotpoints.csv; mirrors between cells.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java); 305 lines; SHA-256 `971e5911fe4fa6596de7b34a25f0b47f369b453a4c5d9afe761b54c79aa0c7c5`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java); 305 lines; SHA-256 `9afbb0a55bf0cf36c24f2284640fa9b74fd2d5662e13d4a82785130d3c18c5a9`.
 
-Types: `TunedShotTable` (class, line 40), `Point` (class, line 64), `Shot` (class, line 84)
+Types: `TunedShotTable` (class, line 40), `Point` (class, line 65), `Shot` (class, line 84)
 
-- L69: `public Point(HiveCell cell, double x, double y, double rpm, double hood, boolean fromFile)`
+- L70: `public Point(HiveCell cell, double x, double y, double rpm, double hood, boolean fromFile)`
 - L74: `public String javaLine()`
 - L97: `private TunedShotTable()`
 - L100: `public static synchronized void load()`
@@ -786,53 +781,74 @@ Types: `TunedShotTable` (class, line 40), `Point` (class, line 64), `Shot` (clas
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java`
 
+### subsystem/aim/turret/StickLead.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java); 176 lines; SHA-256 `1d7a253a1d044a89d5eff48389eed2fa0a8b47499a671e2709f9f939373733b8`.
+
+Types: `StickLead` (class, line 26)
+
+- L65: `public void setSticks(double forward, double lateral, double turn, double offsetRad, boolean robotCentric)`
+- L75: `public void clearSticks()`
+- L80: `public void track(double dtSec)`
+- L106: `private static double weight(double age)`
+- L122: `public void apply(double solverAimDeg, double aimRange, double heading, double vx, double vy, double measuredOmega, double leadSec)`
+- L171: `public double aimDeg()`
+- L173: `public double omega()`
+- L175: `public double changeDeg()`
+
+Internal dependency candidates: none detected
+
 ### subsystem/aim/turret/TurretCalc.java
 
 Turret servo gearing, angular limits, slew, alliance offsets and yaw compensation.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java); 236 lines; SHA-256 `80fe66eba14d1c56c524c3f4895d7ad030c074ac6a92933b19a38c571f20399d`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java); 251 lines; SHA-256 `7017807c993279dd9dcd5322d75e028d1089e93e7fac1b7a891f0204f094991b`.
 
-Types: `TurretCalc` (class, line 10)
+Types: `TurretCalc` (class, line 11)
 
-- L57: `public static double turretDegPerServoDeg()`
-- L62: `public static double servoPositionFor(double turretDeg)`
-- L81: `public static void reset()`
-- L95: `public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance)`
-- L101: `public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)`
-- L116: `public static double solveWithoutWrap(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)`
-- L129: `private static double targetAngle(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)`
-- L135: `public static boolean outOfRange()`
-- L137: `public static double aimErrorDeg()`
-- L139: `private static double servoPosition(double targetDeg)`
-- L150: `private static double normalizeDegrees(double degrees)`
-- L154: `private static double getClosestValidTurretAngle(double relativeGoalDegrees)`
-- L191: `private static double slewTurret(double target)`
+- L63: `public static double turretDegPerServoDeg()`
+- L68: `public static double servoPositionFor(double turretDeg)`
+- L87: `public static void reset()`
+- L101: `public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance)`
+- L107: `public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)`
+- L122: `public static double solveWithoutWrap(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)`
+- L135: `private static double targetAngle(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)`
+- L142: `public static double leadSec()`
+- L148: `public static double commandDeg()`
+- L150: `public static boolean outOfRange()`
+- L152: `public static double aimErrorDeg()`
+- L154: `private static double servoPosition(double targetDeg)`
+- L165: `private static double normalizeDegrees(double degrees)`
+- L169: `private static double getClosestValidTurretAngle(double relativeGoalDegrees)`
+- L206: `private static double slewTurret(double target)`
 
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
 
 ### tele/Tele.java
 
 Two-driver controls, field-centric drive, shooting gates, manual presets and live trims.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java); 220 lines; SHA-256 `4fcb6ebfcba59d7ce53b84e1c07e9daa9249e04e5e0c136c8fe9d49847597ba8`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java); 202 lines; SHA-256 `e65462be00cd1bb70100cd8fbeb3d65905b0e730251e0d00d00c88487f998766`.
 
-Types: `Tele` (class, line 24)
+Types: `Tele` (class, line 18)
 
-- L53: `public Tele(Alliance a)`
-- L60: `public void initialize()`
-- L93: `public void initializeLoop()`
-- L104: `public void execute()`
-- L117: `public void end()`
-- L130: `private void driver1()`
-- L161: `private void driver2(double dt)`
-- L195: `private double forwardOffsetRad()`
-- L199: `private double turretOffset()`
-- L200: `private void setTurretOffset(double deg)`
-- L206: `private boolean usingSavedPose()`
-- L208: `private Pose startPose()`
-- L212: `private String notConnected()`
+- L32: `public Tele(Alliance a)`
+- L39: `public void initialize()`
+- L76: `public void initializeLoop()`
+- L87: `public void execute()`
+- L100: `public void end()`
+- L111: `private void driver1()`
+- L142: `private void driver2(double dt)`
+- L177: `private double forwardOffsetRad()`
+- L181: `private double turretOffset()`
+- L182: `private void setTurretOffset(double deg)`
+- L188: `private boolean usingSavedPose()`
+- L190: `private Pose startPose()`
+- L194: `private String notConnected()`
 
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/GamepadEx.java`
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/GamepadEx.java`
 
 ### tele/teleBlue.java
 
@@ -878,7 +894,7 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Bench OpMode for intake, flywheel PIDF and solver-driven hood targets.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlywheelPIDFTest.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlywheelPIDFTest.java); 177 lines; SHA-256 `124667d4083eb850cae012255ce68b6b1f39661545ff91f4d0efb815645f1876`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlywheelPIDFTest.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlywheelPIDFTest.java); 177 lines; SHA-256 `85ac6e4a11d28ed291e7b8b141669404d2bc51d8e2dc16e0309abf0945ed8fc0`.
 
 Types: `FlywheelPIDFTest` (class, line 42)
 
@@ -929,23 +945,24 @@ Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/te
 
 Drive, tune, save and export calibrated shot points.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java); 275 lines; SHA-256 `c41c34cd4ace14bc4c50b3e98e3fc10c72ac7f6035d311416ec31bf1b68f130e`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java); 286 lines; SHA-256 `a18e54bc4b69ef90b3b333288c6a2dd1c0b802882db7fc0dc291c48c58cce344`.
 
-Types: `ShotPointTuner` (class, line 52)
+Types: `ShotPointTuner` (class, line 54)
 
-- L80: `public void initialize()`
-- L94: `public void initializeLoop()`
-- L107: `public void onStart()`
-- L113: `public void execute()`
-- L132: `private void aim()`
-- L150: `private void handleButtons()`
-- L198: `private void nudge(double rpm, double hood)`
-- L204: `private void save()`
-- L220: `private void deleteNearest()`
-- L238: `private void showTelemetry()`
-- L272: `public void end()`
+- L82: `public void initialize()`
+- L97: `public void initializeLoop()`
+- L110: `public void onStart()`
+- L116: `public void execute()`
+- L136: `private void aim()`
+- L154: `private void handleButtons()`
+- L202: `private void nudgeTurret(double degrees)`
+- L207: `private void nudge(double rpm, double hood)`
+- L213: `private void save()`
+- L229: `private void deleteNearest()`
+- L247: `private void showTelemetry()`
+- L283: `public void end()`
 
-Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/GamepadEx.java`
+Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/GamepadEx.java`
 
 ### test/TurretCenter.java
 
@@ -1037,6 +1054,19 @@ Types: `CommandOpMode` (class, line 7)
 
 Internal dependency candidates: none detected
 
+### util/FollowerLocalization.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java); 33 lines; SHA-256 `8cadecc6866b4f0181ec84415184be2e6c1acf417f555eb3dd0049e6f060ffcc`.
+
+Types: `FollowerLocalization` (class, line 22)
+
+- L23: `private FollowerLocalization()`
+- L25: `public static void update(PulseFollower follower)`
+
+Internal dependency candidates: none detected
+
 ### util/OpModeStorage.java
 
 Pose handoff between OpModes.
@@ -1049,11 +1079,30 @@ Types: `OpModeStorage` (class, line 5)
 
 Internal dependency candidates: none detected
 
+### util/ShotLogger.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java); 149 lines; SHA-256 `0372a558443254991843ccba5bff1676b3742e946d229cccae0590252e6ad743`.
+
+Types: `ShotLogger` (class, line 24)
+
+- L51: `public double[] row()`
+- L54: `public void commit(boolean shooting)`
+- L72: `private void flushRunUp(double now)`
+- L80: `private void append(double[] from, int offset)`
+- L87: `public int rowCount()`
+- L93: `public File save()`
+- L104: `public void run()`
+- L117: `private static File newFile()`
+
+Internal dependency candidates: none detected
+
 ### util/TeleTelemetry.java
 
 Driver Station and Panels telemetry presentation.
 
-Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java); 95 lines; SHA-256 `d3e7cddeb654aadc10087d76b3d46230901b176690f49648c09cf0d00c30b803`.
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java); 100 lines; SHA-256 `15476a818d2bf6339218e4d4491624fad4e9abbc72b94a10c0f1d872d2d22b9f`.
 
 Types: `TeleTelemetry` (class, line 11)
 
@@ -1062,7 +1111,7 @@ Types: `TeleTelemetry` (class, line 11)
 - L29: `public static String shotSourceText()`
 - L35: `private String driver2Text(double turretOffset)`
 - L44: `private void driverStation(double turretOffset)`
-- L73: `private void panels(double turretOffset)`
+- L76: `private void panels(double turretOffset)`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java`
 
@@ -1290,3 +1339,55 @@ Types: `GamepadEx` (class, line 12)
 - L130: `public void update()`
 
 Internal dependency candidates: `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/BooleanSwitch.java`, `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java`
+
+### util/math/RotMatrix.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java); 25 lines; SHA-256 `7733f325ed07b7402633c00c8d05dc866bf6c093c23e11fd10b423136b895fc5`.
+
+Types: `RotMatrix` (class, line 9)
+
+- L10: `private RotMatrix()`
+- L16: `public static Matrix rotMatrix(double angle)`
+
+Internal dependency candidates: none detected
+
+### util/math/VectorMagnitude.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java); 19 lines; SHA-256 `e3ecd87cf55a2a49a8e39bd39168a9c048f1f8f7c7283fa2c1080732f65367c9`.
+
+Types: `VectorMagnitude` (class, line 9)
+
+- L10: `private VectorMagnitude()`
+- L16: `public static double magnitude(Vector2D v)`
+
+Internal dependency candidates: none detected
+
+### util/math/VectorPrint.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java); 12 lines; SHA-256 `040e82cb5c1cb3dc976368916362942ad21099fb40c6c28bf1958a037074f533`.
+
+Types: `VectorPrint` (class, line 6)
+
+- L7: `private VectorPrint()`
+- L9: `public static String print(Vector2D v)`
+
+Internal dependency candidates: none detected
+
+### util/math/VectorTransform.java
+
+Project support file.
+
+Source: [TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java](../../TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java); 34 lines; SHA-256 `f1bd720d0288808294fe71d5d3ff43d8a074fdce7e53d81131394583ddf8f7e6`.
+
+Types: `VectorTransform` (class, line 10)
+
+- L11: `private VectorTransform()`
+- L19: `public static Vector2D transform(Vector2D v, Matrix matrix)`
+
+Internal dependency candidates: none detected

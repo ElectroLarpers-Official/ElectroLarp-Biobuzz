@@ -1,7 +1,7 @@
 {
   "project": "ElectroLarp-Biobuzz",
-  "generated_date": "2026-11-21",
-  "git_head": "fd6f8a8c51fb738977064fc8101677498ca9540b",
+  "generated_date": "2026-11-27",
+  "git_head": "0aa215d7a41b2f432cab58ae65021b97ecfba007",
   "scope": "Tracked non-sensitive repository paths; Java symbols and imports. No secrets, binary contents or generated build directories.",
   "limitations": "Regex-based declarations and dependency candidates; not a compiler-resolved call graph. Commented-out declarations excluded. No runtime validation.",
   "inventory": [
@@ -47,7 +47,7 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 1352
+      "bytes": 1330
     },
     {
       "path": ".mcp.json",
@@ -407,7 +407,7 @@
     },
     {
       "path": "TeamCode/build.gradle",
-      "bytes": 1742
+      "bytes": 3638
     },
     {
       "path": "TeamCode/lib/OpModeAnnotationProcessor.jar",
@@ -423,15 +423,11 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
-      "bytes": 17596
+      "bytes": 11861
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
-      "bytes": 5382
-    },
-    {
-      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
-      "bytes": 1652
+      "bytes": 6451
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/OneTip.java",
@@ -447,11 +443,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
-      "bytes": 7697
-    },
-    {
-      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java",
-      "bytes": 784
+      "bytes": 8220
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/OneTipPaths.java",
@@ -467,11 +459,11 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java",
-      "bytes": 5420
+      "bytes": 5110
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java",
-      "bytes": 963
+      "bytes": 727
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/TUNING.md",
@@ -522,8 +514,12 @@
       "bytes": 6257
     },
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "bytes": 9051
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java",
-      "bytes": 1080
+      "bytes": 934
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Hood.java",
@@ -531,35 +527,35 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java",
-      "bytes": 2656
+      "bytes": 2227
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Latch.java",
-      "bytes": 1100
+      "bytes": 1013
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Shooter.java",
-      "bytes": 9112
+      "bytes": 5809
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java",
-      "bytes": 8569
+      "bytes": 9099
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/TUNING.md",
-      "bytes": 15813
+      "bytes": 20278
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java",
-      "bytes": 4375
+      "bytes": 3006
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java",
-      "bytes": 24558
+      "bytes": 18730
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java",
-      "bytes": 5186
+      "bytes": 2912
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java",
@@ -567,19 +563,23 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java",
-      "bytes": 2786
+      "bytes": 3326
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java",
-      "bytes": 13541
+      "bytes": 13580
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java",
+      "bytes": 9321
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
-      "bytes": 12048
+      "bytes": 13043
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java",
-      "bytes": 9738
+      "bytes": 8951
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/teleBlue.java",
@@ -595,7 +595,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/FlywheelPIDFTest.java",
-      "bytes": 8381
+      "bytes": 8383
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/HoodServoPositionTuning.java",
@@ -607,7 +607,7 @@
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java",
-      "bytes": 13057
+      "bytes": 13769
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/TurretCenter.java",
@@ -630,12 +630,20 @@
       "bytes": 1200
     },
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java",
+      "bytes": 1766
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java",
       "bytes": 199
     },
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java",
+      "bytes": 6192
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java",
-      "bytes": 5297
+      "bytes": 5748
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/control/PIDController.java",
@@ -674,6 +682,22 @@
       "bytes": 5390
     },
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java",
+      "bytes": 812
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java",
+      "bytes": 618
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java",
+      "bytes": 354
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java",
+      "bytes": 1362
+    },
+    {
       "path": "TeamCode/src/main/res/raw/readme.md",
       "bytes": 71
     },
@@ -696,6 +720,10 @@
     {
       "path": "build.gradle",
       "bytes": 697
+    },
+    {
+      "path": "configs/egg.xml",
+      "bytes": 1402
     },
     {
       "path": "doc/legal/AudioBlocksSounds.txt",
@@ -780,7 +808,7 @@
     "com.pedropathing:tuning:1.0.1",
     "com.pedropathing.ivy:pedro:1.1.1",
     "com.pedropathing:telemetry:1.0.0",
-    "org.electrolightsftc:pulse-electropathing:2.1.1",
+    "org.electrolightsftc:pulse-electropathing:2.1.2",
     "org.electrolightsftc:pulse-lumen:2.1.0",
     "dev.frozenmilk.sinister:Sloth:0.3.2",
     "com.bylazar.sloth:fullpanels:0.3.2+1.0.13"
@@ -4335,7 +4363,7 @@
         {
           "name": "Robot",
           "kind": "class",
-          "line": 47
+          "line": 37
         }
       ],
       "methods": [
@@ -4343,181 +4371,169 @@
           "name": "Robot",
           "signature": "public Robot(HardwareMap hardwareMap, Alliance alliance)",
           "visibility": "public",
-          "line": 102
+          "line": 72
         },
         {
           "name": "update",
           "signature": "public void update()",
           "visibility": "public",
-          "line": 122
+          "line": 93
+        },
+        {
+          "name": "setDriverSticks",
+          "signature": "public void setDriverSticks(double forward, double lateral, double turn, double forwardOffsetRad)",
+          "visibility": "public",
+          "line": 109
+        },
+        {
+          "name": "stickBlendDeg",
+          "signature": "public double stickBlendDeg()",
+          "visibility": "public",
+          "line": 113
+        },
+        {
+          "name": "logShot",
+          "signature": "private void logShot(long nowNanos)",
+          "visibility": "private",
+          "line": 115
         },
         {
           "name": "manualLatch",
           "signature": "public void manualLatch(boolean open)",
           "visibility": "public",
-          "line": 137
+          "line": 142
         },
         {
           "name": "setTurretOffsetOverride",
           "signature": "public void setTurretOffsetOverride(double offsetDeg)",
           "visibility": "public",
-          "line": 141
+          "line": 146
         },
         {
           "name": "setFixedTurretAngle",
           "signature": "public void setFixedTurretAngle(double angleDeg)",
           "visibility": "public",
-          "line": 146
+          "line": 150
+        },
+        {
+          "name": "fixedTurretAngleDeg",
+          "signature": "public Double fixedTurretAngleDeg()",
+          "visibility": "public",
+          "line": 154
         },
         {
           "name": "solveTurret",
           "signature": "private double solveTurret(double angleDeg, double angularVelocity)",
           "visibility": "private",
-          "line": 150
+          "line": 156
         },
         {
           "name": "updateAiming",
           "signature": "private void updateAiming()",
           "visibility": "private",
-          "line": 159
+          "line": 165
         },
         {
           "name": "isManual",
           "signature": "public boolean isManual()",
           "visibility": "public",
-          "line": 216
+          "line": 233
         },
         {
           "name": "isTurretForward",
           "signature": "public boolean isTurretForward()",
           "visibility": "public",
-          "line": 219
+          "line": 235
         },
         {
           "name": "setTurretForward",
           "signature": "public void setTurretForward(boolean on)",
           "visibility": "public",
-          "line": 220
+          "line": 236
         },
         {
           "name": "setManual",
           "signature": "public void setManual(boolean on)",
           "visibility": "public",
-          "line": 222
+          "line": 238
         },
         {
           "name": "manualTurretDeg",
           "signature": "public double manualTurretDeg()",
           "visibility": "public",
-          "line": 226
+          "line": 242
         },
         {
           "name": "nudgeManualTurret",
           "signature": "public void nudgeManualTurret(double deg)",
           "visibility": "public",
-          "line": 228
+          "line": 243
         },
         {
           "name": "resetPose",
           "signature": "public static Pose resetPose(Alliance alliance)",
           "visibility": "public",
-          "line": 234
+          "line": 248
         },
         {
           "name": "resetPose",
           "signature": "public void resetPose()",
           "visibility": "public",
-          "line": 239
+          "line": 252
         },
         {
           "name": "underHive",
           "signature": "public boolean underHive()",
           "visibility": "public",
-          "line": 244
+          "line": 256
         },
         {
-          "name": "drive",
-          "signature": "public void drive(double forward, double lateral, double turn, double forwardOffsetRad)",
+          "name": "startTeleOpDrive",
+          "signature": "public void startTeleOpDrive()",
           "visibility": "public",
-          "line": 249
-        },
-        {
-          "name": "isPaused",
-          "signature": "public boolean isPaused()",
-          "visibility": "public",
-          "line": 253
-        },
-        {
-          "name": "pauseFollowing",
-          "signature": "public boolean pauseFollowing(boolean hold)",
-          "visibility": "public",
-          "line": 257
-        },
-        {
-          "name": "resumeFollowing",
-          "signature": "public boolean resumeFollowing()",
-          "visibility": "public",
-          "line": 270
-        },
-        {
-          "name": "clearPause",
-          "signature": "public void clearPause()",
-          "visibility": "public",
-          "line": 324
-        },
-        {
-          "name": "collectModifiers",
-          "signature": "private static void collectModifiers(Path path, List<Modifier> inherited, List<List<Modifier>> out)",
-          "visibility": "private",
-          "line": 328
-        },
-        {
-          "name": "tailOf",
-          "signature": "private static Curve tailOf(Curve curve, double t)",
-          "visibility": "private",
-          "line": 340
+          "line": 261
         },
         {
           "name": "startShooting",
           "signature": "public void startShooting()",
           "visibility": "public",
-          "line": 362
+          "line": 266
         },
         {
           "name": "stopShooting",
           "signature": "public void stopShooting()",
           "visibility": "public",
-          "line": 370
+          "line": 273
         },
         {
           "name": "isShooting",
           "signature": "public boolean isShooting()",
           "visibility": "public",
-          "line": 378
+          "line": 281
         },
         {
           "name": "shootCycle",
           "signature": "public Command shootCycle()",
           "visibility": "public",
-          "line": 383
+          "line": 286
         },
         {
           "name": "flower",
           "signature": "public void flower(boolean down)",
           "visibility": "public",
-          "line": 391
+          "line": 294
         },
         {
           "name": "stop",
           "signature": "public void stop()",
           "visibility": "public",
-          "line": 395
+          "line": 298
         },
         {
           "name": "loopMs",
           "signature": "public double loopMs()",
           "visibility": "public",
-          "line": 405
+          "line": 309
         }
       ],
       "imports": [
@@ -4525,21 +4541,7 @@
         "com.pedropathing.ivy.commands.Commands.waitMs",
         "com.pedropathing.ivy.groups.Groups.sequential",
         "com.bylazar.configurables.annotations.Configurable",
-        "com.pedropathing.follower.ManualDrive",
         "com.pedropathing.ivy.Command",
-        "com.pedropathing.algorithm.ForesightConfig",
-        "com.pedropathing.api.Paths",
-        "com.pedropathing.config.Modifier",
-        "com.pedropathing.paths.CompoundPath",
-        "com.pedropathing.paths.Path",
-        "com.pedropathing.paths.PathSegment",
-        "com.pedropathing.paths.Piecewise",
-        "com.pedropathing.paths.curves.Curve",
-        "com.pedropathing.paths.curves.Line",
-        "com.pedropathing.paths.curves.bezier.BezierCurve",
-        "org.electrolightsftc.pulse.electropathing.paths.PathModifiers",
-        "java.util.ArrayList",
-        "java.util.Collections",
         "com.pedropathing.math.Pose",
         "com.pedropathing.math.Vector2D",
         "com.qualcomm.hardware.lynx.LynxModule",
@@ -4548,6 +4550,7 @@
         "org.electrolightsftc.pulse.electropathing.PulseRuntime",
         "org.firstinspires.ftc.teamcode.auto.Close",
         "org.firstinspires.ftc.teamcode.pedro.Constants",
+        "org.firstinspires.ftc.teamcode.subsystem.Drivetrain",
         "org.firstinspires.ftc.teamcode.subsystem.Flower",
         "org.firstinspires.ftc.teamcode.subsystem.Hood",
         "org.firstinspires.ftc.teamcode.subsystem.Intake",
@@ -4556,17 +4559,21 @@
         "org.firstinspires.ftc.teamcode.subsystem.Turret",
         "org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterConstants",
         "org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc",
+        "org.firstinspires.ftc.teamcode.subsystem.aim.turret.StickLead",
         "org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc",
         "org.firstinspires.ftc.teamcode.util.Alliance",
+        "org.firstinspires.ftc.teamcode.util.FollowerLocalization",
+        "org.firstinspires.ftc.teamcode.util.ShotLogger",
         "com.pedropathing.math.Velocity",
         "java.util.List"
       ],
       "role": "Owns hardware and follower; updates aiming and flywheel; coordinates shooting, manual fallback and pose reset.",
-      "lines": 408,
-      "sha256": "c72b6493ee26667726d0e817bb0b45d9c005585e1fd590d62784772d685ee5c2",
+      "lines": 313,
+      "sha256": "13b16f7de6122f90693143b0b02ee1795bb21e2b510e6d6b37e48d165eeecd46",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Hood.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Intake.java",
@@ -4575,8 +4582,11 @@
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java"
       ]
     },
     {
@@ -4586,7 +4596,12 @@
         {
           "name": "Close",
           "kind": "class",
-          "line": 24
+          "line": 25
+        },
+        {
+          "name": "ShooterStage",
+          "kind": "enum",
+          "line": 38
         }
       ],
       "methods": [
@@ -4594,61 +4609,67 @@
           "name": "Close",
           "signature": "public Close(Alliance a)",
           "visibility": "public",
-          "line": 39
+          "line": 42
         },
         {
           "name": "initialize",
           "signature": "public void initialize()",
           "visibility": "public",
-          "line": 44
+          "line": 47
         },
         {
           "name": "initializeLoop",
           "signature": "public void initializeLoop()",
           "visibility": "public",
-          "line": 54
+          "line": 57
         },
         {
           "name": "onStart",
           "signature": "public void onStart()",
           "visibility": "public",
-          "line": 63
+          "line": 66
         },
         {
           "name": "execute",
           "signature": "public void execute()",
           "visibility": "public",
-          "line": 71
+          "line": 74
         },
         {
           "name": "onUpdate",
           "signature": "private void onUpdate()",
           "visibility": "private",
-          "line": 84
+          "line": 94
+        },
+        {
+          "name": "targetRpm",
+          "signature": "private double targetRpm()",
+          "visibility": "private",
+          "line": 100
         },
         {
           "name": "end",
           "signature": "public void end()",
           "visibility": "public",
-          "line": 92
+          "line": 110
         },
         {
           "name": "routine",
           "signature": "private Command routine()",
           "visibility": "private",
-          "line": 101
+          "line": 119
         },
         {
           "name": "shootCycle",
           "signature": "private Command shootCycle()",
           "visibility": "private",
-          "line": 134
+          "line": 154
         },
         {
           "name": "shootCycle2",
           "signature": "private Command shootCycle2()",
           "visibility": "private",
-          "line": 147
+          "line": 167
         }
       ],
       "imports": [
@@ -4665,86 +4686,18 @@
         "org.electrolightsftc.pulse.electropathing.opmode.PulseOpMode",
         "org.firstinspires.ftc.teamcode.Robot",
         "org.firstinspires.ftc.teamcode.auto.paths.ClosePaths",
+        "org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc",
         "org.firstinspires.ftc.teamcode.util.Alliance",
         "org.firstinspires.ftc.teamcode.util.CommandOpMode",
         "org.firstinspires.ftc.teamcode.util.OpModeStorage"
       ],
       "role": "Near-side autonomous sequence: shooting, pollen loading, flower approach and retreat.",
-      "lines": 151,
-      "sha256": "1309ea0678fa4c19cb1cb94cf8de6bb753aa3a1c5474a13e8e64a011a8ac089a",
+      "lines": 171,
+      "sha256": "2139519d35cbeee15923f9a1ca70205892219fc7503d9ebdc3b73a6204f2e819",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java"
-      ]
-    },
-    {
-      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
-      "package": "org.firstinspires.ftc.teamcode.auto",
-      "types": [
-        {
-          "name": "Far",
-          "kind": "class",
-          "line": 16
-        }
-      ],
-      "methods": [
-        {
-          "name": "Far",
-          "signature": "public Far(Alliance a)",
-          "visibility": "public",
-          "line": 21
-        },
-        {
-          "name": "initialize",
-          "signature": "public void initialize()",
-          "visibility": "public",
-          "line": 24
-        },
-        {
-          "name": "initializeLoop",
-          "signature": "public void initializeLoop()",
-          "visibility": "public",
-          "line": 31
-        },
-        {
-          "name": "onStart",
-          "signature": "public void onStart()",
-          "visibility": "public",
-          "line": 38
-        },
-        {
-          "name": "end",
-          "signature": "public void end()",
-          "visibility": "public",
-          "line": 47
-        },
-        {
-          "name": "routine",
-          "signature": "private Command routine()",
-          "visibility": "private",
-          "line": 57
-        }
-      ],
-      "imports": [
-        "com.pedropathing.ivy.commands.Commands.infinite",
-        "com.pedropathing.ivy.commands.Commands.instant",
-        "com.bylazar.configurables.annotations.Configurable",
-        "com.pedropathing.ivy.Command",
-        "org.firstinspires.ftc.teamcode.Robot",
-        "org.firstinspires.ftc.teamcode.auto.paths.FarPaths",
-        "org.firstinspires.ftc.teamcode.util.Alliance",
-        "org.firstinspires.ftc.teamcode.util.CommandOpMode",
-        "org.firstinspires.ftc.teamcode.util.OpModeStorage"
-      ],
-      "role": "Far-side autonomous lifecycle; routine currently a placeholder.",
-      "lines": 60,
-      "sha256": "eff0d4f04083a2d9786476059afb4717aaf302fcea2af0ccd2793d51772033be",
-      "internal_dependencies": [
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java"
@@ -4910,12 +4863,12 @@
         {
           "name": "ClosePaths",
           "kind": "class",
-          "line": 18
+          "line": 19
         },
         {
           "name": "Poses",
           "kind": "class",
-          "line": 147
+          "line": 160
         }
       ],
       "methods": [
@@ -4923,43 +4876,55 @@
           "name": "ClosePaths",
           "signature": "private ClosePaths()",
           "visibility": "private",
-          "line": 19
+          "line": 20
         },
         {
           "name": "poses",
           "signature": "public static PoseFactory poses(Alliance a)",
           "visibility": "public",
-          "line": 23
+          "line": 24
         },
         {
           "name": "startPose",
           "signature": "public static Pose startPose(Alliance a)",
           "visibility": "public",
-          "line": 28
+          "line": 29
         },
         {
           "name": "intakeLoading",
           "signature": "public static Path intakeLoading(Alliance a)",
           "visibility": "public",
-          "line": 34
+          "line": 35
         },
         {
           "name": "goNearFlower",
           "signature": "public static Path goNearFlower(Alliance a, Command openFlower)",
           "visibility": "public",
-          "line": 42
+          "line": 43
         },
         {
-          "name": "goInFlower",
-          "signature": "public static Path goInFlower(Alliance a, Command shootCycle2)",
+          "name": "approachFlower",
+          "signature": "public static Path approachFlower(Alliance a)",
           "visibility": "public",
-          "line": 53
+          "line": 54
+        },
+        {
+          "name": "finishFlower",
+          "signature": "public static Path finishFlower(Alliance a)",
+          "visibility": "public",
+          "line": 58
+        },
+        {
+          "name": "flowerLeg",
+          "signature": "private static Path flowerLeg(Alliance a, boolean approach)",
+          "visibility": "private",
+          "line": 63
         },
         {
           "name": "park",
           "signature": "public static Path park(Alliance a)",
           "visibility": "public",
-          "line": 64
+          "line": 77
         }
       ],
       "imports": [
@@ -4968,6 +4933,7 @@
         "com.pedropathing.api.PoseFactory",
         "org.electrolightsftc.pulse.lumen.Command",
         "com.pedropathing.math.Pose",
+        "com.pedropathing.math.Vector2D",
         "com.pedropathing.paths.Path",
         "com.pedropathing.paths.interpolator.Interpolator",
         "org.electrolightsftc.pulse.electropathing.*",
@@ -4978,50 +4944,8 @@
         "org.firstinspires.ftc.teamcode.util.Alliance"
       ],
       "role": "Near-side paths, heading interpolation, mirrored poses and flower pose callback.",
-      "lines": 186,
-      "sha256": "9c0caca88be291e9d09c769441cee857984ae759455c9f0d670844988a423d54",
-      "internal_dependencies": [
-        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
-      ]
-    },
-    {
-      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java",
-      "package": "org.firstinspires.ftc.teamcode.auto.paths",
-      "types": [
-        {
-          "name": "FarPaths",
-          "kind": "class",
-          "line": 8
-        }
-      ],
-      "methods": [
-        {
-          "name": "FarPaths",
-          "signature": "private FarPaths()",
-          "visibility": "private",
-          "line": 9
-        },
-        {
-          "name": "poses",
-          "signature": "public static PoseFactory poses(Alliance a)",
-          "visibility": "public",
-          "line": 14
-        },
-        {
-          "name": "startPose",
-          "signature": "public static Pose startPose(Alliance a)",
-          "visibility": "public",
-          "line": 20
-        }
-      ],
-      "imports": [
-        "com.pedropathing.api.PoseFactory",
-        "com.pedropathing.math.Pose",
-        "org.firstinspires.ftc.teamcode.util.Alliance"
-      ],
-      "role": "Far-side pose factory and placeholder starting pose; paths not implemented.",
-      "lines": 23,
-      "sha256": "a6a74be0b649233647f256240298f2c17e61cb6a8c09bf57a24a586609be78d1",
+      "lines": 199,
+      "sha256": "3b956f83c4c82dd3884b478410e112c0f4bd455a4db636197233401d7ff2963d",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
       ]
@@ -5163,7 +5087,7 @@
         {
           "name": "Constants",
           "kind": "class",
-          "line": 28
+          "line": 23
         }
       ],
       "methods": [
@@ -5171,7 +5095,7 @@
           "name": "create",
           "signature": "public static PulseFollower create(HardwareMap h)",
           "visibility": "public",
-          "line": 88
+          "line": 83
         }
       ],
       "imports": [
@@ -5194,8 +5118,8 @@
         "org.firstinspires.ftc.teamcode.HardwareNames"
       ],
       "role": "Builds PulseFollower from Pinpoint localization, Mecanum or NoDrivetrain, and Foresight configuration.",
-      "lines": 101,
-      "sha256": "1877dd8f6c8419a0adecd4b69488f0862ba8622d099828e381d4204ed026306e",
+      "lines": 96,
+      "sha256": "c2d437440fe3bd744a8653196d6434b98168393cb433e0a19f104291e24f9352",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/NoDrivetrain.java"
@@ -5208,7 +5132,7 @@
         {
           "name": "NoDrivetrain",
           "kind": "class",
-          "line": 13
+          "line": 9
         }
       ],
       "methods": [
@@ -5216,31 +5140,31 @@
           "name": "drive",
           "signature": "public void drive(DrivePowers powers, boolean useBrake)",
           "visibility": "public",
-          "line": 14
+          "line": 10
         },
         {
           "name": "maxScaling",
           "signature": "public double maxScaling(DrivePowers a, DrivePowers b)",
           "visibility": "public",
-          "line": 15
+          "line": 11
         },
         {
           "name": "stop",
           "signature": "public void stop()",
           "visibility": "public",
-          "line": 16
+          "line": 12
         },
         {
           "name": "stop",
           "signature": "public void stop(boolean useBrake)",
           "visibility": "public",
-          "line": 17
+          "line": 13
         },
         {
           "name": "interpolateVelocity",
           "signature": "public double interpolateVelocity(double a, double b, double c)",
           "visibility": "public",
-          "line": 19
+          "line": 15
         }
       ],
       "imports": [
@@ -5250,8 +5174,8 @@
         "java.util.Map"
       ],
       "role": "Drivetrain fallback when the four drive motors are absent.",
-      "lines": 20,
-      "sha256": "8fa5e6b75fd99e6588366c708f4145eaeea885e36b646701881959cfdb7cc894",
+      "lines": 16,
+      "sha256": "4e98c00b715b2fa89c0dc41923a448b916fe7e481212c2a03f5cea64f9ea0bd9",
       "internal_dependencies": []
     },
     {
@@ -6510,6 +6434,125 @@
       "internal_dependencies": []
     },
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "package": "org.firstinspires.ftc.teamcode.subsystem",
+      "types": [
+        {
+          "name": "Drivetrain",
+          "kind": "class",
+          "line": 21
+        }
+      ],
+      "methods": [
+        {
+          "name": "Drivetrain",
+          "signature": "public Drivetrain(HardwareMap hardwareMap, PulseFollower follower, Alliance alliance)",
+          "visibility": "public",
+          "line": 45
+        },
+        {
+          "name": "startTeleOpDrive",
+          "signature": "public void startTeleOpDrive()",
+          "visibility": "public",
+          "line": 54
+        },
+        {
+          "name": "setZeroPowerBehavior",
+          "signature": "public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior)",
+          "visibility": "public",
+          "line": 58
+        },
+        {
+          "name": "setPowers",
+          "signature": "public void setPowers(double lf, double lr, double rf, double rr)",
+          "visibility": "public",
+          "line": 66
+        },
+        {
+          "name": "arcadeDrive",
+          "signature": "public void arcadeDrive(double x, double y, double rx, float DZ, float angleZero, float maxPower)",
+          "visibility": "public",
+          "line": 93
+        },
+        {
+          "name": "setFieldCentric",
+          "signature": "public void setFieldCentric(boolean fieldCentric)",
+          "visibility": "public",
+          "line": 173
+        },
+        {
+          "name": "isFieldCentric",
+          "signature": "public boolean isFieldCentric()",
+          "visibility": "public",
+          "line": 177
+        },
+        {
+          "name": "forwardOffsetDeg",
+          "signature": "private double forwardOffsetDeg()",
+          "visibility": "private",
+          "line": 181
+        },
+        {
+          "name": "smoothGamepadAngle",
+          "signature": "private Vector2D smoothGamepadAngle(double x, double y, double zeroAngle)",
+          "visibility": "private",
+          "line": 185
+        },
+        {
+          "name": "arcadeDrive",
+          "signature": "public void arcadeDrive(double x, double y, double rx)",
+          "visibility": "public",
+          "line": 197
+        },
+        {
+          "name": "arcadeDrive",
+          "signature": "public void arcadeDrive(Gamepad gamepad)",
+          "visibility": "public",
+          "line": 201
+        },
+        {
+          "name": "getLambda",
+          "signature": "public double getLambda(double s, double alpha)",
+          "visibility": "public",
+          "line": 205
+        },
+        {
+          "name": "addTelemetry",
+          "signature": "public void addTelemetry(Telemetry telemetry)",
+          "visibility": "public",
+          "line": 216
+        }
+      ],
+      "imports": [
+        "com.bylazar.configurables.annotations.Configurable",
+        "com.pedropathing.math.Vector2D",
+        "com.pedropathing.math.Velocity",
+        "com.qualcomm.robotcore.hardware.DcMotor",
+        "com.qualcomm.robotcore.hardware.DcMotorEx",
+        "com.qualcomm.robotcore.hardware.Gamepad",
+        "com.qualcomm.robotcore.hardware.HardwareMap",
+        "org.electrolightsftc.pulse.electropathing.PulseFollower",
+        "org.firstinspires.ftc.robotcore.external.Telemetry",
+        "org.firstinspires.ftc.teamcode.HardwareNames",
+        "org.firstinspires.ftc.teamcode.util.Alliance",
+        "org.firstinspires.ftc.teamcode.util.math.RotMatrix",
+        "org.firstinspires.ftc.teamcode.util.math.VectorMagnitude",
+        "org.firstinspires.ftc.teamcode.util.math.VectorPrint",
+        "org.firstinspires.ftc.teamcode.util.math.VectorTransform"
+      ],
+      "role": "Project support file.",
+      "lines": 225,
+      "sha256": "dbca14d209c7f1c59d71dec109d57a5c0aecc4c2c7aed5bddb62ddcab4437104",
+      "internal_dependencies": [
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java"
+      ]
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Flower.java",
       "package": "org.firstinspires.ftc.teamcode.subsystem",
       "types": [
@@ -6536,31 +6579,31 @@
           "name": "update",
           "signature": "public void update()",
           "visibility": "public",
-          "line": 27
+          "line": 26
         },
         {
           "name": "stop",
           "signature": "public void stop()",
           "visibility": "public",
-          "line": 30
+          "line": 28
         },
         {
           "name": "toggle",
           "signature": "public void toggle()",
           "visibility": "public",
-          "line": 32
+          "line": 30
         },
         {
           "name": "isDown",
           "signature": "public boolean isDown()",
           "visibility": "public",
-          "line": 34
+          "line": 32
         },
         {
           "name": "isConnected",
           "signature": "public boolean isConnected()",
           "visibility": "public",
-          "line": 36
+          "line": 34
         }
       ],
       "imports": [
@@ -6570,8 +6613,8 @@
         "org.firstinspires.ftc.teamcode.HardwareNames"
       ],
       "role": "Optional flower mechanism servo.",
-      "lines": 37,
-      "sha256": "8e59c4d78688a3400f93312bc34766822cb399cae7600d1d13b5860adde8215f",
+      "lines": 35,
+      "sha256": "53e70e739e4fcd6afd98b7e237e4212ee28b2f6ac3532caada7b69762688e53c",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java"
       ]
@@ -6636,12 +6679,12 @@
         {
           "name": "Intake",
           "kind": "class",
-          "line": 17
+          "line": 13
         },
         {
           "name": "IntakeState",
           "kind": "enum",
-          "line": 25
+          "line": 21
         }
       ],
       "methods": [
@@ -6649,55 +6692,55 @@
           "name": "Intake",
           "signature": "public Intake(HardwareMap hw)",
           "visibility": "public",
-          "line": 36
+          "line": 32
         },
         {
           "name": "setPower",
           "signature": "private void setPower(double power)",
           "visibility": "private",
-          "line": 47
+          "line": 43
         },
         {
           "name": "on",
           "signature": "public void on()",
           "visibility": "public",
-          "line": 52
+          "line": 48
         },
         {
           "name": "reverse",
           "signature": "public void reverse()",
           "visibility": "public",
-          "line": 57
+          "line": 53
         },
         {
           "name": "slowReverse",
           "signature": "public void slowReverse()",
           "visibility": "public",
-          "line": 62
+          "line": 58
         },
         {
           "name": "off",
           "signature": "public void off()",
           "visibility": "public",
-          "line": 67
+          "line": 63
         },
         {
           "name": "getState",
           "signature": "public IntakeState getState()",
           "visibility": "public",
-          "line": 72
+          "line": 68
         },
         {
           "name": "atState",
           "signature": "public boolean atState(IntakeState state)",
           "visibility": "public",
-          "line": 76
+          "line": 72
         },
         {
           "name": "hasTransferMotor",
           "signature": "public boolean hasTransferMotor()",
           "visibility": "public",
-          "line": 80
+          "line": 76
         }
       ],
       "imports": [
@@ -6709,8 +6752,8 @@
         "org.firstinspires.ftc.teamcode.util.hardware.CachedMotor"
       ],
       "role": "Intake plus optional belted transfer motor, controlled together.",
-      "lines": 83,
-      "sha256": "1b4ae8b6f3e74f31d6e97dbe3d5aa5485b44bb9a617964537e1e2da26231a444",
+      "lines": 79,
+      "sha256": "9a95ff875f55f50fc058d0af9477f235ac6758ea0d7c0e7d11c7d5f344571d33",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/hardware/CachedMotor.java"
@@ -6766,7 +6809,7 @@
       ],
       "role": "Optional shooting gate servo.",
       "lines": 37,
-      "sha256": "6e4a5db05aa460131f8579b2a02b2f1b056d5a5db1fb2958b3e8c8c870741905",
+      "sha256": "eebfe5b5b9cf813600d4db6f0a89e602c33f3b4ea4f733a2fa3bebed2fed7a07",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java"
       ]
@@ -6778,12 +6821,12 @@
         {
           "name": "Shooter",
           "kind": "class",
-          "line": 29
+          "line": 19
         },
         {
           "name": "Mode",
           "kind": "enum",
-          "line": 74
+          "line": 43
         }
       ],
       "methods": [
@@ -6791,115 +6834,115 @@
           "name": "Shooter",
           "signature": "public Shooter(HardwareMap hw)",
           "visibility": "public",
-          "line": 91
+          "line": 60
         },
         {
           "name": "update",
           "signature": "public void update()",
           "visibility": "public",
-          "line": 105
+          "line": 72
         },
         {
           "name": "writePower",
           "signature": "private void writePower(double p)",
           "visibility": "private",
-          "line": 146
+          "line": 107
         },
         {
           "name": "readVoltage",
           "signature": "private void readVoltage()",
           "visibility": "private",
-          "line": 160
+          "line": 121
         },
         {
           "name": "setTargetVelocity",
           "signature": "public void setTargetVelocity(double ticksPerSecond)",
           "visibility": "public",
-          "line": 166
+          "line": 127
         },
         {
           "name": "setTargetRpm",
           "signature": "public void setTargetRpm(double motorRpm)",
           "visibility": "public",
-          "line": 167
+          "line": 128
         },
         {
           "name": "setShooting",
           "signature": "public void setShooting(boolean shooting)",
           "visibility": "public",
-          "line": 169
+          "line": 130
         },
         {
           "name": "partyMode",
           "signature": "public void partyMode()",
           "visibility": "public",
-          "line": 170
+          "line": 131
         },
         {
           "name": "stop",
           "signature": "public void stop()",
           "visibility": "public",
-          "line": 171
+          "line": 132
         },
         {
           "name": "isSpinning",
           "signature": "public boolean isSpinning()",
           "visibility": "public",
-          "line": 178
+          "line": 139
         },
         {
           "name": "atTarget",
           "signature": "public boolean atTarget()",
           "visibility": "public",
-          "line": 179
+          "line": 140
         },
         {
           "name": "velocity",
           "signature": "public double velocity()",
           "visibility": "public",
-          "line": 181
+          "line": 141
         },
         {
           "name": "targetVelocity",
           "signature": "public double targetVelocity()",
           "visibility": "public",
-          "line": 182
+          "line": 142
         },
         {
           "name": "rpm",
           "signature": "public double rpm()",
           "visibility": "public",
-          "line": 183
+          "line": 143
         },
         {
           "name": "targetRpm",
           "signature": "public double targetRpm()",
           "visibility": "public",
-          "line": 184
+          "line": 144
         },
         {
           "name": "power",
           "signature": "public double power()",
           "visibility": "public",
-          "line": 185
+          "line": 145
         },
         {
           "name": "voltage",
           "signature": "public double voltage()",
           "visibility": "public",
-          "line": 186
+          "line": 146
         },
         {
           "name": "mode",
           "signature": "public Mode mode()",
           "visibility": "public",
-          "line": 187
+          "line": 147
         },
         {
           "name": "isShooting",
           "signature": "public boolean isShooting()",
           "visibility": "public",
-          "line": 188
+          "line": 148
         }
       ],
       "imports": [
@@ -6916,8 +6959,8 @@
         "java.util.List"
       ],
       "role": "Dual flywheel motors, encoder feedback, PIDF and optional shooting bang-bang control.",
-      "lines": 189,
-      "sha256": "c55d5c2e335138beab19874b04f002db934dbbd9147dc2e685f8f3edd7e7233d",
+      "lines": 149,
+      "sha256": "9ba26560e450d8adbd406a75b6d06558f9e31cf8c54d9e7ac0eebe520cf36467",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/control/PIDController.java"
@@ -6938,85 +6981,85 @@
           "name": "Turret",
           "signature": "public Turret(HardwareMap hw)",
           "visibility": "public",
-          "line": 37
+          "line": 30
         },
         {
           "name": "direction",
           "signature": "private static Servo.Direction direction(boolean reversed)",
           "visibility": "private",
-          "line": 49
+          "line": 42
         },
         {
           "name": "applyDirection",
           "signature": "private boolean applyDirection(ServoImplEx servo, int i, boolean reversed)",
           "visibility": "private",
-          "line": 54
+          "line": 46
         },
         {
           "name": "getTurretPose",
           "signature": "public static Pose getTurretPose(Pose robotPose)",
           "visibility": "public",
-          "line": 61
+          "line": 53
         },
         {
           "name": "getTurretToGoalVector",
           "signature": "public static Vector2D getTurretToGoalVector(Pose turretPose, Pose goal)",
           "visibility": "public",
-          "line": 72
+          "line": 64
         },
         {
           "name": "isConnected",
           "signature": "public boolean isConnected()",
           "visibility": "public",
-          "line": 78
+          "line": 70
         },
         {
           "name": "missing",
           "signature": "public List<String> missing()",
           "visibility": "public",
-          "line": 81
+          "line": 71
         },
         {
           "name": "setPosition",
           "signature": "public void setPosition(double pos)",
           "visibility": "public",
-          "line": 83
+          "line": 73
         },
         {
           "name": "Turret",
           "signature": "public Turret(HardwareMap hw, boolean fourServos)",
           "visibility": "public",
-          "line": 108
+          "line": 101
         },
         {
           "name": "extraServo",
           "signature": "private ServoImplEx extraServo(HardwareMap hw, String name, boolean reversed)",
           "visibility": "private",
-          "line": 120
+          "line": 117
         },
         {
           "name": "servoCount",
           "signature": "public int servoCount()",
           "visibility": "public",
-          "line": 133
+          "line": 130
         },
         {
           "name": "setPositionAll",
           "signature": "public void setPositionAll(double pos)",
           "visibility": "public",
-          "line": 141
+          "line": 149
         },
         {
           "name": "setExtraServosEnabled",
           "signature": "public void setExtraServosEnabled(boolean enabled)",
           "visibility": "public",
-          "line": 156
+          "line": 170
         },
         {
           "name": "setEnabled",
           "signature": "private void setEnabled(ServoImplEx servo, boolean enabled)",
           "visibility": "private",
-          "line": 162
+          "line": 176
         }
       ],
       "imports": [
@@ -7032,8 +7075,8 @@
         "java.util.List"
       ],
       "role": "Turret servo hardware, optional four-servo operation and robot-to-turret geometry.",
-      "lines": 173,
-      "sha256": "39765355fc141858fb570da099b750c11976272b28ac4a8e4e80ee6a12ee1651",
+      "lines": 187,
+      "sha256": "e1a7583c7bef3946450a50f45c48d0a9014f6314f4c1e7b658dc25423a0bc143",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java"
       ]
@@ -7053,51 +7096,51 @@
           "name": "lambertW",
           "signature": "public static double lambertW(double x)",
           "visibility": "public",
-          "line": 42
+          "line": 18
         },
         {
           "name": "computeX",
           "signature": "private static double computeX(double t)",
           "visibility": "private",
-          "line": 61
+          "line": 37
         },
         {
           "name": "refreshFactors",
           "signature": "private static void refreshFactors()",
           "visibility": "private",
-          "line": 66
+          "line": 42
         },
         {
           "name": "ensureFresh",
           "signature": "private static void ensureFresh()",
           "visibility": "private",
-          "line": 84
+          "line": 60
         },
         {
           "name": "speedAfter",
           "signature": "public static double speedAfter(double currentSpeed)",
           "visibility": "public",
-          "line": 92
+          "line": 68
         },
         {
           "name": "distanceAfter",
           "signature": "public static double distanceAfter(double currentSpeed)",
           "visibility": "public",
-          "line": 100
+          "line": 76
         },
         {
           "name": "impliedDecel",
           "signature": "public static double impliedDecel(double currentSpeed)",
           "visibility": "public",
-          "line": 108
+          "line": 84
         }
       ],
       "imports": [
         "com.bylazar.configurables.annotations.Configurable"
       ],
       "role": "Stopping prediction used by aiming.",
-      "lines": 112,
-      "sha256": "a8e1eecaf4674ab83c3a320ad11952d9faf05cfc2020b51bd323bd60d7fc9825",
+      "lines": 88,
+      "sha256": "49fb386f0041d510dc6de74c2090ea07755eac87b100fcde8c17a9ba1cdecebe",
       "internal_dependencies": []
     },
     {
@@ -7115,61 +7158,67 @@
           "name": "queryTuned",
           "signature": "private static void queryTuned(double range, double bearing)",
           "visibility": "private",
-          "line": 87
+          "line": 68
         },
         {
           "name": "flightTime",
           "signature": "public static double flightTime(double range, double hoodPosition)",
           "visibility": "public",
-          "line": 105
+          "line": 80
         },
         {
           "name": "resetProjectionFilter",
           "signature": "public static void resetProjectionFilter()",
           "visibility": "public",
-          "line": 114
+          "line": 89
         },
         {
           "name": "ballSpeedForMotorRpm",
           "signature": "public static double ballSpeedForMotorRpm(double motorRpm)",
           "visibility": "public",
-          "line": 169
+          "line": 125
         },
         {
           "name": "hoodServoPosition",
           "signature": "public static double hoodServoPosition(double launchDeg)",
           "visibility": "public",
-          "line": 234
+          "line": 168
         },
         {
           "name": "launchDegForHoodPosition",
           "signature": "public static double launchDegForHoodPosition(double position)",
           "visibility": "public",
-          "line": 239
+          "line": 172
         },
         {
           "name": "normalizeDegrees",
           "signature": "public static double normalizeDegrees(double degrees)",
           "visibility": "public",
-          "line": 245
+          "line": 178
         },
         {
           "name": "goal",
           "signature": "public static Pose goal(Alliance alliance, double robotY)",
           "visibility": "public",
-          "line": 253
+          "line": 186
         },
         {
           "name": "hiveAimFar",
           "signature": "public static boolean hiveAimFar()",
           "visibility": "public",
-          "line": 279
+          "line": 210
+        },
+        {
+          "name": "solveMeta",
+          "signature": "private static double[] solveMeta(double robotHeading, double x, double goalTheta, Vector2D robotVel)",
+          "visibility": "private",
+          "line": 218
         },
         {
           "name": "solve",
           "signature": "public static double[] solve( double robotHeading, Vector2D robotToGoalVector, Vector2D robotVel, double robotAngularVelocity)",
           "visibility": "public",
-          "line": 285
+          "line": 259
         }
       ],
       "imports": [
@@ -7184,8 +7233,8 @@
         "org.firstinspires.ftc.teamcode.util.Alliance"
       ],
       "role": "Selects and solves shots; tuned-point/map lookup, motion prediction and hardware target conversion.",
-      "lines": 464,
-      "sha256": "3a6ef4dba606a1169b004442920bbf7c49f3516c325d7ccdd7b273a75431e31d",
+      "lines": 430,
+      "sha256": "862d5579d0ad876c4a5b11d106da3ab90c3c72de4b5a7eed8b89dab592102441",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/Braking.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterConstants.java",
@@ -7209,25 +7258,25 @@
           "name": "hiveAimPoint",
           "signature": "public static Pose hiveAimPoint(boolean red, boolean far)",
           "visibility": "public",
-          "line": 33
+          "line": 21
         },
         {
           "name": "hiveAimX",
           "signature": "public static double hiveAimX(boolean red, boolean far)",
           "visibility": "public",
-          "line": 43
+          "line": 30
         },
         {
           "name": "hiveAimY",
           "signature": "public static double hiveAimY(boolean red, boolean far)",
           "visibility": "public",
-          "line": 48
+          "line": 34
         },
         {
           "name": "underHive",
           "signature": "public static boolean underHive(double x, double y)",
           "visibility": "public",
-          "line": 75
+          "line": 49
         }
       ],
       "imports": [
@@ -7235,8 +7284,8 @@
         "com.pedropathing.math.Pose"
       ],
       "role": "Field/HIVE geometry, target selection constants and under-HIVE behavior.",
-      "lines": 82,
-      "sha256": "a51afe30c2d75d0e5940d7ea27a2e4acb9dde413ddf826d7cad3b1827d163790",
+      "lines": 56,
+      "sha256": "fc230eb564588091665cf91cffa8535640c1fff35440034fdda4467866ba27e3",
       "internal_dependencies": []
     },
     {
@@ -7284,7 +7333,7 @@
           "name": "p",
           "signature": "private static TunedShotTable.Point p(HiveCell cell, double x, double y, double rpm, double hood)",
           "visibility": "private",
-          "line": 49
+          "line": 60
         }
       ],
       "imports": [
@@ -7294,8 +7343,8 @@
         "java.util.List"
       ],
       "role": "Committed calibrated shot points.",
-      "lines": 52,
-      "sha256": "e27fd706f483ecb4f72ff0bd905c8cf4b15a1dbfbf4cb0f6fe8b513534d20da1",
+      "lines": 63,
+      "sha256": "27903efe84fd0cef93020cc6e1454b05dec279a5cf2135a4f569cc1e672cf76f",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotTable.java"
@@ -7313,7 +7362,7 @@
         {
           "name": "Point",
           "kind": "class",
-          "line": 64
+          "line": 65
         },
         {
           "name": "Shot",
@@ -7326,7 +7375,7 @@
           "name": "Point",
           "signature": "public Point(HiveCell cell, double x, double y, double rpm, double hood, boolean fromFile)",
           "visibility": "public",
-          "line": 69
+          "line": 70
         },
         {
           "name": "javaLine",
@@ -7476,11 +7525,79 @@
       ],
       "role": "Blends hand-tuned points; merges committed points with Control Hub shotpoints.csv; mirrors between cells.",
       "lines": 305,
-      "sha256": "971e5911fe4fa6596de7b34a25f0b47f369b453a4c5d9afe761b54c79aa0c7c5",
+      "sha256": "9afbb0a55bf0cf36c24f2284640fa9b74fd2d5662e13d4a82785130d3c18c5a9",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/HiveCell.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/table/TunedShotPoints.java"
       ]
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java",
+      "package": "org.firstinspires.ftc.teamcode.subsystem.aim.turret",
+      "types": [
+        {
+          "name": "StickLead",
+          "kind": "class",
+          "line": 26
+        }
+      ],
+      "methods": [
+        {
+          "name": "setSticks",
+          "signature": "public void setSticks(double forward, double lateral, double turn, double offsetRad, boolean robotCentric)",
+          "visibility": "public",
+          "line": 65
+        },
+        {
+          "name": "clearSticks",
+          "signature": "public void clearSticks()",
+          "visibility": "public",
+          "line": 75
+        },
+        {
+          "name": "track",
+          "signature": "public void track(double dtSec)",
+          "visibility": "public",
+          "line": 80
+        },
+        {
+          "name": "weight",
+          "signature": "private static double weight(double age)",
+          "visibility": "private",
+          "line": 106
+        },
+        {
+          "name": "apply",
+          "signature": "public void apply(double solverAimDeg, double aimRange, double heading, double vx, double vy, double measuredOmega, double leadSec)",
+          "visibility": "public",
+          "line": 122
+        },
+        {
+          "name": "aimDeg",
+          "signature": "public double aimDeg()",
+          "visibility": "public",
+          "line": 171
+        },
+        {
+          "name": "omega",
+          "signature": "public double omega()",
+          "visibility": "public",
+          "line": 173
+        },
+        {
+          "name": "changeDeg",
+          "signature": "public double changeDeg()",
+          "visibility": "public",
+          "line": 175
+        }
+      ],
+      "imports": [
+        "com.bylazar.configurables.annotations.Configurable"
+      ],
+      "role": "Project support file.",
+      "lines": 176,
+      "sha256": "1d7a253a1d044a89d5eff48389eed2fa0a8b47499a671e2709f9f939373733b8",
+      "internal_dependencies": []
     },
     {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
@@ -7489,7 +7606,7 @@
         {
           "name": "TurretCalc",
           "kind": "class",
-          "line": 10
+          "line": 11
         }
       ],
       "methods": [
@@ -7497,91 +7614,105 @@
           "name": "turretDegPerServoDeg",
           "signature": "public static double turretDegPerServoDeg()",
           "visibility": "public",
-          "line": 57
+          "line": 63
         },
         {
           "name": "servoPositionFor",
           "signature": "public static double servoPositionFor(double turretDeg)",
           "visibility": "public",
-          "line": 62
+          "line": 68
         },
         {
           "name": "reset",
           "signature": "public static void reset()",
           "visibility": "public",
-          "line": 81
+          "line": 87
         },
         {
           "name": "solve",
           "signature": "public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, Alliance alliance)",
           "visibility": "public",
-          "line": 95
+          "line": 101
         },
         {
           "name": "solve",
           "signature": "public static double solve(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)",
           "visibility": "public",
-          "line": 101
+          "line": 107
         },
         {
           "name": "solveWithoutWrap",
           "signature": "public static double solveWithoutWrap(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)",
           "visibility": "public",
-          "line": 116
+          "line": 122
         },
         {
           "name": "targetAngle",
           "signature": "private static double targetAngle(double commandedAngleDeg, double robotAngularVelocityRadPerSec, double offsetDeg)",
           "visibility": "private",
-          "line": 129
+          "line": 135
+        },
+        {
+          "name": "leadSec",
+          "signature": "public static double leadSec()",
+          "visibility": "public",
+          "line": 142
+        },
+        {
+          "name": "commandDeg",
+          "signature": "public static double commandDeg()",
+          "visibility": "public",
+          "line": 148
         },
         {
           "name": "outOfRange",
           "signature": "public static boolean outOfRange()",
           "visibility": "public",
-          "line": 135
+          "line": 150
         },
         {
           "name": "aimErrorDeg",
           "signature": "public static double aimErrorDeg()",
           "visibility": "public",
-          "line": 137
+          "line": 152
         },
         {
           "name": "servoPosition",
           "signature": "private static double servoPosition(double targetDeg)",
           "visibility": "private",
-          "line": 139
+          "line": 154
         },
         {
           "name": "normalizeDegrees",
           "signature": "private static double normalizeDegrees(double degrees)",
           "visibility": "private",
-          "line": 150
+          "line": 165
         },
         {
           "name": "getClosestValidTurretAngle",
           "signature": "private static double getClosestValidTurretAngle(double relativeGoalDegrees)",
           "visibility": "private",
-          "line": 154
+          "line": 169
         },
         {
           "name": "slewTurret",
           "signature": "private static double slewTurret(double target)",
           "visibility": "private",
-          "line": 191
+          "line": 206
         }
       ],
       "imports": [
         "com.bylazar.configurables.annotations.Configurable",
         "com.qualcomm.robotcore.util.ElapsedTime",
         "com.qualcomm.robotcore.util.Range",
+        "org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc",
         "org.firstinspires.ftc.teamcode.util.Alliance"
       ],
       "role": "Turret servo gearing, angular limits, slew, alliance offsets and yaw compensation.",
-      "lines": 236,
-      "sha256": "80fe66eba14d1c56c524c3f4895d7ad030c074ac6a92933b19a38c571f20399d",
+      "lines": 251,
+      "sha256": "7017807c993279dd9dcd5322d75e028d1089e93e7fac1b7a891f0204f094991b",
       "internal_dependencies": [
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java"
       ]
     },
@@ -7592,7 +7723,7 @@
         {
           "name": "Tele",
           "kind": "class",
-          "line": 24
+          "line": 18
         }
       ],
       "methods": [
@@ -7600,92 +7731,89 @@
           "name": "Tele",
           "signature": "public Tele(Alliance a)",
           "visibility": "public",
-          "line": 53
+          "line": 32
         },
         {
           "name": "initialize",
           "signature": "public void initialize()",
           "visibility": "public",
-          "line": 60
+          "line": 39
         },
         {
           "name": "initializeLoop",
           "signature": "public void initializeLoop()",
           "visibility": "public",
-          "line": 93
+          "line": 76
         },
         {
           "name": "execute",
           "signature": "public void execute()",
           "visibility": "public",
-          "line": 104
+          "line": 87
         },
         {
           "name": "end",
           "signature": "public void end()",
           "visibility": "public",
-          "line": 117
+          "line": 100
         },
         {
           "name": "driver1",
           "signature": "private void driver1()",
           "visibility": "private",
-          "line": 130
+          "line": 111
         },
         {
           "name": "driver2",
           "signature": "private void driver2(double dt)",
           "visibility": "private",
-          "line": 161
+          "line": 142
         },
         {
           "name": "forwardOffsetRad",
           "signature": "private double forwardOffsetRad()",
           "visibility": "private",
-          "line": 195
+          "line": 177
         },
         {
           "name": "turretOffset",
           "signature": "private double turretOffset()",
           "visibility": "private",
-          "line": 199
+          "line": 181
         },
         {
           "name": "setTurretOffset",
           "signature": "private void setTurretOffset(double deg)",
           "visibility": "private",
-          "line": 200
+          "line": 182
         },
         {
           "name": "usingSavedPose",
           "signature": "private boolean usingSavedPose()",
           "visibility": "private",
-          "line": 206
+          "line": 188
         },
         {
           "name": "startPose",
           "signature": "private Pose startPose()",
           "visibility": "private",
-          "line": 208
+          "line": 190
         },
         {
           "name": "notConnected",
           "signature": "private String notConnected()",
           "visibility": "private",
-          "line": 212
+          "line": 194
         }
       ],
       "imports": [
         "com.pedropathing.ivy.commands.Commands.infinite",
-        "com.pedropathing.ivy.commands.Commands.instant",
         "com.bylazar.configurables.annotations.Configurable",
         "com.pedropathing.ivy.Command",
-        "com.pedropathing.ivy.Scheduler",
         "com.pedropathing.math.Pose",
-        "org.electrolightsftc.pulse.electropathing.PulseFollower",
-        "org.electrolightsftc.pulse.electropathing.PulseRuntime",
         "org.firstinspires.ftc.teamcode.Robot",
         "org.firstinspires.ftc.teamcode.pedro.Constants",
+        "org.firstinspires.ftc.teamcode.subsystem.Drivetrain",
         "org.firstinspires.ftc.teamcode.subsystem.aim.turret.TurretCalc",
         "org.firstinspires.ftc.teamcode.util.Alliance",
         "org.firstinspires.ftc.teamcode.util.CommandOpMode",
@@ -7695,11 +7823,12 @@
         "org.firstinspires.ftc.teamcode.util.input.GamepadEx"
       ],
       "role": "Two-driver controls, field-centric drive, shooting gates, manual presets and live trims.",
-      "lines": 220,
-      "sha256": "4fcb6ebfcba59d7ce53b84e1c07e9daa9249e04e5e0c136c8fe9d49847597ba8",
+      "lines": 202,
+      "sha256": "e65462be00cd1bb70100cd8fbeb3d65905b0e730251e0d00d00c88487f998766",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
@@ -7905,7 +8034,7 @@
       ],
       "role": "Bench OpMode for intake, flywheel PIDF and solver-driven hood targets.",
       "lines": 177,
-      "sha256": "124667d4083eb850cae012255ce68b6b1f39661545ff91f4d0efb815645f1876",
+      "sha256": "85ac6e4a11d28ed291e7b8b141669404d2bc51d8e2dc16e0309abf0945ed8fc0",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Hood.java",
@@ -8062,7 +8191,7 @@
         {
           "name": "ShotPointTuner",
           "kind": "class",
-          "line": 52
+          "line": 54
         }
       ],
       "methods": [
@@ -8070,67 +8199,73 @@
           "name": "initialize",
           "signature": "public void initialize()",
           "visibility": "public",
-          "line": 80
+          "line": 82
         },
         {
           "name": "initializeLoop",
           "signature": "public void initializeLoop()",
           "visibility": "public",
-          "line": 94
+          "line": 97
         },
         {
           "name": "onStart",
           "signature": "public void onStart()",
           "visibility": "public",
-          "line": 107
+          "line": 110
         },
         {
           "name": "execute",
           "signature": "public void execute()",
           "visibility": "public",
-          "line": 113
+          "line": 116
         },
         {
           "name": "aim",
           "signature": "private void aim()",
           "visibility": "private",
-          "line": 132
+          "line": 136
         },
         {
           "name": "handleButtons",
           "signature": "private void handleButtons()",
           "visibility": "private",
-          "line": 150
+          "line": 154
+        },
+        {
+          "name": "nudgeTurret",
+          "signature": "private void nudgeTurret(double degrees)",
+          "visibility": "private",
+          "line": 202
         },
         {
           "name": "nudge",
           "signature": "private void nudge(double rpm, double hood)",
           "visibility": "private",
-          "line": 198
+          "line": 207
         },
         {
           "name": "save",
           "signature": "private void save()",
           "visibility": "private",
-          "line": 204
+          "line": 213
         },
         {
           "name": "deleteNearest",
           "signature": "private void deleteNearest()",
           "visibility": "private",
-          "line": 220
+          "line": 229
         },
         {
           "name": "showTelemetry",
           "signature": "private void showTelemetry()",
           "visibility": "private",
-          "line": 238
+          "line": 247
         },
         {
           "name": "end",
           "signature": "public void end()",
           "visibility": "public",
-          "line": 272
+          "line": 283
         }
       ],
       "imports": [
@@ -8152,6 +8287,7 @@
         "org.firstinspires.ftc.teamcode.util.TeleTelemetry",
         "org.firstinspires.ftc.teamcode.util.Alliance",
         "org.firstinspires.ftc.teamcode.util.CommandOpMode",
+        "org.firstinspires.ftc.teamcode.util.FollowerLocalization",
         "org.firstinspires.ftc.teamcode.util.input.FloatSupplier",
         "org.firstinspires.ftc.teamcode.util.input.GamepadEx",
         "java.io.IOException",
@@ -8159,8 +8295,8 @@
         "java.util.Locale"
       ],
       "role": "Drive, tune, save and export calibrated shot points.",
-      "lines": 275,
-      "sha256": "c41c34cd4ace14bc4c50b3e98e3fc10c72ac7f6035d311416ec31bf1b68f130e",
+      "lines": 286,
+      "sha256": "a18e54bc4b69ef90b3b333288c6a2dd1c0b802882db7fc0dc291c48c58cce344",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Turret.java",
@@ -8172,6 +8308,7 @@
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
+        "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/TeleTelemetry.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/GamepadEx.java"
@@ -8557,6 +8694,39 @@
       "internal_dependencies": []
     },
     {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java",
+      "package": "org.firstinspires.ftc.teamcode.util",
+      "types": [
+        {
+          "name": "FollowerLocalization",
+          "kind": "class",
+          "line": 22
+        }
+      ],
+      "methods": [
+        {
+          "name": "FollowerLocalization",
+          "signature": "private FollowerLocalization()",
+          "visibility": "private",
+          "line": 23
+        },
+        {
+          "name": "update",
+          "signature": "public static void update(PulseFollower follower)",
+          "visibility": "public",
+          "line": 25
+        }
+      ],
+      "imports": [
+        "org.electrolightsftc.pulse.electropathing.PulseFollower",
+        "org.electrolightsftc.pulse.electropathing.autotune.AutoTune"
+      ],
+      "role": "Project support file.",
+      "lines": 33,
+      "sha256": "8cadecc6866b4f0181ec84415184be2e6c1acf417f555eb3dd0049e6f060ffcc",
+      "internal_dependencies": []
+    },
+    {
       "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java",
       "package": "org.firstinspires.ftc.teamcode.util",
       "types": [
@@ -8580,6 +8750,82 @@
       "role": "Pose handoff between OpModes.",
       "lines": 9,
       "sha256": "cd4cf3ba0275a02eccc48c2037c2744a12e4728b0b106ae4aa28c5af9dbd500a",
+      "internal_dependencies": []
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java",
+      "package": "org.firstinspires.ftc.teamcode.util",
+      "types": [
+        {
+          "name": "ShotLogger",
+          "kind": "class",
+          "line": 24
+        }
+      ],
+      "methods": [
+        {
+          "name": "row",
+          "signature": "public double[] row()",
+          "visibility": "public",
+          "line": 51
+        },
+        {
+          "name": "commit",
+          "signature": "public void commit(boolean shooting)",
+          "visibility": "public",
+          "line": 54
+        },
+        {
+          "name": "flushRunUp",
+          "signature": "private void flushRunUp(double now)",
+          "visibility": "private",
+          "line": 72
+        },
+        {
+          "name": "append",
+          "signature": "private void append(double[] from, int offset)",
+          "visibility": "private",
+          "line": 80
+        },
+        {
+          "name": "rowCount",
+          "signature": "public int rowCount()",
+          "visibility": "public",
+          "line": 87
+        },
+        {
+          "name": "save",
+          "signature": "public File save()",
+          "visibility": "public",
+          "line": 93
+        },
+        {
+          "name": "run",
+          "signature": "public void run()",
+          "visibility": "public",
+          "line": 104
+        },
+        {
+          "name": "newFile",
+          "signature": "private static File newFile()",
+          "visibility": "private",
+          "line": 117
+        }
+      ],
+      "imports": [
+        "com.bylazar.configurables.annotations.Configurable",
+        "org.firstinspires.ftc.robotcore.internal.system.AppUtil",
+        "java.io.BufferedWriter",
+        "java.io.File",
+        "java.io.FileWriter",
+        "java.io.IOException",
+        "java.text.SimpleDateFormat",
+        "java.util.Date",
+        "java.util.Locale"
+      ],
+      "role": "Project support file.",
+      "lines": 149,
+      "sha256": "0372a558443254991843ccba5bff1676b3742e946d229cccae0590252e6ad743",
       "internal_dependencies": []
     },
     {
@@ -8627,7 +8873,7 @@
           "name": "panels",
           "signature": "private void panels(double turretOffset)",
           "visibility": "private",
-          "line": 73
+          "line": 76
         }
       ],
       "imports": [
@@ -8638,8 +8884,8 @@
         "org.firstinspires.ftc.teamcode.subsystem.aim.shot.ShooterCalc"
       ],
       "role": "Driver Station and Panels telemetry presentation.",
-      "lines": 95,
-      "sha256": "d3e7cddeb654aadc10087d76b3d46230901b176690f49648c09cf0d00c30b803",
+      "lines": 100,
+      "sha256": "15476a818d2bf6339218e4d4491624fad4e9abbc72b94a10c0f1d872d2d22b9f",
       "internal_dependencies": [
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java",
@@ -9607,6 +9853,135 @@
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/BooleanSwitch.java",
         "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/input/FloatSupplier.java"
       ]
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java",
+      "package": "org.firstinspires.ftc.teamcode.util.math",
+      "types": [
+        {
+          "name": "RotMatrix",
+          "kind": "class",
+          "line": 9
+        }
+      ],
+      "methods": [
+        {
+          "name": "RotMatrix",
+          "signature": "private RotMatrix()",
+          "visibility": "private",
+          "line": 10
+        },
+        {
+          "name": "rotMatrix",
+          "signature": "public static Matrix rotMatrix(double angle)",
+          "visibility": "public",
+          "line": 16
+        }
+      ],
+      "imports": [
+        "com.pedropathing.math.Matrix"
+      ],
+      "role": "Project support file.",
+      "lines": 25,
+      "sha256": "7733f325ed07b7402633c00c8d05dc866bf6c093c23e11fd10b423136b895fc5",
+      "internal_dependencies": []
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java",
+      "package": "org.firstinspires.ftc.teamcode.util.math",
+      "types": [
+        {
+          "name": "VectorMagnitude",
+          "kind": "class",
+          "line": 9
+        }
+      ],
+      "methods": [
+        {
+          "name": "VectorMagnitude",
+          "signature": "private VectorMagnitude()",
+          "visibility": "private",
+          "line": 10
+        },
+        {
+          "name": "magnitude",
+          "signature": "public static double magnitude(Vector2D v)",
+          "visibility": "public",
+          "line": 16
+        }
+      ],
+      "imports": [
+        "com.pedropathing.math.Vector2D"
+      ],
+      "role": "Project support file.",
+      "lines": 19,
+      "sha256": "e3ecd87cf55a2a49a8e39bd39168a9c048f1f8f7c7283fa2c1080732f65367c9",
+      "internal_dependencies": []
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java",
+      "package": "org.firstinspires.ftc.teamcode.util.math",
+      "types": [
+        {
+          "name": "VectorPrint",
+          "kind": "class",
+          "line": 6
+        }
+      ],
+      "methods": [
+        {
+          "name": "VectorPrint",
+          "signature": "private VectorPrint()",
+          "visibility": "private",
+          "line": 7
+        },
+        {
+          "name": "print",
+          "signature": "public static String print(Vector2D v)",
+          "visibility": "public",
+          "line": 9
+        }
+      ],
+      "imports": [
+        "com.pedropathing.math.Vector2D"
+      ],
+      "role": "Project support file.",
+      "lines": 12,
+      "sha256": "040e82cb5c1cb3dc976368916362942ad21099fb40c6c28bf1958a037074f533",
+      "internal_dependencies": []
+    },
+    {
+      "path": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java",
+      "package": "org.firstinspires.ftc.teamcode.util.math",
+      "types": [
+        {
+          "name": "VectorTransform",
+          "kind": "class",
+          "line": 10
+        }
+      ],
+      "methods": [
+        {
+          "name": "VectorTransform",
+          "signature": "private VectorTransform()",
+          "visibility": "private",
+          "line": 11
+        },
+        {
+          "name": "transform",
+          "signature": "public static Vector2D transform(Vector2D v, Matrix matrix)",
+          "visibility": "public",
+          "line": 19
+        }
+      ],
+      "imports": [
+        "com.pedropathing.math.Matrix",
+        "com.pedropathing.math.Vector2D"
+      ],
+      "role": "Project support file.",
+      "lines": 34,
+      "sha256": "f1bd720d0288808294fe71d5d3ff43d8a074fdce7e53d81131394583ddf8f7e6",
+      "internal_dependencies": []
     }
   ],
   "edges": [
@@ -9638,6 +10013,11 @@
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
       "kind": "import-or-same-package-reference"
     },
     {
@@ -9682,12 +10062,27 @@
     },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/StickLead.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
       "kind": "import-or-same-package-reference"
     },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/ShotLogger.java",
       "kind": "import-or-same-package-reference"
     },
     {
@@ -9702,6 +10097,11 @@
     },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
       "kind": "import-or-same-package-reference"
     },
@@ -9712,31 +10112,6 @@
     },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Close.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/Robot.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/Far.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/OpModeStorage.java",
       "kind": "import-or-same-package-reference"
     },
@@ -9787,11 +10162,6 @@
     },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/ClosePaths.java",
-      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
-      "kind": "import-or-same-package-reference"
-    },
-    {
-      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/auto/paths/FarPaths.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
       "kind": "import-or-same-package-reference"
     },
@@ -9853,6 +10223,36 @@
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Tuning.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/procedures/Tests.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/HardwareNames.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/RotMatrix.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorMagnitude.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorPrint.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/math/VectorTransform.java",
       "kind": "import-or-same-package-reference"
     },
     {
@@ -9947,6 +10347,11 @@
     },
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/shot/ShooterCalc.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/aim/turret/TurretCalc.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/Alliance.java",
       "kind": "import-or-same-package-reference"
     },
@@ -9958,6 +10363,11 @@
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/pedro/Constants.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/tele/Tele.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystem/Drivetrain.java",
       "kind": "import-or-same-package-reference"
     },
     {
@@ -10173,6 +10583,11 @@
     {
       "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java",
       "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/CommandOpMode.java",
+      "kind": "import-or-same-package-reference"
+    },
+    {
+      "from": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/test/ShotPointTuner.java",
+      "to": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/FollowerLocalization.java",
       "kind": "import-or-same-package-reference"
     },
     {

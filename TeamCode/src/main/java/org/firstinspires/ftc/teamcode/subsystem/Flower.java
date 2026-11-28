@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.HardwareNames;
 @Configurable
 public class Flower {
     public static double DOWN_POS = 0.75;
-    public static double UP_POS = 0.16;
+    public static double UP_POS = 0.11;
 
     private final ServoImplEx flower;
     private boolean down = false;

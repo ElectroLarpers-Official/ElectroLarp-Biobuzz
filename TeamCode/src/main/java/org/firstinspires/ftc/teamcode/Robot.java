@@ -151,6 +151,8 @@ public final class Robot {
         fixedTurretAngleDeg = angleDeg;
     }
 
+    public Double fixedTurretAngleDeg() { return fixedTurretAngleDeg; }
+
     private double solveTurret(double angleDeg, double angularVelocity) {
         if (fixedTurretAngleDeg != null) {
             return TurretCalc.solveWithoutWrap(fixedTurretAngleDeg, 0.0, 0.0);
